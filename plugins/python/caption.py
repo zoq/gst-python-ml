@@ -16,7 +16,7 @@
 # Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
-from global_logger import GlobalLogger
+from log.global_logger import GlobalLogger
 from muxed_buffer_processor import MuxedBufferProcessor  # Added import
 
 CAN_REGISTER_ELEMENT = True

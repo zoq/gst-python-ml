@@ -17,7 +17,7 @@
 # Boston, MA 02110-1301, USA.
 
 
-from global_logger import GlobalLogger
+from log.global_logger import GlobalLogger
 
 CAN_REGISTER_ELEMENT = True
 try:

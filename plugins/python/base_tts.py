@@ -1,4 +1,4 @@
-# TtsBase
+# BaseTts
 # Copyright (C) 2024-2025 Collabora Ltd.
 #
 # This library is free software; you can redistribute it and/or
@@ -32,9 +32,9 @@ from gi.repository import Gst, GObject, GstBase, GstAudio  # noqa: E402
 ICAPS = Gst.Caps(Gst.Structure("text/x-raw", format="utf8"))
 
 
-class TtsBase(BaseAggregator):
+class BaseTts(BaseAggregator):
     __gstmetadata__ = (
-        "TtsBase",
+        "BaseTts",
         "Aggregator",
         "Parent TTS class",
         "Aaron Boxer <aaron.boxer@collabora.com>",

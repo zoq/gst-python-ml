@@ -1139,7 +1139,7 @@ class YoloAdvancedEngine(PyTorchEngine):
         return AdvancedResult(tracks_p, tracks_b, self.single_ball_trail, det_res.boxes)
 
 
-class YOLOBall(BaseObjectDetector):
+class DemoSoccer(BaseObjectDetector):
     """
     GStreamer element for advanced YOLO inference focused on person and ball tracking with fallback and gating.
     """
@@ -1156,14 +1156,22 @@ class YOLOBall(BaseObjectDetector):
         self.engine_name = "yolo-ball-engine"
         EngineFactory.register(self.engine_name, YoloAdvancedEngine)
 
-        # Resolve YAMLs: script dir (plugins/python/) → root/data/
+        # Resolve YAMLs
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        yaml_base = os.path.join(script_dir, "..", "..", "data")  # Up 2 to root/data/
-        self.logger.info(
-            f"YAML base resolved to: {yaml_base}"
-        )  # Debug: Logs /home/aaron/src/gst-python-ml/data
+        yaml_base = os.path.join(script_dir, "demo", "soccer")
+        self.logger.info(f"YAML base resolved to: {yaml_base}")
         self.__tracker_people = os.path.join(yaml_base, "botsort_people_reid.yaml")
         self.__tracker_ball = os.path.join(yaml_base, "bytetrack_ball.yaml")
+
+        # Check if YAML files exist
+        if not os.path.exists(self.__tracker_people):
+            raise FileNotFoundError(
+                f"People tracker YAML file not found: {self.__tracker_people}"
+            )
+        if not os.path.exists(self.__tracker_ball):
+            raise FileNotFoundError(
+                f"Ball tracker YAML file not found: {self.__tracker_ball}"
+            )
 
         # Defaults (all params)
         self.__model = "yolo11x"
@@ -1916,9 +1924,9 @@ class YOLOBall(BaseObjectDetector):
 
 
 if CAN_REGISTER_ELEMENT:
-    GObject.type_register(YOLOBall)
-    __gstelementfactory__ = ("pyml_yolo_ball", Gst.Rank.NONE, YOLOBall)
+    GObject.type_register(DemoSoccer)
+    __gstelementfactory__ = ("demo_soccer", Gst.Rank.NONE, DemoSoccer)
 else:
     GlobalLogger().warning(
-        "The 'pyml_yolo_ball' element will not be registered because required modules are missing."
+        "The 'demo_soccer' element will not be registered because required modules are missing."
     )

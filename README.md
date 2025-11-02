@@ -362,6 +362,10 @@ GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodeb
 
 ```
 
+```
+GST_DEBUG=4 gst-launch-1.0 filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale ! video/x-raw,width=640,height=480 ! pyml_yolo_ball device=cuda:0 ! pyml_overlay ! videoconvert ! autovideosink
+```
+
 
 ### Transcription
 

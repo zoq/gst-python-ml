@@ -99,7 +99,6 @@ class BaseAggregator(GstBase.Aggregator):
         super().__init__()
         self.logger = LoggerFactory.get(LoggerFactory.LOGGER_TYPE_GST)
         self.engine_helper = ModelEngineHelper(self.logger)
-        self.engine_name = self.engine_helper.engine_name
         self.kwargs = {}
         self.segment_pushed = False
 
@@ -113,7 +112,7 @@ class BaseAggregator(GstBase.Aggregator):
         elif prop.name == "device":
             return self.device  # Return from BaseAggregator, not from helper
         elif prop.name == "engine-name":
-            return self.engine_name
+            return self.engine_helper.engine_name
         elif prop.name == "device-queue-id":
             return self.device_queue_id
         else:
@@ -137,12 +136,12 @@ class BaseAggregator(GstBase.Aggregator):
             elif prop.name == "device":
                 self.device = value
                 self.engine_helper.set_device(value)
-                self.engine_helper.initialize_engine(self.engine_name)
+                self.engine_helper.initialize_engine()
                 if self.model_name and self.engine_helper.engine:
                     self.engine_helper.load_model(self.model_name)
             elif prop.name == "engine-name":
-                self.engine_name = value
-                self.engine_helper.initialize_engine(value)
+                self.engine_helper.engine_name = value
+                self.engine_helper.initialize_engine()
                 if self.model_name and self.engine_helper.engine:
                     self.engine_helper.load_model(self.model_name)
             elif prop.name == "device-queue-id":
@@ -156,18 +155,20 @@ class BaseAggregator(GstBase.Aggregator):
             raise
 
     def _initialize_engine_if_needed(self):
-        if not self.engine_helper.engine and self.engine_name:
-            self.engine_helper.initialize_engine(self.engine_name)
+        if not self.engine_helper.engine and self.engine_helper.engine_name:
+            self.engine_helper.initialize_engine()
 
     def initialize_engine(self):
-        if self.engine_name is not None:
-            self.engine_helper.initialize_engine(self.engine_name)
+        if self.engine_helper.engine_name is not None:
+            self.engine_helper.initialize_engine()
             self.engine_helper.engine.batch_size = self.batch_size
             self.engine_helper.engine.frame_stride = self.frame_stride
             if self.device_queue_id:
                 self.engine_helper.engine.device_queue_id = self.device_queue_id
         else:
-            self.logger.error(f"Unsupported ML engine: {self.engine_name}")
+            self.logger.error(
+                f"Unsupported ML engine: {self.engine_helper.engine_name}"
+            )
 
     def do_load_model(self):
         if self.engine_helper.engine and self.model_name:

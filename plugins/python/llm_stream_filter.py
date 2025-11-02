@@ -200,7 +200,7 @@ class LLMStreamFilter(VideoTransform):
                 self.llm_engine_helper.set_device(
                     self.device if hasattr(self, "device") else "cuda:0"
                 )
-                self.llm_engine_helper.initialize_engine(EngineFactory.PYTORCH_ENGINE)
+                self.llm_engine_helper.initialize_engine()
                 self.llm_engine_helper.kwargs = {
                     "quantization_config": BitsAndBytesConfig(
                         load_in_4bit=True,

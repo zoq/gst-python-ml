@@ -27,9 +27,9 @@ class ModelEngineHelper:
         self.kwargs = {}
         self.device = "cpu"  # Manage device here
 
-    def initialize_engine(self, engine_name):
-        if engine_name:
-            self.engine = EngineFactory.create(engine_name, self.device)
+    def initialize_engine(self):
+        if self.engine_name:
+            self.engine = EngineFactory.create(self.engine_name, self.device)
         else:
             self.logger.error(f"Unsupported ML engine: {engine_name}")
 

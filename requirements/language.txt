@@ -1,7 +1,11 @@
 # These are the requirements for running the NLP elements such as
 # TTS and STT
 
-nvidia-cudnn-cu11==8.9.6.50
+# Ubuntu 24.04 with python 3.12
+#nvidia-cudnn-cu11==8.9.6.50
+
+# Fedora 42 with python 3.13, cuda 12.8 and torch 2.9
+nvidia-cudnn-cu12==9.14.0.64
 
 sentencepiece
 protobuf

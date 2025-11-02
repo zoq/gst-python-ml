@@ -171,6 +171,11 @@ class CaptionEngine(MLEngine):
                 self.logger.error(f"Vision-language inference error: {e}")
                 return None
 
+    # no-op
+    def generate(self, input_text, max_length=100):
+        """Generate LLM text."""
+        pass
+
 
 class Caption(VideoTransform):
     """

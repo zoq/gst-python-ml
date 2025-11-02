@@ -176,19 +176,24 @@ class BaseAggregator(GstBase.Aggregator):
             self.logger.warning("Engine is not present, unable to load the model.")
 
     def get_model(self):
+        """Gets the model from the engine."""
         self._initialize_engine_if_needed()
-        if self.engine_helper.engine:
-            return self.engine_helper.get_model()
-        else:
-            self.logger.warning("Engine is not present, unable to get the model.")
+        if self.engine is None:
+            self.logger.error("Cannot get model: engine not initialized")
             return None
+        """Gets the model from the engine."""
+        if self.engine:
+            return self.engine.get_model()
+        return None
 
     def set_model(self, model):
+        """Sets the model in the engine."""
         self._initialize_engine_if_needed()
-        if self.engine_helper.engine:
-            self.engine_helper.set_model(model)
-        else:
-            self.logger.warning("Engine is not present, unable to set the model.")
+        if self.engine is None:
+            self.logger.error("Cannot load model: engine not initialized")
+            return False
+        self.engine.set_model(model)  # Set the model in the engine
+        self.logger.info("Model set successfully in the engine.")
 
     def get_tokenizer(self):
         self._initialize_engine_if_needed()

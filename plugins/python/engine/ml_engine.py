@@ -73,7 +73,7 @@ class MLEngine(ABC):
         return self.device
 
     def set_model(self, model):
-        """Set the model directly (useful for loading pre-built models)."""
+        """Set the model directly """
         self.model = model
 
     def get_model(self):

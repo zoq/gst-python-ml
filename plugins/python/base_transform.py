@@ -176,6 +176,9 @@ class BaseTransform(GstBase.BaseTransform):
     def get_model(self):
         """Gets the model from the engine."""
         self._initialize_engine_if_needed()
+        if self.engine is None:
+            self.logger.error("Cannot get model: engine not initialized")
+            return None
         """Gets the model from the engine."""
         if self.engine:
             return self.engine.get_model()
@@ -183,8 +186,9 @@ class BaseTransform(GstBase.BaseTransform):
 
     def set_model(self, model):
         """Sets the model in the engine."""
-        if self.engine:
-            self.engine.set_model(model)  # Set the model in the engine
-            self.logger.info("Model set successfully in the engine.")
-        else:
-            Gst.Error("Engine is not initialized.")
+        self._initialize_engine_if_needed()
+        if self.engine is None:
+            self.logger.error("Cannot load model: engine not initialized")
+            return False
+        self.engine.set_model(model)  # Set the model in the engine
+        self.logger.info("Model set successfully in the engine.")

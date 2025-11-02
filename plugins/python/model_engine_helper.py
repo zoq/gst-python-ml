@@ -63,12 +63,6 @@ class ModelEngineHelper:
             self.logger.warning("Engine is not present, unable to get the model.")
             return None
 
-    def set_model(self, model):
-        if self.engine:
-            self.engine.model = model
-        else:
-            self.logger.warning("Engine is not present, unable to set the model.")
-
     def get_tokenizer(self):
         if self.engine:
             model = self.get_model()

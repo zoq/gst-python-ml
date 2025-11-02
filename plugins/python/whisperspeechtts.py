@@ -72,7 +72,7 @@ class WhisperSpeechTTS(BaseTts):
             f"Initializing WhisperSpeech TTS model on device: {self.device}"
         )
         try:
-            self.set_model(
+            self.load_model(
                 Pipeline(s2a_ref=model_ref, device=self.device, torch_compile=True)
             )
             if self.get_model() is not None:

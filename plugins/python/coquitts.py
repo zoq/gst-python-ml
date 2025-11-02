@@ -66,7 +66,7 @@ class CoquiTTS(BaseTts):
 
     def do_load_model(self):
         self.logger.info(f"Initializing Coqui TTS model on device: {self.device}")
-        self.set_model(
+        self.load_model(
             TTS(
                 model_name="tts_models/multilingual/multi-dataset/xtts_v2",
                 progress_bar=False,

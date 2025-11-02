@@ -71,7 +71,7 @@ class StableDiffusion(BaseAggregator):
         Initialize the Stable Diffusion model
         """
         self.logger.info(f"Initializing Stable Diffusion model on {self.device}")
-        self.set_model(
+        self.load_model(
             StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4")
         )
         self.get_model().to(self.device)

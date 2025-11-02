@@ -186,7 +186,7 @@ class BaseAggregator(GstBase.Aggregator):
             return self.engine.get_model()
         return None
 
-    def set_model(self, model):
+    def load_model(self, model):
         """Sets the model in the engine."""
         self._initialize_engine_if_needed()
         if self.engine is None:

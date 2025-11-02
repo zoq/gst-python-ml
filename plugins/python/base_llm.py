@@ -51,7 +51,6 @@ class BaseLlm(BaseAggregator):
 
     def __init__(self):
         super().__init__()
-        self.engine = None  # Explicitly initialize self.engine
 
     def do_process(self, buf):
         """
@@ -75,7 +74,6 @@ class BaseLlm(BaseAggregator):
                 self.engine_helper.set_device(self.device)
                 self.engine_helper.initialize_engine()
                 self.engine_helper.load_model(self.model_name)
-                self.engine = self.engine_helper.engine  # Set self.engine
 
             # Retry model loading if tokenizer or model is missing
             tokenizer = self.get_tokenizer()
@@ -91,7 +89,6 @@ class BaseLlm(BaseAggregator):
                     self.logger.error("Model reload failed")
                     buf.unmap(map_info)
                     return Gst.FlowReturn.ERROR
-                self.engine = self.engine_helper.engine  # Update self.engine
                 tokenizer = self.get_tokenizer()
                 model = self.get_model()
                 if not tokenizer or not model:
@@ -100,7 +97,7 @@ class BaseLlm(BaseAggregator):
                     return Gst.FlowReturn.ERROR
 
             # Generate text using the engine
-            generated_text = self.engine.generate(input_text)
+            generated_text = self.engine_helper.engine.generate(input_text)
             self.logger.info(f"Generated text: {generated_text}")
 
             buf.unmap(map_info)

@@ -59,9 +59,7 @@ class PyTorchEngine(MLEngine):
                         processor_name
                     )
                     self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-                    self.set_model(
-                        VisionEncoderDecoderModel.from_pretrained(model_name)
-                    )
+                    self.model = VisionEncoderDecoderModel.from_pretrained(model_name)
                     self.frame_stride = self.model.config.encoder.num_frames
                     self.logger.info(
                         f"Vision-Text model '{model_name}' loaded with processor and tokenizer."
@@ -73,18 +71,15 @@ class PyTorchEngine(MLEngine):
                     self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                     self.logger.info(f"Loading language model {model_name}")
                     quantization_config = BitsAndBytesConfig(load_in_4bit=True)
-                    self.set_model(
-                        AutoModelForCausalLM.from_pretrained(
-                            model_name,
-                            torch_dtype=(
-                                torch.float16
-                                if self.device == "cuda"
-                                else torch.float32
-                            ),
-                            device_map="auto",
-                            quantization_config=quantization_config,
-                        )
+                    self.model = AutoModelForCausalLM.from_pretrained(
+                        model_name,
+                        torch_dtype=(
+                            torch.float16 if self.device == "cuda" else torch.float32
+                        ),
+                        device_map="auto",
+                        quantization_config=quantization_config,
                     )
+
                     self.get_model().eval()
                     self.logger.info(
                         f"Pre-trained LLM model '{model_name}' loaded from Transformers."

@@ -192,7 +192,7 @@ class BaseAggregator(GstBase.Aggregator):
         if self.engine is None:
             self.logger.error("Cannot load model: engine not initialized")
             return False
-        self.engine.set_model(model)  # Set the model in the engine
+        self.engine.model = model
         self.logger.info("Model set successfully in the engine.")
 
     def get_tokenizer(self):

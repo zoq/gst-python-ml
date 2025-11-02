@@ -41,7 +41,6 @@ class MLEngine(ABC):
         self.prompt = "What is shown in this image?"  # Default prompt
 
     # Interface #
-
     @abstractmethod
     def load_model(self, model_name, **kwargs):
         """Load a model by name or path, with additional options."""
@@ -59,7 +58,6 @@ class MLEngine(ABC):
         pass
 
     # Implementation #
-
     def set_prompt(self, prompt):
         """Set the custom prompt for generating responses."""
         self.prompt = prompt
@@ -71,10 +69,6 @@ class MLEngine(ABC):
     def get_device(self):
         """Return the device the model is running on."""
         return self.device
-
-    def set_model(self, model):
-        """Set the model directly """
-        self.model = model
 
     def get_model(self):
         """Return the loaded model for use in inference."""

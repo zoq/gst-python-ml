@@ -65,7 +65,7 @@ class ModelEngineHelper:
 
     def set_model(self, model):
         if self.engine:
-            self.engine.set_model(model)
+            self.engine.model = model
         else:
             self.logger.warning("Engine is not present, unable to set the model.")
 

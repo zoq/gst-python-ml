@@ -182,7 +182,7 @@ docker image prune -a -f
 
 1. To use the language elements included in this project, the `nvidia-cuda-toolkit`
 Ubuntu package must be installed, and additional pip requirements must be installed from
-`requirements/language_requirements.txt`
+`requirements/language.txt`
 
 2. A specfic version of Cuda is required for these elements: LD_LIBRARY_PATH in `~/.bashrc` must be updated with the following line (!!! adjust for your python version) :
 

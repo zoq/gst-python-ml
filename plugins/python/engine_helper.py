@@ -44,6 +44,7 @@ class EngineHelper:
             self.engine.set_device(device)
 
     def load_model(self, model_name):
+        self.initialize_engine_if_needed()
         if self.engine and model_name:
             try:
                 self.logger.info(f"Loading model: {model_name}")
@@ -62,6 +63,7 @@ class EngineHelper:
             return False
 
     def get_model(self):
+        self.initialize_engine_if_needed()
         if self.engine:
             return self.engine.get_model()
         else:

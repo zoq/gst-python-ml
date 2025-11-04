@@ -155,7 +155,7 @@ class BaseTransform(GstBase.BaseTransform):
 
     def initialize_engine(self):
         """Initialize the machine learning engine based on the engine_name property."""
-        if self.engine_name is not None:
+        if self.engine_name:
             self.engine = EngineFactory.create(self.engine_name, self.device)
             self.engine.batch_size = self.batch_size
             self.engine.frame_stride = self.frame_stride
@@ -180,9 +180,7 @@ class BaseTransform(GstBase.BaseTransform):
             self.logger.error("Cannot get model: engine not initialized")
             return None
         """Gets the model from the engine."""
-        if self.engine:
-            return self.engine.get_model()
-        return None
+        return self.engine.get_model()
 
     def load_model(self, model):
         """Sets the model in the engine."""

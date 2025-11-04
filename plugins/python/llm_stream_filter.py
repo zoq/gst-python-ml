@@ -34,7 +34,7 @@ try:
 
     from muxed_buffer_processor import MuxedBufferProcessor
     from video_transform import VideoTransform
-    from model_engine_helper import ModelEngineHelper
+    from engine_helper import EngineHelper
     from engine.engine_factory import EngineFactory
     from utils.caption_utils import load_captions
     import torch
@@ -110,7 +110,7 @@ class LLMStreamFilter(VideoTransform):
         self.model_name = (
             "phi-3.5-vision"  # Caption model, inherited from BaseTransform
         )
-        self.llm_engine_helper = ModelEngineHelper(GlobalLogger())
+        self.llm_engine_helper = EngineHelper(GlobalLogger())
         self.llm_engine = None
         self.selected_streams = []
         self.captions = {}  # Loaded captions from file

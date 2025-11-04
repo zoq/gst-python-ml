@@ -26,7 +26,7 @@ from gi.repository import Gst, GObject, GstBase  # noqa: E402
 
 from engine.engine_factory import EngineFactory
 from log.logger_factory import LoggerFactory
-from model_engine_helper import ModelEngineHelper
+from engine_helper import EngineHelper
 
 
 class BaseAggregator(GstBase.Aggregator):
@@ -98,7 +98,7 @@ class BaseAggregator(GstBase.Aggregator):
     def __init__(self):
         super().__init__()
         self.logger = LoggerFactory.get(LoggerFactory.LOGGER_TYPE_GST)
-        self.engine_helper = ModelEngineHelper(self.logger)
+        self.engine_helper = EngineHelper(self.logger)
         self.kwargs = {}
         self.segment_pushed = False
 

@@ -1,4 +1,4 @@
-# ModelEngineHelper
+# EngineHelper
 # Copyright (C) 2024-2025 Collabora Ltd.
 #
 # This library is free software; you can redistribute it and/or
@@ -19,7 +19,7 @@
 from engine.engine_factory import EngineFactory
 
 
-class ModelEngineHelper:
+class EngineHelper:
     def __init__(self, logger, default_engine=EngineFactory.PYTORCH_ENGINE):
         self.logger = logger
         self.engine_name = default_engine

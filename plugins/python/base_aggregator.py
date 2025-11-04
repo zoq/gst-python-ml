@@ -131,18 +131,16 @@ class BaseAggregator(GstBase.Aggregator):
                     self.engine_helper.engine.frame_stride = value
             elif prop.name == "model-name":
                 self.model_name = value
-                if self.engine_helper.engine:
-                    self.engine_helper.load_model(value)
+                self.engine_helper.initialize_engine()
+                self.engine_helper.load_model(self.model_name)
             elif prop.name == "device":
                 self.engine_helper.set_device(value)
                 self.engine_helper.initialize_engine()
-                if self.model_name and self.engine_helper.engine:
-                    self.engine_helper.load_model(self.model_name)
+                self.engine_helper.load_model(self.model_name)
             elif prop.name == "engine-name":
                 self.engine_helper.engine_name = value
                 self.engine_helper.initialize_engine()
-                if self.model_name and self.engine_helper.engine:
-                    self.engine_helper.load_model(self.model_name)
+                self.engine_helper.load_model(self.model_name)
             elif prop.name == "device-queue-id":
                 self.device_queue_id = value
                 if self.engine_helper.engine:

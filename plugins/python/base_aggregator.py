@@ -157,7 +157,7 @@ class BaseAggregator(GstBase.Aggregator):
         self.engine_helper.initialize_engine_if_needed()
 
     def initialize_engine(self):
-        if self.engine_helper.engine_name is not None:
+        if self.engine_helper.engine_name:
             self.engine_helper.initialize_engine()
             self.engine_helper.engine.batch_size = self.batch_size
             self.engine_helper.engine.frame_stride = self.frame_stride

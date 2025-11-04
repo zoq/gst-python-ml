@@ -64,11 +64,9 @@ class EngineHelper:
 
     def get_model(self):
         self.initialize_engine_if_needed()
-        if self.engine:
-            return self.engine.get_model()
-        else:
-            self.logger.warning("Engine is not present, unable to get the model.")
-            return None
+        if self.engine is None:
+            raise ValueError("Engine is not present, unable to get model")
+        return self.engine.get_model()
 
     def get_tokenizer(self):
         if self.engine:

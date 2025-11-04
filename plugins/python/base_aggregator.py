@@ -110,7 +110,7 @@ class BaseAggregator(GstBase.Aggregator):
         elif prop.name == "model-name":
             return self.model_name
         elif prop.name == "device":
-            return self.device  # Return from BaseAggregator, not from helper
+            return self.engine_helper.device
         elif prop.name == "engine-name":
             return self.engine_helper.engine_name
         elif prop.name == "device-queue-id":
@@ -134,7 +134,6 @@ class BaseAggregator(GstBase.Aggregator):
                 if self.engine_helper.engine:
                     self.engine_helper.load_model(value)
             elif prop.name == "device":
-                self.device = value
                 self.engine_helper.set_device(value)
                 self.engine_helper.initialize_engine()
                 if self.model_name and self.engine_helper.engine:

@@ -71,7 +71,6 @@ class BaseLlm(BaseAggregator):
             # Ensure engine is initialized
             if not self.engine_helper.engine:
                 self.logger.info("Engine not initialized, initializing now")
-                self.engine_helper.set_device(self.device)
                 self.engine_helper.initialize_engine()
                 self.engine_helper.load_model(self.model_name)
 

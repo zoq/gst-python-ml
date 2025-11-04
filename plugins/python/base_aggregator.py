@@ -43,58 +43,6 @@ class BaseAggregator(GstBase.Aggregator):
         "Aaron Boxer <aaron.boxer@collabora.com>",
     )
 
-    batch_size = GObject.Property(
-        type=int,
-        default=1,
-        minimum=1,
-        maximum=32,
-        nick="Batch Size",
-        blurb="Number of items to process in a batch",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-
-    frame_stride = GObject.Property(
-        type=int,
-        default=1,
-        minimum=1,
-        maximum=256,
-        nick="Frame Stride",
-        blurb="How often to process a frame",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-    device = GObject.Property(
-        type=str,
-        default="cpu",
-        nick="Device",
-        blurb="Device to run the inference on (cpu, cuda, cuda:0, cuda:1, etc.)",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-
-    model_name = GObject.Property(
-        type=str,
-        default=None,
-        nick="Model Name",
-        blurb="Name of the pre-trained model or local model path",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-    engine_name = GObject.Property(
-        type=str,
-        default=None,
-        nick="ML Engine",
-        blurb="Machine Learning Engine to use : pytorch, tflite, tensorflow, onnx or openvino",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-
-    device_queue_id = GObject.Property(
-        type=int,
-        default=0,
-        minimum=0,
-        maximum=32,
-        nick="Device Queue ID",
-        blurb="ID of the DeviceQueue from the pool to use",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-
     def __init__(self):
         super().__init__()
         self.logger = LoggerFactory.get(LoggerFactory.LOGGER_TYPE_GST)
@@ -102,54 +50,71 @@ class BaseAggregator(GstBase.Aggregator):
         self.kwargs = {}
         self.segment_pushed = False
 
-    def do_get_property(self, prop: GObject.ParamSpec):
-        if prop.name == "batch-size":
-            return self.batch_size
-        elif prop.name == "frame-stride":
-            return self.frame_stride
-        elif prop.name == "model-name":
-            return self.model_name
-        elif prop.name == "device":
-            return self.engine_helper.device
-        elif prop.name == "engine-name":
-            return self.engine_helper.engine_name
-        elif prop.name == "device-queue-id":
-            return self.device_queue_id
-        else:
-            raise AttributeError(f"Unknown property {prop.name}")
+    @GObject.Property(type=str)
+    def device(self):
+        "Device to run the inference on (cpu, cuda, cuda:0, cuda:1, etc.)"
+        return self.engine_helper.device
 
-    def do_set_property(self, prop: GObject.ParamSpec, value):
-        self.logger.info(f"Setting property {prop.name} to {value}")
-        try:
-            if prop.name == "batch-size":
-                self.batch_size = value
-                if self.engine_helper.engine:
-                    self.engine_helper.engine.batch_size = value
-            elif prop.name == "frame-stride":
-                self.frame_stride = value
-                if self.engine_helper.engine:
-                    self.engine_helper.engine.frame_stride = value
-            elif prop.name == "model-name":
-                self.model_name = value
-                self.engine_helper.initialize_engine()
-                self.engine_helper.load_model(self.model_name)
-            elif prop.name == "device":
-                self.engine_helper.set_device(value)
-                self.engine_helper.initialize_engine()
-                self.engine_helper.load_model(self.model_name)
-            elif prop.name == "engine-name":
-                self.engine_helper.engine_name = value
-                self.engine_helper.initialize_engine()
-                self.engine_helper.load_model(self.model_name)
-            elif prop.name == "device-queue-id":
-                self.device_queue_id = value
-                if self.engine_helper.engine:
-                    self.engine_helper.engine.device_queue_id = value
-            else:
-                raise AttributeError(f"Unknown property {prop.name}")
-        except Exception as e:
-            self.logger.error(f"Error setting property {prop.name}: {e}")
-            raise
+    @device.setter
+    def device(self, value):
+        self.engine_helper.set_device(value)
+        self.engine_helper.initialize_engine()
+        self.engine_helper.load_model(self.__model_name)
+
+    @GObject.Property(type=int)
+    def batch_size(self):
+        "Number of items to process in a batch"
+        return self.__batch_size
+
+    @batch_size.setter
+    def batch_size(self, value):
+        self.__batch_size = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.batch_size = value
+
+    @GObject.Property(type=int)
+    def frame_stride(self):
+        "How often to process a frame"
+        return self.__frame_stride
+
+    @frame_stride.setter
+    def frame_stride(self, value):
+        self.__frame_stride = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.frame_stride = value
+
+    @GObject.Property(type=str)
+    def model_name(self):
+        "Name of the pre-trained model or local model path"
+        return self.__model_name
+
+    @model_name.setter
+    def model_name(self, value):
+        self.__model_name = value
+        self.engine_helper.initialize_engine()
+        self.engine_helper.load_model(self.__model_name)
+
+    @GObject.Property(type=str)
+    def engine_name(self):
+        "Machine Learning Engine to use : pytorch, tflite, tensorflow, onnx or openvino, or custom engine name"
+        return self.engine_helper.engine_name
+
+    @engine_name.setter
+    def engine_name(self, value):
+        self.engine_helper.engine_name = value
+        self.engine_helper.initialize_engine()
+        self.engine_helper.load_model(self.__model_name)
+
+    @GObject.Property(type=int)
+    def device_queue_id(self):
+        "ID of the DeviceQueue from the pool to use"
+        return self.__device_queue_id
+
+    @device_queue_id.setter
+    def device_queue_id(self, value):
+        self.__device_queue_id = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.device_queue_id = value
 
     def _initialize_engine_if_needed(self):
         self.engine_helper.initialize_engine_if_needed()
@@ -157,18 +122,18 @@ class BaseAggregator(GstBase.Aggregator):
     def initialize_engine(self):
         if self.engine_helper.engine_name:
             self.engine_helper.initialize_engine()
-            self.engine_helper.engine.batch_size = self.batch_size
-            self.engine_helper.engine.frame_stride = self.frame_stride
-            if self.device_queue_id:
-                self.engine_helper.engine.device_queue_id = self.device_queue_id
+            self.engine_helper.engine.batch_size = self.__batch_size
+            self.engine_helper.engine.frame_stride = self.__frame_stride
+            if self.__device_queue_id:
+                self.engine_helper.engine.device_queue_id = self.__device_queue_id
         else:
             self.logger.error(
                 f"Unsupported ML engine: {self.engine_helper.engine_name}"
             )
 
     def do_load_model(self):
-        if self.engine_helper.engine and self.model_name:
-            self.engine_helper.load_model(self.model_name)
+        if self.engine_helper.engine and self.__model_name:
+            self.engine_helper.load_model(self.__model_name)
         else:
             self.logger.warning("Engine is not present, unable to load the model.")
 

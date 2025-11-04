@@ -33,6 +33,7 @@ try:
     import numpy as np
     import cv2
     from video_transform import VideoTransform
+    import traceback
 
     import torch
     from transformers import (
@@ -40,7 +41,7 @@ try:
         AutoProcessor,
         BitsAndBytesConfig,
     )
-    from engine.pytorch_engine import MLEngine
+    from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
 
 except ImportError as e:
@@ -52,7 +53,7 @@ except ImportError as e:
 TEXT_CAPS = Gst.Caps.from_string("text/x-raw, format=utf8")
 
 
-class CaptionEngine(MLEngine):
+class CaptionEngine(PyTorchEngine):
     def load_model(self, model_name, **kwargs):
         """Load a Phi-3-vision model from Hugging Face."""
         try:
@@ -86,11 +87,6 @@ class CaptionEngine(MLEngine):
             self.tokenizer = None
             self.model = None
             return False
-
-    def set_device(self, device):
-        """Set PyTorch device for the model."""
-        self.device = device
-        self.logger.info(f"Setting device to {device}")
 
     def forward(self, frames):
         """Handle inference for phi3.5 vision, supporting single frames or batches."""

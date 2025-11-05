@@ -55,23 +55,29 @@ class BaseTranslate(BaseAggregator):
         ),
     )
 
-    src = GObject.Property(
-        type=str,
-        default="en",
-        nick="Source Language",
-        blurb="Source language code (e.g., 'de' for German).",
-    )
-
-    target = GObject.Property(
-        type=str,
-        default="en",
-        nick="Destination Language",
-        blurb="Destination language code (e.g., 'ko' for Korean).",
-    )
-
     def __init__(self):
         super().__init__()
         self.tokenizer = None
+        self.__src = "en"
+        self.__target = "en"
+
+    @GObject.Property(type=str)
+    def src(self):
+        "Source language code (e.g., 'de' for German)."
+        return self.__src
+
+    @src.setter
+    def src(self, value):
+        self.__src = value
+
+    @GObject.Property(type=str)
+    def target(self):
+        "Destination language code (e.g., 'ko' for Korean)."
+        return self.__target
+
+    @target.setter
+    def target(self, value):
+        self.__target = value
 
     def do_load_model(self):
         """

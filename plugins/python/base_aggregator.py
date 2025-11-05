@@ -63,7 +63,8 @@ class BaseAggregator(GstBase.Aggregator):
     def device(self, value):
         self.engine_helper.set_device(value)
         self.engine_helper.initialize_engine()
-        self.engine_helper.load_model(self.model_name)
+        if self.model_name:
+            self.engine_helper.load_model(self.model_name)
 
     @GObject.Property(type=int, default=1)
     def batch_size(self):
@@ -137,16 +138,23 @@ class BaseAggregator(GstBase.Aggregator):
 
     def do_load_model(self):
         self._initialize_engine_if_needed()
-        if self.engine_helper.engine and self.model_name:
-            self.engine_helper.load_model(self.model_name)
-        else:
-            self.logger.warning("Engine is not present, unable to load the model.")
+        if self.engine_helper.engine is None:
+            self.logger.error(
+                f"Cannot load model {self.model_name}: engine not initialized"
+            )
+            return
+        if self.model_name is None:
+            self.logger.warning(f"Cannot load model as model name is not set")
+            return
+        self.engine_helper.load_model(self.model_name)
 
     def get_model(self):
         """Gets the model from the engine."""
         self._initialize_engine_if_needed()
         if self.engine_helper.engine is None:
-            self.logger.error("Cannot get model: engine not initialized")
+            self.logger.error(
+                f"Cannot get model {self.model_name}: engine not initialized"
+            )
             return None
         """Gets the model from the engine."""
         if self.engine_helper.engine:
@@ -164,11 +172,10 @@ class BaseAggregator(GstBase.Aggregator):
 
     def get_tokenizer(self):
         self._initialize_engine_if_needed()
-        if self.engine_helper.engine:
-            return self.engine_helper.get_tokenizer()
-        else:
-            self.logger.warning("Engine is not present, unable to get the tokenizer.")
+        if self.engine_helper.engine is None:
+            self.logger.error("Cannot get tokenizer: engine not initialized")
             return None
+        return self.engine_helper.get_tokenizer()
 
     def push_segment_if_needed(self):
         if not self.segment_pushed:

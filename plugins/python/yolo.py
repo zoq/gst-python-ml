@@ -205,8 +205,8 @@ class YOLOTransform(BaseObjectDetector):
 
     def __init__(self):
         super().__init__()
-        self.engine_name = "yolo-engine"
-        EngineFactory.register(self.engine_name, YoloEngine)
+        self.engine_helper.engine_name = "yolo-engine"
+        EngineFactory.register(self.engine_helper.engine_name, YoloEngine)
 
     def do_decode(self, buf, result, stream_idx=0):
         self.logger.debug(
@@ -214,7 +214,7 @@ class YOLOTransform(BaseObjectDetector):
         )
         boxes = result.boxes
         masks = None
-        if not self.engine.track:
+        if not self.engine_helper.engine.track:
             masks = result.masks
 
         if boxes is None or len(boxes) == 0:
@@ -239,7 +239,7 @@ class YOLOTransform(BaseObjectDetector):
             class_name = COCO_CLASSES.get(label_num, f"unknown_{label_num}")
 
             # Use class name for detection, track_id for tracking
-            if self.engine.track and hasattr(boxes, "id") and boxes.id is not None:
+            if self.engine_helper.engine.track and hasattr(boxes, "id") and boxes.id is not None:
                 track_id = boxes.id[i]
                 track_id_int = int(track_id.item())
                 qk_string = f"stream_{stream_idx}_id_{track_id_int}"
@@ -267,7 +267,7 @@ class YOLOTransform(BaseObjectDetector):
             )
 
             # Tracking metadata only when track=True
-            if self.engine.track and hasattr(boxes, "id") and boxes.id is not None:
+            if self.engine_helper.engine.track and hasattr(boxes, "id") and boxes.id is not None:
                 ret, tracking_mtd = meta.add_tracking_mtd(
                     track_id_int, Gst.util_get_timestamp()
                 )

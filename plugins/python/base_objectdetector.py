@@ -50,23 +50,23 @@ class BaseObjectDetector(VideoTransform):
     @GObject.Property(type=bool, default=False)
     def track(self):
         "Enable or disable tracking mode"
-        if self.engine:
-            return self.engine.track
+        if self.engine_helper.engine:
+            return self.engine_helper.engine.track
         return self.__track
 
     @track.setter
     def track(self, value):
         self.__track = value
-        if self.engine:
-            self.engine.track = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.track = value
 
     def forward(self, frames):
         self.logger.info(
             f"Forward called with frames shape: {frames.shape if frames is not None else 'None'}"
         )
-        if self.engine:
-            self.engine.track = self.track
-            result = self.engine.forward(frames)
+        if self.engine_helper.engine:
+            self.engine_helper.engine.track = self.track
+            result = self.engine_helper.engine.forward(frames)
             self.logger.debug(f"Forward result: {result} (type: {type(result)})")
             return result
         return None

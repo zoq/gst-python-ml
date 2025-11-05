@@ -1228,8 +1228,8 @@ class DemoSoccer(BaseObjectDetector):
     @model.setter
     def model(self, value):
         self.__model = value
-        if self.engine:
-            self.engine.load_model(value)
+        if self.engine_helper.engine:
+            self.engine_helper.engine.load_model(value)
 
     @GObject.Property(type=str, default="auto")
     def device(self):
@@ -1238,8 +1238,8 @@ class DemoSoccer(BaseObjectDetector):
     @device.setter
     def device(self, value):
         self.__device = value
-        if self.engine:
-            self.engine.device_str = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.device_str = value
 
     @GObject.Property(type=int, default=1280)
     def imgsz(self):
@@ -1248,8 +1248,8 @@ class DemoSoccer(BaseObjectDetector):
     @imgsz.setter
     def imgsz(self, value):
         self.__imgsz = value
-        if self.engine:
-            self.engine.imgsz = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.imgsz = value
 
     @GObject.Property(type=float, default=0.25)
     def conf(self):
@@ -1258,8 +1258,8 @@ class DemoSoccer(BaseObjectDetector):
     @conf.setter
     def conf(self, value):
         self.__conf = value
-        if self.engine:
-            self.engine.conf = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.conf = value
 
     @GObject.Property(type=float, default=0.45)
     def iou(self):
@@ -1268,8 +1268,8 @@ class DemoSoccer(BaseObjectDetector):
     @iou.setter
     def iou(self, value):
         self.__iou = value
-        if self.engine:
-            self.engine.iou = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.iou = value
 
     @GObject.Property(type=str, default="0 32")
     def classes(self):
@@ -1278,8 +1278,8 @@ class DemoSoccer(BaseObjectDetector):
     @classes.setter
     def classes(self, value):
         self.__classes = [int(c.strip()) for c in value.split()]
-        if self.engine:
-            self.engine.classes = self.__classes
+        if self.engine_helper.engine:
+            self.engine_helper.engine.classes = self.__classes
 
     @GObject.Property(type=float, default=0.25)
     def person_conf_keep(self):
@@ -1288,8 +1288,8 @@ class DemoSoccer(BaseObjectDetector):
     @person_conf_keep.setter
     def person_conf_keep(self, value):
         self.__person_conf_keep = value
-        if self.engine:
-            self.engine.person_conf_keep = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.person_conf_keep = value
 
     @GObject.Property(type=float, default=0.04)
     def ball_conf_keep(self):
@@ -1298,8 +1298,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_conf_keep.setter
     def ball_conf_keep(self, value):
         self.__ball_conf_keep = value
-        if self.engine:
-            self.engine.ball_conf_keep = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_conf_keep = value
 
     @GObject.Property(type=bool, default=True)
     def ball_mode(self):
@@ -1308,8 +1308,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_mode.setter
     def ball_mode(self, value):
         self.__ball_mode = value
-        if self.engine:
-            self.engine.ball_mode = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_mode = value
 
     @GObject.Property(type=bool, default=True)
     def hires_fallback(self):
@@ -1318,8 +1318,8 @@ class DemoSoccer(BaseObjectDetector):
     @hires_fallback.setter
     def hires_fallback(self, value):
         self.__hires_fallback = value
-        if self.engine:
-            self.engine.hires_fallback = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.hires_fallback = value
 
     @GObject.Property(type=int, default=1536)
     def hires_imgsz(self):
@@ -1328,8 +1328,8 @@ class DemoSoccer(BaseObjectDetector):
     @hires_imgsz.setter
     def hires_imgsz(self, value):
         self.__hires_imgsz = value
-        if self.engine:
-            self.engine.hires_imgsz = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.hires_imgsz = value
 
     @GObject.Property(type=int, default=6)
     def fallback_every(self):
@@ -1338,8 +1338,8 @@ class DemoSoccer(BaseObjectDetector):
     @fallback_every.setter
     def fallback_every(self, value):
         self.__fallback_every = value
-        if self.engine:
-            self.engine.fallback_every = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.fallback_every = value
 
     @GObject.Property(type=bool, default=False)
     def fallback_tiles(self):
@@ -1348,8 +1348,8 @@ class DemoSoccer(BaseObjectDetector):
     @fallback_tiles.setter
     def fallback_tiles(self, value):
         self.__fallback_tiles = value
-        if self.engine:
-            self.engine.fallback_tiles = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.fallback_tiles = value
 
     @GObject.Property(type=int, default=1280)
     def tile_size(self):
@@ -1358,8 +1358,8 @@ class DemoSoccer(BaseObjectDetector):
     @tile_size.setter
     def tile_size(self, value):
         self.__tile_size = value
-        if self.engine:
-            self.engine.tile_size = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.tile_size = value
 
     @GObject.Property(type=int, default=256)
     def tile_overlap(self):
@@ -1368,8 +1368,8 @@ class DemoSoccer(BaseObjectDetector):
     @tile_overlap.setter
     def tile_overlap(self, value):
         self.__tile_overlap = value
-        if self.engine:
-            self.engine.tile_overlap = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.tile_overlap = value
 
     @GObject.Property(type=int, default=300)
     def fallback_budget_ms(self):
@@ -1378,8 +1378,8 @@ class DemoSoccer(BaseObjectDetector):
     @fallback_budget_ms.setter
     def fallback_budget_ms(self, value):
         self.__fallback_budget_ms = value
-        if self.engine:
-            self.engine.fallback_budget_ms = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.fallback_budget_ms = value
 
     @GObject.Property(type=bool, default=False)
     def ball_roi_boost(self):
@@ -1388,8 +1388,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_roi_boost.setter
     def ball_roi_boost(self, value):
         self.__ball_roi_boost = value
-        if self.engine:
-            self.engine.ball_roi_boost = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_roi_boost = value
 
     @GObject.Property(type=float, default=2.5)
     def roi_scale(self):
@@ -1398,8 +1398,8 @@ class DemoSoccer(BaseObjectDetector):
     @roi_scale.setter
     def roi_scale(self, value):
         self.__roi_scale = value
-        if self.engine:
-            self.engine.roi_scale = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.roi_scale = value
 
     @GObject.Property(type=int, default=256)
     def roi_min(self):
@@ -1408,8 +1408,8 @@ class DemoSoccer(BaseObjectDetector):
     @roi_min.setter
     def roi_min(self, value):
         self.__roi_min = value
-        if self.engine:
-            self.engine.roi_min = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.roi_min = value
 
     @GObject.Property(type=int, default=1920)
     def roi_max(self):
@@ -1418,8 +1418,8 @@ class DemoSoccer(BaseObjectDetector):
     @roi_max.setter
     def roi_max(self, value):
         self.__roi_max = value
-        if self.engine:
-            self.engine.roi_max = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.roi_max = value
 
     @GObject.Property(type=str, default="botsort_people_reid.yaml")
     def tracker_people(self):
@@ -1428,10 +1428,10 @@ class DemoSoccer(BaseObjectDetector):
     @tracker_people.setter
     def tracker_people(self, value):
         self.__tracker_people = value
-        if self.engine:
-            self.engine.tracker_people = value
-            self.engine.people_tracker = BoTSORTWrapper(
-                value, self.engine.frame_rate, self.people_reid
+        if self.engine_helper.engine:
+            self.engine_helper.engine.tracker_people = value
+            self.engine_helper.engine.people_tracker = BoTSORTWrapper(
+                value, self.engine_helper.engine.frame_rate, self.people_reid
             )
 
     @GObject.Property(type=str, default="bytetrack_ball.yaml")
@@ -1441,9 +1441,11 @@ class DemoSoccer(BaseObjectDetector):
     @tracker_ball.setter
     def tracker_ball(self, value):
         self.__tracker_ball = value
-        if self.engine:
-            self.engine.tracker_ball = value
-            self.engine.ball_tracker = ByteTrackWrapper(value, self.engine.frame_rate)
+        if self.engine_helper.engine:
+            self.engine_helper.engine.tracker_ball = value
+            self.engine_helper.engine.ball_tracker = ByteTrackWrapper(
+                value, self.engine_helper.engine.frame_rate
+            )
 
     @GObject.Property(type=bool, default=True)
     def people_reid(self):
@@ -1452,8 +1454,8 @@ class DemoSoccer(BaseObjectDetector):
     @people_reid.setter
     def people_reid(self, value):
         self.__people_reid = value
-        if self.engine:
-            self.engine.people_reid = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.people_reid = value
             # Reinit tracker if needed
 
     @GObject.Property(type=int, default=200)
@@ -1463,9 +1465,9 @@ class DemoSoccer(BaseObjectDetector):
     @trail.setter
     def trail(self, value):
         self.__trail = value
-        if self.engine:
-            self.engine.trail = value
-            self.engine.single_ball_trail = deque(maxlen=value)
+        if self.engine_helper.engine:
+            self.engine_helper.engine.trail = value
+            self.engine_helper.engine.single_ball_trail = deque(maxlen=value)
 
     @GObject.Property(type=str, default="affine")
     def gmc(self):
@@ -1474,8 +1476,8 @@ class DemoSoccer(BaseObjectDetector):
     @gmc.setter
     def gmc(self, value):
         self.__gmc = value
-        if self.engine:
-            self.engine.gmc = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.gmc = value
 
     @GObject.Property(type=float, default=0.5)
     def gmc_scale(self):
@@ -1484,8 +1486,8 @@ class DemoSoccer(BaseObjectDetector):
     @gmc_scale.setter
     def gmc_scale(self, value):
         self.__gmc_scale = value
-        if self.engine:
-            self.engine.gmc_scale = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.gmc_scale = value
 
     @GObject.Property(type=int, default=400)
     def gft_max_corners(self):
@@ -1494,8 +1496,8 @@ class DemoSoccer(BaseObjectDetector):
     @gft_max_corners.setter
     def gft_max_corners(self, value):
         self.__gft_max_corners = value
-        if self.engine:
-            self.engine.gft_max_corners = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.gft_max_corners = value
 
     @GObject.Property(type=float, default=0.01)
     def gft_quality(self):
@@ -1504,8 +1506,8 @@ class DemoSoccer(BaseObjectDetector):
     @gft_quality.setter
     def gft_quality(self, value):
         self.__gft_quality = value
-        if self.engine:
-            self.engine.gft_quality = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.gft_quality = value
 
     @GObject.Property(type=int, default=8)
     def gft_min_dist(self):
@@ -1514,8 +1516,8 @@ class DemoSoccer(BaseObjectDetector):
     @gft_min_dist.setter
     def gft_min_dist(self, value):
         self.__gft_min_dist = value
-        if self.engine:
-            self.engine.gft_min_dist = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.gft_min_dist = value
 
     @GObject.Property(type=int, default=21)
     def lk_win(self):
@@ -1524,8 +1526,8 @@ class DemoSoccer(BaseObjectDetector):
     @lk_win.setter
     def lk_win(self, value):
         self.__lk_win = value
-        if self.engine:
-            self.engine.lk_win = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.lk_win = value
 
     @GObject.Property(type=int, default=3)
     def lk_levels(self):
@@ -1534,8 +1536,8 @@ class DemoSoccer(BaseObjectDetector):
     @lk_levels.setter
     def lk_levels(self, value):
         self.__lk_levels = value
-        if self.engine:
-            self.engine.lk_levels = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.lk_levels = value
 
     @GObject.Property(type=float, default=3.0)
     def ransac_thresh(self):
@@ -1544,8 +1546,8 @@ class DemoSoccer(BaseObjectDetector):
     @ransac_thresh.setter
     def ransac_thresh(self, value):
         self.__ransac_thresh = value
-        if self.engine:
-            self.engine.ransac_thresh = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ransac_thresh = value
 
     @GObject.Property(type=float, default=0.06)
     def ball_gate_rel(self):
@@ -1554,8 +1556,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_gate_rel.setter
     def ball_gate_rel(self, value):
         self.__ball_gate_rel = value
-        if self.engine:
-            self.engine.ball_gate_rel = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_gate_rel = value
 
     @GObject.Property(type=int, default=12)
     def ball_gate_min(self):
@@ -1564,8 +1566,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_gate_min.setter
     def ball_gate_min(self, value):
         self.__ball_gate_min = value
-        if self.engine:
-            self.engine.ball_gate_min = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_gate_min = value
 
     @GObject.Property(type=bool, default=False)
     def ball_gate_use_pred(self):
@@ -1574,8 +1576,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_gate_use_pred.setter
     def ball_gate_use_pred(self, value):
         self.__ball_gate_use_pred = value
-        if self.engine:
-            self.engine.ball_gate_use_pred = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_gate_use_pred = value
 
     @GObject.Property(type=float, default=0.20)
     def ball_min_iou(self):
@@ -1584,8 +1586,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_min_iou.setter
     def ball_min_iou(self, value):
         self.__ball_min_iou = value
-        if self.engine:
-            self.engine.ball_min_iou = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_min_iou = value
 
     @GObject.Property(type=float, default=0.12)
     def ball_max_jump_rel(self):
@@ -1594,8 +1596,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_max_jump_rel.setter
     def ball_max_jump_rel(self, value):
         self.__ball_max_jump_rel = value
-        if self.engine:
-            self.engine.ball_max_jump_rel = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_max_jump_rel = value
 
     @GObject.Property(type=float, default=3.0)
     def ball_speed_mult(self):
@@ -1604,8 +1606,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_speed_mult.setter
     def ball_speed_mult(self, value):
         self.__ball_speed_mult = value
-        if self.engine:
-            self.engine.ball_speed_mult = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_speed_mult = value
 
     @GObject.Property(type=float, default=0.0)
     def ball_smooth_ema(self):
@@ -1614,8 +1616,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_smooth_ema.setter
     def ball_smooth_ema(self, value):
         self.__ball_smooth_ema = value
-        if self.engine:
-            self.engine.ball_smooth_ema = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_smooth_ema = value
 
     @GObject.Property(type=float, default=0.28)
     def det_override_conf(self):
@@ -1624,8 +1626,8 @@ class DemoSoccer(BaseObjectDetector):
     @det_override_conf.setter
     def det_override_conf(self, value):
         self.__det_override_conf = value
-        if self.engine:
-            self.engine.det_override_conf = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.det_override_conf = value
 
     @GObject.Property(type=int, default=2)
     def det_override_after(self):
@@ -1634,8 +1636,8 @@ class DemoSoccer(BaseObjectDetector):
     @det_override_after.setter
     def det_override_after(self, value):
         self.__det_override_after = value
-        if self.engine:
-            self.engine.det_override_after = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.det_override_after = value
 
     @GObject.Property(type=int, default=6)
     def reacquire_frames(self):
@@ -1644,8 +1646,8 @@ class DemoSoccer(BaseObjectDetector):
     @reacquire_frames.setter
     def reacquire_frames(self, value):
         self.__reacquire_frames = value
-        if self.engine:
-            self.engine.reacquire_frames = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.reacquire_frames = value
 
     @GObject.Property(type=bool, default=False)
     def ball_coast(self):
@@ -1654,8 +1656,8 @@ class DemoSoccer(BaseObjectDetector):
     @ball_coast.setter
     def ball_coast(self, value):
         self.__ball_coast = value
-        if self.engine:
-            self.engine.ball_coast = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.ball_coast = value
 
     @GObject.Property(type=int, default=6)
     def coast_max(self):
@@ -1664,8 +1666,8 @@ class DemoSoccer(BaseObjectDetector):
     @coast_max.setter
     def coast_max(self, value):
         self.__coast_max = value
-        if self.engine:
-            self.engine.coast_max = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.coast_max = value
 
     @GObject.Property(type=float, default=0.90)
     def coast_decay(self):
@@ -1674,8 +1676,8 @@ class DemoSoccer(BaseObjectDetector):
     @coast_decay.setter
     def coast_decay(self, value):
         self.__coast_decay = value
-        if self.engine:
-            self.engine.coast_decay = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.coast_decay = value
 
     @GObject.Property(type=bool, default=False)
     def verbose(self):
@@ -1684,8 +1686,8 @@ class DemoSoccer(BaseObjectDetector):
     @verbose.setter
     def verbose(self, value):
         self.__verbose = value
-        if self.engine:
-            self.engine.verbose = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.verbose = value
 
     @GObject.Property(type=float, default=30.0)
     def frame_rate(self):
@@ -1694,14 +1696,14 @@ class DemoSoccer(BaseObjectDetector):
     @frame_rate.setter
     def frame_rate(self, value):
         self.__frame_rate = value
-        if self.engine:
-            self.engine.frame_rate = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.frame_rate = value
 
     def load_model(self):
         """Override: Create engine first, then load with all properties as kwargs."""
-        if self.engine is None:
+        if self.engine_helper.engine is None:
             self._initialize_engine_if_needed()
-        if self.engine is None:
+        if self.engine_helper.engine is None:
             self.logger.error("Cannot load model: engine not initialized")
             return False
         # Sync all properties to kwargs for engine load
@@ -1753,7 +1755,7 @@ class DemoSoccer(BaseObjectDetector):
             "frame_rate": self.frame_rate,
         }
         # Call engine's load_model with current model name + synced kwargs
-        return self.engine.load_model(self.model, **kwargs)
+        return self.engine_helper.engine.load_model(self.model, **kwargs)
 
     def do_decode(self, buf, result, stream_idx=0):
         self.logger.debug(

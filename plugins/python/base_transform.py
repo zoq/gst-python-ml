@@ -159,4 +159,3 @@ class BaseTransform(GstBase.BaseTransform):
             return False
         self.engine_helper.engine.model = model
         self.logger.info("Model set successfully in the engine.")
-

@@ -25,6 +25,7 @@ try:
     gi.require_version("Gst", "1.0")
     from gi.repository import Gst, GObject  # noqa: E402
     from base_translate import BaseTranslate
+    from transformers import MarianMTModel, MarianTokenizer
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
     GlobalLogger().warning(
@@ -39,6 +40,40 @@ class MarianTranslate(BaseTranslate):
         "Processes text using a Large Language Model",
         "Aaron Boxer <aaron.boxer@collabora.com>",
     )
+
+    def __init__(self):
+        super().__init__()
+        self.tokenizer = None
+
+    def do_load_model(self):
+        """
+        Loads the MarianMT model based on the source
+        and destination languages.
+        """
+        model_name = f"Helsinki-NLP/opus-mt-{self.src}-{self.target}"
+        try:
+            self.tokenizer = MarianTokenizer.from_pretrained(model_name)
+            self.set_model(MarianMTModel.from_pretrained(model_name))
+            self.logger.info(
+                f"Loaded translation model for {self.src} to {self.target}"
+            )
+        except Exception as e:
+            self.logger.error(f"Error loading model: {e}")
+
+    def do_translate_text(self, text):
+        """
+        Translates the input text using the MarianMT model.
+        """
+        if self.get_model() is None or self.tokenizer is None:
+            self.do_load_model()
+
+        if self.get_model() and self.tokenizer:
+            inputs = self.tokenizer(text, return_tensors="pt", padding=True)
+            translated = self.get_model().generate(**inputs)
+            return self.tokenizer.decode(translated[0], skip_special_tokens=True)
+        else:
+            self.logger.error("Model or tokenizer is not available.")
+            return ""
 
 
 if CAN_REGISTER_ELEMENT:

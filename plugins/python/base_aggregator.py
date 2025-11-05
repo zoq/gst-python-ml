@@ -26,7 +26,7 @@ from gi.repository import Gst, GObject, GstBase  # noqa: E402
 
 from engine.engine_factory import EngineFactory
 from log.logger_factory import LoggerFactory
-from engine_helper import EngineHelper
+from engine.engine_helper import EngineHelper
 
 
 class BaseAggregator(GstBase.Aggregator):
@@ -136,6 +136,7 @@ class BaseAggregator(GstBase.Aggregator):
             )
 
     def do_load_model(self):
+        self._initialize_engine_if_needed()
         if self.engine_helper.engine and self.model_name:
             self.engine_helper.load_model(self.model_name)
         else:

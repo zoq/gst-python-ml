@@ -34,7 +34,7 @@ try:
 
     from muxed_buffer_processor import MuxedBufferProcessor
     from video_transform import VideoTransform
-    from engine_helper import EngineHelper
+    from engine.engine_helper import EngineHelper
     from engine.engine_factory import EngineFactory
     from utils.caption_utils import load_captions
     import torch

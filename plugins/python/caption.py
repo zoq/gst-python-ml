@@ -207,7 +207,7 @@ class Caption(VideoTransform):
         self.model_name = "phi-3.5-vision"
         self.engine_name = "caption-engine"
         EngineFactory.register(self.engine_name, CaptionEngine)
-        self.caption = "   "
+        self.caption = "What is shown in this image?"
         self.text_src_pad = None
 
     def do_request_new_pad(self, template, name, caps):

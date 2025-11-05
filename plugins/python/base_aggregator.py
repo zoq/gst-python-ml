@@ -49,6 +49,10 @@ class BaseAggregator(GstBase.Aggregator):
         self.engine_helper = EngineHelper(self.logger)
         self.kwargs = {}
         self.segment_pushed = False
+        self.__batch_size = 1
+        self.__frame_stride = 1
+        self.__model_name = None
+        self.__device_queue_id = 0
 
     @GObject.Property(type=str)
     def device(self):

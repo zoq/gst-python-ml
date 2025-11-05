@@ -50,6 +50,7 @@ class BaseAggregator(GstBase.Aggregator):
         self.kwargs = {}
         self.segment_pushed = False
 
+
     @GObject.Property(type=str)
     def device(self):
         "Device to run the inference on (cpu, cuda, cuda:0, cuda:1, etc.)"
@@ -59,9 +60,9 @@ class BaseAggregator(GstBase.Aggregator):
     def device(self, value):
         self.engine_helper.set_device(value)
         self.engine_helper.initialize_engine()
-        self.engine_helper.load_model(self.__model_name)
+        self.engine_helper.load_model(self.model_name)
 
-    @GObject.Property(type=int)
+    @GObject.Property(type=int, default=1)
     def batch_size(self):
         "Number of items to process in a batch"
         return self.__batch_size
@@ -72,7 +73,7 @@ class BaseAggregator(GstBase.Aggregator):
         if self.engine_helper.engine:
             self.engine_helper.engine.batch_size = value
 
-    @GObject.Property(type=int)
+    @GObject.Property(type=int, default=1)
     def frame_stride(self):
         "How often to process a frame"
         return self.__frame_stride
@@ -92,7 +93,7 @@ class BaseAggregator(GstBase.Aggregator):
     def model_name(self, value):
         self.__model_name = value
         self.engine_helper.initialize_engine()
-        self.engine_helper.load_model(self.__model_name)
+        self.engine_helper.load_model(self.model_name)
 
     @GObject.Property(type=str)
     def engine_name(self):
@@ -103,9 +104,9 @@ class BaseAggregator(GstBase.Aggregator):
     def engine_name(self, value):
         self.engine_helper.engine_name = value
         self.engine_helper.initialize_engine()
-        self.engine_helper.load_model(self.__model_name)
+        self.engine_helper.load_model(self.model_name)
 
-    @GObject.Property(type=int)
+    @GObject.Property(type=int, default=1)
     def device_queue_id(self):
         "ID of the DeviceQueue from the pool to use"
         return self.__device_queue_id
@@ -132,8 +133,8 @@ class BaseAggregator(GstBase.Aggregator):
             )
 
     def do_load_model(self):
-        if self.engine_helper.engine and self.__model_name:
-            self.engine_helper.load_model(self.__model_name)
+        if self.engine_helper.engine and self.model_name:
+            self.engine_helper.load_model(self.model_name)
         else:
             self.logger.warning("Engine is not present, unable to load the model.")
 

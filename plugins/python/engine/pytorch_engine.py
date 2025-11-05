@@ -65,22 +65,6 @@ class PyTorchEngine(MLEngine):
                     self.logger.info(
                         f"Vision-Text model '{model_name}' loaded with processor and tokenizer."
                     )
-                elif "whisper" in model_name.lower() or model_name in [
-                    "tiny",
-                    "base",
-                    "small",
-                    "medium",
-                    "large",
-                    "large-v2",
-                    "large-v3",
-                ]:
-                    compute_type = (
-                        "float16" if "cuda" in self.device else "int8"
-                    )  # Adjust as needed; int8 for CPU, float16 for GPU
-                    self.model = WhisperModel(
-                        model_name, device=self.device, compute_type=compute_type
-                    )
-                    self.logger.info(f"Faster-Whisper model '{model_name}' loaded.")
                 else:
                     self.logger.info(
                         f"Loading tokenizer for language model {model_name}"

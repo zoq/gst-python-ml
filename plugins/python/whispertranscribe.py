@@ -28,11 +28,28 @@ try:
     from gi.repository import Gst, GObject  # noqa: E402
     from base_transcribe import BaseTranscribe
     from faster_whisper import WhisperModel
+
+    from engine.pytorch_engine import PyTorchEngine
+    from engine.engine_factory import EngineFactory
+
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
     GlobalLogger().warning(
         f"The 'pyml_whispertranscribe' element will not be available. Error: {e}"
     )
+
+
+class WhisperEngine(PyTorchEngine):
+    def load_model(self, model_name, **kwargs):
+        if not model_name:
+            return
+        compute_type = "float16" if self.device.startswith("cuda") else "int8"
+        self.logger.info(
+            f"Loading Whisper model on device: {self.device} with compute_type: {compute_type}"
+        )
+        self.model = WhisperModel(
+            model_name, device=self.device, compute_type=compute_type
+        )
 
 
 class WhisperTranscribe(BaseTranscribe):
@@ -46,22 +63,12 @@ class WhisperTranscribe(BaseTranscribe):
     def __init__(self):
         super().__init__()
         self.model_name = "medium"
+        self.engine_helper.engine_name = "whisper-engine"
+        EngineFactory.register(self.engine_helper.engine_name, WhisperEngine)
 
     def do_load_model(self):
-        if self.engine_helper.get_model():
-            return
-        compute_type = "float16" if self.device.startswith("cuda") else "int8"
-        self.logger.info(
-            f"Loading Whisper model on device: {self.device} with compute_type: {compute_type}"
-        )
-        # Set the model and ensure it is not None
-        self.load_model(
-            WhisperModel(self.model_name, device=self.device, compute_type=compute_type)
-        )
-        if self.get_model() is None:
-            self.logger.error("Failed to load Whisper model.")
-        else:
-            self.logger.info(f"Whisper model loaded successfully on {self.device}")
+        if not self.engine_helper.get_model():
+            self.engine_helper.load_model(self.model_name)
 
     def do_transcribe(self, audio_data, task):
         result, _ = self.get_model().transcribe(

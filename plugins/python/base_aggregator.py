@@ -50,7 +50,6 @@ class BaseAggregator(GstBase.Aggregator):
         self.kwargs = {}
         self.segment_pushed = False
 
-
     @GObject.Property(type=str)
     def device(self):
         "Device to run the inference on (cpu, cuda, cuda:0, cuda:1, etc.)"

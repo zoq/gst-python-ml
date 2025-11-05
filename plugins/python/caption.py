@@ -191,7 +191,7 @@ class Caption(VideoTransform):
         ),
     )
 
-    @GObject.Property(type=str)
+    @GObject.Property(type=str, default="What is shown in this image?")
     def prompt(self):
         "Custom prompt text for image analysis"
         return self.__prompt
@@ -208,7 +208,6 @@ class Caption(VideoTransform):
         self.engine_name = "caption-engine"
         EngineFactory.register(self.engine_name, CaptionEngine)
         self.caption = "   "
-        self.__prompt = "What is shown in this image?"
         self.text_src_pad = None
 
     def do_request_new_pad(self, template, name, caps):

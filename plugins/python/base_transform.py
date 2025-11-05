@@ -160,9 +160,3 @@ class BaseTransform(GstBase.BaseTransform):
         self.engine_helper.engine.model = model
         self.logger.info("Model set successfully in the engine.")
 
-    def get_tokenizer(self):
-        self._initialize_engine_if_needed()
-        if self.engine_helper.engine is None:
-            self.logger.error("Cannot get tokenizer: engine not initialized")
-            return None
-        return self.engine_helper.get_tokenizer()

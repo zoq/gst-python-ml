@@ -151,7 +151,7 @@ class BaseTransform(GstBase.BaseTransform):
             return self.engine_helper.engine.get_model()
         return None
 
-    def load_model(self, model):
+    def set_model(self, model):
         """Sets the model in the engine."""
         self._initialize_engine_if_needed()
         if self.engine_helper.engine is None:

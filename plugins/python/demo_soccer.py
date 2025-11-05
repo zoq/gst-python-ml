@@ -1652,7 +1652,7 @@ class DemoSoccer(BaseObjectDetector):
         if self.engine_helper.engine:
             self.engine_helper.engine.frame_rate = value
 
-    def load_model(self):
+    def set_model(self):
         """Override: Create engine first, then load with all properties as kwargs."""
         if self.engine_helper.engine is None:
             self._initialize_engine_if_needed()

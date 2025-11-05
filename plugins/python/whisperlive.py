@@ -103,7 +103,7 @@ class WhisperLive(BaseTranscribe):
         self.logger.info(
             f"Loading Whisper model on device: {self.device} with compute_type: {compute_type}"
         )
-        self.load_model(
+        self.set_model(
             WhisperModel(self.model_name, device=self.device, compute_type=compute_type)
         )
         # load WhisperSpeech TTS model

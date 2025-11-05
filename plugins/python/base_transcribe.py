@@ -87,7 +87,6 @@ class BaseTranscribe(BaseAggregator):
         chunk_duration_ms = (vad_chunk_size / STT_SAMPLE_RATE) * 1000
         silence_ms = 300
         self.clip_silence_trigger_counter = int(silence_ms / chunk_duration_ms)
-        self.old_device = None
         self.__initial_prompt = ""
         self.__translate = False
         self.__language = "en"
@@ -154,7 +153,7 @@ class BaseTranscribe(BaseAggregator):
         audio_collected = False
 
         try:
-            if self.device != self.old_device:
+            if self.device:
                 self.do_load_model()
 
             # Map the buffer to access the audio data

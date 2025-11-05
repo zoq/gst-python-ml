@@ -106,8 +106,6 @@ class WhisperLive(BaseTranscribe):
         self.load_model(
             WhisperModel(self.model_name, device=self.device, compute_type=compute_type)
         )
-        self.old_device = self.device
-
         # load WhisperSpeech TTS model
         self.logger.info(
             f"Initializing WhisperSpeech TTS model on device: {self.device}"
@@ -158,7 +156,7 @@ class WhisperLive(BaseTranscribe):
         return result
 
     def do_process_text(self, transcript):
-        if self.device != self.old_device:
+        if self.device:
             self.do_load_model()
 
         # Ensure LLM model and tokenizer are initialized

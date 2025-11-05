@@ -48,6 +48,8 @@ class WhisperTranscribe(BaseTranscribe):
         self.model_name = "medium"
 
     def do_load_model(self):
+        if self.engine_helper.get_model():
+            return
         compute_type = "float16" if self.device.startswith("cuda") else "int8"
         self.logger.info(
             f"Loading Whisper model on device: {self.device} with compute_type: {compute_type}"
@@ -60,7 +62,6 @@ class WhisperTranscribe(BaseTranscribe):
             self.logger.error("Failed to load Whisper model.")
         else:
             self.logger.info(f"Whisper model loaded successfully on {self.device}")
-        self.old_device = self.device
 
     def do_transcribe(self, audio_data, task):
         result, _ = self.get_model().transcribe(

@@ -78,34 +78,6 @@ class BaseTranscribe(BaseAggregator):
         ),
     )
 
-    initial_prompt = GObject.Property(
-        type=str,
-        default="",
-        nick="Initial Prompt",
-        blurb="Comma-separated list of initial prompt keywords for transcription.",
-    )
-
-    translate = GObject.Property(
-        type=bool,
-        default=False,
-        nick="Translate",
-        blurb="Translate audio to English.",
-    )
-
-    language = GObject.Property(
-        type=str,
-        default="en",
-        nick="Language",
-        blurb="Two-character code for the language to transcribe.",
-    )
-
-    streaming = GObject.Property(
-        type=bool,
-        default=False,
-        nick="Streaming",
-        blurb="Enable or disable streaming mode. If disabled, process in batch mode.",
-    )
-
     def __init__(self):
         super().__init__()
 
@@ -116,30 +88,46 @@ class BaseTranscribe(BaseAggregator):
         silence_ms = 300
         self.clip_silence_trigger_counter = int(silence_ms / chunk_duration_ms)
         self.old_device = None
+        self.__initial_prompt = ""
+        self.__translate = False
+        self.__language = "en"
+        self.__streaming = False
 
-    def do_get_property(self, prop):
-        if prop.name == "initial_prompt":
-            return self.initial_prompt
-        elif prop.name == "translate":
-            return self.translate
-        elif prop.name == "language":
-            return self.language
-        elif prop.name == "streaming":
-            return self.streaming
-        else:
-            raise AttributeError(f"Unknown property: {prop.name}")
+    @GObject.Property(type=str, default="")
+    def initial_prompt(self):
+        "Initial Prompt"
+        return self.__initial_prompt
 
-    def do_set_property(self, prop, value):
-        if prop.name == "initial_prompt":
-            self.initial_prompt = value
-        elif prop.name == "translate":
-            self.translate = value
-        elif prop.name == "language":
-            self.language = value
-        elif prop.name == "streaming":
-            self.streaming = value
-        else:
-            raise AttributeError(f"Unknown property: {prop.name}")
+    @initial_prompt.setter
+    def initial_prompt(self, value):
+        self.__initial_prompt = value
+
+    @GObject.Property(type=bool, default=False)
+    def translate(self):
+        "toggle translation functionality"
+        return self.__translate
+
+    @translate.setter
+    def translate(self, value):
+        self.__translate = value
+
+    @GObject.Property(type=str, default="en")
+    def language(self):
+        "two character language code for language to transcribe from"
+        return self.__language
+
+    @language.setter
+    def language(self, value):
+        self.__language = value
+
+    @GObject.Property(type=bool, default=False)
+    def streaming(self):
+        "toggle streaming"
+        return self.__streaming
+
+    @streaming.setter
+    def streaming(self, value):
+        self.__streaming = value
 
     @abstractmethod
     def do_load_model(self):

@@ -27,6 +27,7 @@ from transformers import (
     VisionEncoderDecoderModel,
     BitsAndBytesConfig,
 )
+from faster_whisper import WhisperModel
 
 from .ml_engine import MLEngine
 
@@ -64,6 +65,22 @@ class PyTorchEngine(MLEngine):
                     self.logger.info(
                         f"Vision-Text model '{model_name}' loaded with processor and tokenizer."
                     )
+                elif "whisper" in model_name.lower() or model_name in [
+                    "tiny",
+                    "base",
+                    "small",
+                    "medium",
+                    "large",
+                    "large-v2",
+                    "large-v3",
+                ]:
+                    compute_type = (
+                        "float16" if "cuda" in self.device else "int8"
+                    )  # Adjust as needed; int8 for CPU, float16 for GPU
+                    self.model = WhisperModel(
+                        model_name, device=self.device, compute_type=compute_type
+                    )
+                    self.logger.info(f"Faster-Whisper model '{model_name}' loaded.")
                 else:
                     self.logger.info(
                         f"Loading tokenizer for language model {model_name}"
@@ -85,8 +102,9 @@ class PyTorchEngine(MLEngine):
                         f"Pre-trained LLM model '{model_name}' loaded from Transformers."
                     )
 
-            self.execute_with_stream(lambda: self.model.to(self.device))
-            self.logger.info(f"Model moved to {self.device}")
+            if hasattr(self.model, "to") and callable(getattr(self.model, "to")):
+                self.execute_with_stream(lambda: self.model.to(self.device))
+                self.logger.info(f"Model moved to {self.device}")
 
             return True
 
@@ -105,7 +123,7 @@ class PyTorchEngine(MLEngine):
             if not torch.cuda.is_available():
                 self.logger.warning("CUDA is not available, falling back to CPU")
                 self.device = "cpu"
-                if self.model:
+                if self.model and hasattr(self.model, "to"):
                     try:
                         self.model = self.model.cpu()
                         self.logger.info("Model moved to CPU due to unavailable CUDA")
@@ -121,7 +139,7 @@ class PyTorchEngine(MLEngine):
 
                 # Model placement is handled by device_map="auto" in load_model
                 # Only move model if it exists and is not already on the correct device
-                if self.model:
+                if self.model and hasattr(self.model, "to"):
                     current_devices = {
                         param.device for param in self.model.parameters()
                     }
@@ -141,11 +159,11 @@ class PyTorchEngine(MLEngine):
                 self.logger.error(f"Failed to set CUDA device: {e}")
                 self.logger.warning("Falling back to CPU")
                 self.device = "cpu"
-                if self.model:
+                if self.model and hasattr(self.model, "to"):
                     self.model = self.model.cpu()
 
         elif device == "cpu":
-            if self.model:
+            if self.model and hasattr(self.model, "to"):
                 try:
                     if not any(p.is_meta for p in self.model.parameters()):
                         self.model = self.model.cpu()
@@ -160,7 +178,7 @@ class PyTorchEngine(MLEngine):
         else:
             self.logger.error(f"Invalid device specified: {device}")
             self.device = "cpu"
-            if self.model:
+            if self.model and hasattr(self.model, "to"):
                 self.model = self.model.cpu()
 
     def _forward_classification(self, frames):

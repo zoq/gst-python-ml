@@ -80,6 +80,8 @@ class EngineFactory:
 
     @staticmethod
     def create(engine_type: str, device: str = "cpu"):
+        if not engine_type:
+            raise ValueError(f"Engine type not set")
         # Singleton-like: register builtins only once
         if not EngineFactory._builtins_registered:
             EngineFactory._register_builtins()

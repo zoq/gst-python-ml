@@ -199,15 +199,15 @@ class Caption(VideoTransform):
     @prompt.setter
     def prompt(self, value):
         self.__prompt = value
-        if self.engine:
-            self.engine.prompt = value
+        if self.engine_helper.engine:
+            self.engine_helper.engine.prompt = value
 
     def __init__(self):
         super().__init__()
         self.model_name = "phi-3.5-vision"
         self.engine_name = "caption-engine"
         EngineFactory.register(self.engine_name, CaptionEngine)
-        self.caption = "What is shown in this image?"
+        self.__prompt = "What is shown in this image?"
         self.text_src_pad = None
 
     def do_request_new_pad(self, template, name, caps):
@@ -258,7 +258,7 @@ class Caption(VideoTransform):
             if self.get_model() is None:
                 self.do_load_model()
 
-            self.engine.prompt = self.__prompt
+            self.engine_helper.engine.prompt = self.prompt
 
             # Initialize MuxedBufferProcessor with default framerate
             muxed_processor = MuxedBufferProcessor(
@@ -305,8 +305,8 @@ class Caption(VideoTransform):
                         f"Resized to dimensions {self.downsampled_width}, {self.downsampled_height}"
                     )
 
-                if self.engine:
-                    result = self.engine.forward(frame)
+                if self.engine_helper.engine:
+                    result = self.engine_helper.engine.forward(frame)
                     if result:
                         self.caption = result
                         meta = GstAnalytics.buffer_add_analytics_relation_meta(buf)
@@ -358,8 +358,8 @@ class Caption(VideoTransform):
                         f"Resized batch to dimensions {self.downsampled_width}, {self.downsampled_height}"
                     )
 
-                if self.engine:
-                    results = self.engine.forward(frames)
+                if self.engine_helper.engine:
+                    results = self.engine_helper.engine.forward(frames)
                     if results is None:
                         self.logger.error("Inference returned None")
                         return Gst.FlowReturn.ERROR

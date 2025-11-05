@@ -239,7 +239,11 @@ class YOLOTransform(BaseObjectDetector):
             class_name = COCO_CLASSES.get(label_num, f"unknown_{label_num}")
 
             # Use class name for detection, track_id for tracking
-            if self.engine_helper.engine.track and hasattr(boxes, "id") and boxes.id is not None:
+            if (
+                self.engine_helper.engine.track
+                and hasattr(boxes, "id")
+                and boxes.id is not None
+            ):
                 track_id = boxes.id[i]
                 track_id_int = int(track_id.item())
                 qk_string = f"stream_{stream_idx}_id_{track_id_int}"
@@ -267,7 +271,11 @@ class YOLOTransform(BaseObjectDetector):
             )
 
             # Tracking metadata only when track=True
-            if self.engine_helper.engine.track and hasattr(boxes, "id") and boxes.id is not None:
+            if (
+                self.engine_helper.engine.track
+                and hasattr(boxes, "id")
+                and boxes.id is not None
+            ):
                 ret, tracking_mtd = meta.add_tracking_mtd(
                     track_id_int, Gst.util_get_timestamp()
                 )

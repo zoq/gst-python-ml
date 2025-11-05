@@ -59,9 +59,6 @@ class BaseTransform(GstBase.BaseTransform):
     @device.setter
     def device(self, value):
         self.engine_helper.set_device(value)
-        self.engine_helper.initialize_engine()
-        if self.model_name:
-            self.engine_helper.load_model(self.model_name)
 
     @GObject.Property(type=int, default=1)
     def batch_size(self):
@@ -93,8 +90,6 @@ class BaseTransform(GstBase.BaseTransform):
     @model_name.setter
     def model_name(self, value):
         self.__model_name = value
-        self.engine_helper.initialize_engine()
-        self.engine_helper.load_model(self.model_name)
 
     @GObject.Property(type=str)
     def engine_name(self):
@@ -104,8 +99,6 @@ class BaseTransform(GstBase.BaseTransform):
     @engine_name.setter
     def engine_name(self, value):
         self.engine_helper.engine_name = value
-        self.engine_helper.initialize_engine()
-        self.engine_helper.load_model(self.model_name)
 
     @GObject.Property(type=int, default=1)
     def device_queue_id(self):

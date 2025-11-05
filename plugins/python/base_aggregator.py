@@ -48,11 +48,11 @@ class BaseAggregator(GstBase.Aggregator):
         self.logger = LoggerFactory.get(LoggerFactory.LOGGER_TYPE_GST)
         self.engine_helper = EngineHelper(self.logger)
         self.kwargs = {}
-        self.segment_pushed = False
         self.__batch_size = 1
         self.__frame_stride = 1
         self.__model_name = None
         self.__device_queue_id = 0
+        self.segment_pushed = False
 
     @GObject.Property(type=str)
     def device(self):
@@ -62,9 +62,6 @@ class BaseAggregator(GstBase.Aggregator):
     @device.setter
     def device(self, value):
         self.engine_helper.set_device(value)
-        self.engine_helper.initialize_engine()
-        if self.model_name:
-            self.engine_helper.load_model(self.model_name)
 
     @GObject.Property(type=int, default=1)
     def batch_size(self):
@@ -96,8 +93,6 @@ class BaseAggregator(GstBase.Aggregator):
     @model_name.setter
     def model_name(self, value):
         self.__model_name = value
-        self.engine_helper.initialize_engine()
-        self.engine_helper.load_model(self.model_name)
 
     @GObject.Property(type=str)
     def engine_name(self):
@@ -107,8 +102,6 @@ class BaseAggregator(GstBase.Aggregator):
     @engine_name.setter
     def engine_name(self, value):
         self.engine_helper.engine_name = value
-        self.engine_helper.initialize_engine()
-        self.engine_helper.load_model(self.model_name)
 
     @GObject.Property(type=int, default=1)
     def device_queue_id(self):

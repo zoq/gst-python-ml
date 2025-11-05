@@ -37,14 +37,6 @@ class BaseObjectDetector(VideoTransform):
     Handles both single-frame buffers (no metadata) and batch buffers (metadata in last chunk).
     """
 
-    track = GObject.Property(
-        type=bool,
-        default=False,
-        nick="Track Mode",
-        blurb="Enable or disable tracking mode",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-
     def __init__(self):
         super().__init__()
         runtime_check_gstreamer_version()
@@ -52,25 +44,21 @@ class BaseObjectDetector(VideoTransform):
         self.framerate_denom = 1
         self.format_converter = FormatConverter()
         self.metadata = Metadata("si")
-        self.logger.info("Initialized BaseObjectDetector - WORKING_2025_03_11_BATCH_V3")
+        self.logger.info("Initialized BaseObjectDetector")
+        self.__track = False
 
-    def do_set_property(self, prop, value):
-        self.logger.info(f"Setting property {prop.name} to {value}")
-        if prop.name == "track":
-            self.track = value
-            if self.engine:
-                self.engine.track = value
-        else:
-            raise AttributeError(f"Unknown property {prop.name}")
+    @GObject.Property(type=bool, default=False)
+    def track(self):
+        "Enable or disable tracking mode"
+        if self.engine:
+            return self.engine.track
+        return self.__track
 
-    def do_get_property(self, prop):
-        self.logger.info(f"Getting property {prop.name}")
-        if prop.name == "track":
-            if self.engine:
-                return self.engine.track
-            return self.track
-        else:
-            raise AttributeError(f"Unknown property {prop.name}")
+    @track.setter
+    def track(self, value):
+        self.__track = value
+        if self.engine:
+            self.engine.track = value
 
     def forward(self, frames):
         self.logger.info(

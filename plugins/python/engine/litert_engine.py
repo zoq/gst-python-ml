@@ -16,86 +16,277 @@
 # Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
+import os
 import numpy as np
-import tensorflow as tf  # TensorFlow Lite interpreter
+import tensorflow as tf
+from tensorflow import keras
+from transformers import (
+    AutoTokenizer,
+    TFAutoModelForCausalLM,
+    AutoImageProcessor,
+    TFVisionEncoderDecoderModel,
+)
+
 from .ml_engine import MLEngine
 
 
 class LiteRTEngine(MLEngine):
     def __init__(self, device="cpu"):
-        """
-        Initializes the TFLite engine and attempts to load the delegate if provided.
-        """
         super().__init__(device)
         self.interpreter = None
         self.input_details = None
         self.output_details = None
         self.delegate = None
+        self.model_name = None
+        self.kwargs = None
+        self.model_type = None
 
-        # Try to load the delegate during initialization
-        if device is not None and device != "cpu":
-            self.delegate = self._create_delegate()
+        if "cpu" not in device:
+            self.delegate = self._create_delegate(device)
 
-    def _create_delegate(self):
-        """Creates a TFLite delegate from the provided path."""
+    def _create_delegate(self, delegate_path):
         try:
-            delegate = tf.lite.experimental.load_delegate(self.device)
-            self.logger.info(f"Delegate loaded successfully from '{self.device}'")
+            delegate = tf.lite.experimental.load_delegate(delegate_path)
+            self.logger.info(f"Delegate loaded successfully from '{delegate_path}'")
             return delegate
         except Exception as e:
-            self.logger.error(
-                f"Failed to load delegate from '{self.device}'. Error: {e}"
-            )
-            return None  # Fall back to no delegate if loading fails
+            self.logger.error(f"Failed to load delegate from '{delegate_path}': {e}")
+            return None
 
     def load_model(self, model_name, **kwargs):
-        """Load a TFLite model from a file path."""
-        try:
-            # Load the TFLite model and allocate tensors, pass the delegate if available
-            self.interpreter = tf.lite.Interpreter(
-                model_path=model_name,
-                experimental_delegates=[self.delegate] if self.delegate else None,
-            )
-            self.interpreter.allocate_tensors()
+        """Load a pre-trained model and convert to TFLite if necessary."""
+        processor_name = kwargs.get("processor_name")
+        tokenizer_name = kwargs.get("tokenizer_name")
+        self.model_name = model_name
+        self.kwargs = kwargs
 
-            # Get input and output tensor details
+        try:
+            if os.path.isfile(model_name) and model_name.endswith(".tflite"):
+                self.interpreter = tf.lite.Interpreter(
+                    model_path=model_name,
+                    experimental_delegates=[self.delegate] if self.delegate else None,
+                )
+                self.model_type = "custom"
+                self.logger.info(f"TFLite model loaded from local path: {model_name}")
+            else:
+                if hasattr(keras.applications, model_name):
+                    model = getattr(keras.applications, model_name)(weights="imagenet")
+                    self.model_type = "classification"
+                elif processor_name and tokenizer_name:
+                    self.image_processor = AutoImageProcessor.from_pretrained(
+                        processor_name
+                    )
+                    self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+                    model = TFVisionEncoderDecoderModel.from_pretrained(model_name)
+                    self.frame_stride = (
+                        model.config.encoder.num_frames
+                        if hasattr(model.config.encoder, "num_frames")
+                        else 1
+                    )
+                    self.model_type = "vision_text"
+                    self.logger.warning(
+                        "Vision-text models in TFLite may require custom generation loops."
+                    )
+                else:
+                    self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+                    model = TFAutoModelForCausalLM.from_pretrained(model_name)
+                    self.model_type = "llm"
+                    self.logger.warning(
+                        "LLM models in TFLite require manual generation loops for inference."
+                    )
+
+                converter = tf.lite.TFLiteConverter.from_keras_model(model)
+                converter.optimizations = [tf.lite.Optimize.DEFAULT]
+                converter.target_spec.supported_ops = [
+                    tf.lite.OpsSet.TFLITE_BUILTINS,
+                    tf.lite.OpsSet.SELECT_TF_OPS,
+                ]
+                tflite_model = converter.convert()
+
+                self.interpreter = tf.lite.Interpreter(
+                    model_content=tflite_model,
+                    experimental_delegates=[self.delegate] if self.delegate else None,
+                )
+                self.logger.info(
+                    f"Model '{model_name}' converted to TFLite and loaded."
+                )
+
+            self.interpreter.allocate_tensors()
             self.input_details = self.interpreter.get_input_details()
             self.output_details = self.interpreter.get_output_details()
 
-            self.logger.info(f"TFLite model '{model_name}' loaded successfully.")
+            return True
+
         except Exception as e:
-            self.logger.error(f"Failed to load TFLite model '{model_name}'. Error: {e}")
+            self.logger.error(f"Error loading/converting model '{model_name}': {e}")
+            self.interpreter = None
+            self.tokenizer = None
+            self.image_processor = None
+            return False
 
     def set_device(self, device):
-        """TFLite does not require explicit device management in Python, but delegates handle this."""
+        """Set the device/delegate for TFLite."""
         self.device = device
+        self.logger.info(f"Setting device to {device}")
 
-    def forward(self, frame):
-        """
-        Perform object detection using the TFLite model.
-        """
-        # Preprocess the frame (resize, normalize, etc.)
+        if "cpu" in device:
+            self.delegate = None
+        else:
+            self.delegate = self._create_delegate(device)
+
+        # Reload the model with the new delegate
+        if self.model_name:
+            self.load_model(self.model_name, **self.kwargs)
+
+    def _forward_classification(self, frames):
+        """Handle inference for classification models."""
+        is_batch = frames.ndim == 4
         input_shape = self.input_details[0]["shape"]
-        frame_resized = np.resize(frame, input_shape).astype(np.float32)
+        if is_batch:
+            batch_size = frames.shape[0]
+            new_shape = [batch_size] + list(input_shape[1:])
+            self.interpreter.resize_tensor_input(
+                self.input_details[0]["index"], new_shape
+            )
+            self.interpreter.allocate_tensors()
+        else:
+            frames = np.expand_dims(frames, axis=0)
 
-        # Set the input tensor
-        self.interpreter.set_tensor(self.input_details[0]["index"], frame_resized)
+        img_array = frames.astype(np.float32) / 255.0
+        self.interpreter.set_tensor(self.input_details[0]["index"], img_array)
 
-        # Run inference
         self.interpreter.invoke()
 
-        # Get the output tensor(s)
-        output_data = [
-            self.interpreter.get_tensor(output["index"])
-            for output in self.output_details
+        preds = self.interpreter.get_tensor(self.output_details[0]["index"])
+        probs = np.exp(preds) / np.sum(np.exp(preds), axis=1, keepdims=True)
+        top_classes = np.argmax(probs, axis=1)
+        confidences = np.max(probs, axis=1)
+        results = [
+            {"labels": [int(c)], "scores": [float(s)]}
+            for c, s in zip(top_classes, confidences)
         ]
+        return results[0] if not is_batch else results
 
-        # Convert all outputs to NumPy arrays (if not already)
-        results = [np.array(data) for data in output_data]
+    def forward(self, frames):
+        """Handle inference for different types of models, supporting single frames or batches."""
+        is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4
+        if not isinstance(frames, (np.ndarray, str)):
+            self.logger.error(f"Invalid input type for forward: {type(frames)}")
+            return None
 
-        # If there's only one result, return it directly
-        if len(results) == 1:
-            return results[0]
+        if self.model_type == "vision_text":
+            # Basic support; may need custom loop for generation
+            if is_batch:
+                self.logger.error(
+                    "Batch processing not supported for vision-text models."
+                )
+                return None
+            if not hasattr(self, "counter"):
+                self.counter = 0
+                self.frame_buffer = []
+            self.counter += 1
+            if self.counter % self.frame_stride == 0:
+                self.frame_buffer.append(frames)
+            if len(self.frame_buffer) >= self.batch_size:
+                try:
+                    pixel_values = self.image_processor(
+                        self.frame_buffer, return_tensors="tf"
+                    ).pixel_values
+                    # Assuming model exported for single forward pass; adjust if needed
+                    input_shape = self.input_details[0]["shape"]
+                    if pixel_values.shape != tuple(input_shape):
+                        self.logger.error("Input shape mismatch for vision-text model.")
+                        return None
+                    self.interpreter.set_tensor(
+                        self.input_details[0]["index"], pixel_values.numpy()
+                    )
+                    self.interpreter.invoke()
+                    tokens = self.interpreter.get_tensor(
+                        self.output_details[0]["index"]
+                    )
+                    captions = self.tokenizer.batch_decode(
+                        tokens, skip_special_tokens=True
+                    )
+                    self.frame_buffer = []
+                    return captions[0]
+                except Exception as e:
+                    self.logger.error(f"Failed to process frames: {e}")
+                    self.frame_buffer = []
+                    return None
+            return None
 
-        # Otherwise, return all results as a list
-        return results
+        elif self.model_type == "llm":
+            if is_batch:
+                self.logger.error("Batch processing not supported for LLM models.")
+                return None
+            # For LLMs, forward might not be directly applicable; use generate instead
+            self.logger.warning("Use generate method for LLM inference.")
+            return None
+
+        elif self.model_type == "classification":
+            return self._forward_classification(frames)
+
+        else:  # Assume detection or custom
+            input_shape = self.input_details[0]["shape"]
+            if is_batch:
+                batch_size = frames.shape[0]
+                new_shape = [batch_size] + list(input_shape[1:])
+                self.interpreter.resize_tensor_input(
+                    self.input_details[0]["index"], new_shape
+                )
+                self.interpreter.allocate_tensors()
+                writable_frames = frames.astype(np.float32) / 255.0
+            else:
+                writable_frames = np.expand_dims(
+                    frames.astype(np.float32) / 255.0, axis=0
+                )
+
+            self.interpreter.set_tensor(self.input_details[0]["index"], writable_frames)
+            self.interpreter.invoke()
+
+            outputs = [
+                self.interpreter.get_tensor(output["index"])
+                for output in self.output_details
+            ]
+
+            # Assume standard detection outputs: [boxes, classes, scores, num_detections]
+            if len(outputs) >= 4:
+                boxes, classes, scores, num_dets = outputs[:4]
+                results = []
+                for i in range(writable_frames.shape[0]):
+                    n = int(num_dets[i])
+                    res = {
+                        "boxes": boxes[i][:n],
+                        "labels": classes[i][:n].astype(int),
+                        "scores": scores[i][:n],
+                    }
+                    results.append(res)
+                return results[0] if not is_batch else results
+            else:
+                # For other models, return list of outputs
+                output_np = [out.squeeze() if not is_batch else out for out in outputs]
+                return output_np[0] if len(output_np) == 1 else output_np
+
+    def generate(self, input_text, max_length=100):
+        if self.model_type != "llm":
+            raise ValueError("Generate is only supported for LLM models.")
+        # Basic greedy generation loop; assumes model exported as single-step autoregressive
+        input_ids = self.tokenizer(input_text, return_tensors="np")["input_ids"]
+        generated_ids = input_ids.copy()
+
+        for _ in range(max_length):
+            self.interpreter.set_tensor(
+                self.input_details[0]["index"], generated_ids[:, -1:]
+            )  # Last token
+            self.interpreter.invoke()
+            logits = self.interpreter.get_tensor(self.output_details[0]["index"])
+            next_token = np.argmax(logits[:, -1, :], axis=-1)
+            generated_ids = np.concatenate((generated_ids, next_token[:, None]), axis=1)
+            if next_token[0] == self.tokenizer.eos_token_id:
+                break
+
+        generated_text = self.tokenizer.decode(
+            generated_ids[0], skip_special_tokens=True
+        )
+        self.logger.info(f"Generated text: {generated_text}")
+        return generated_text

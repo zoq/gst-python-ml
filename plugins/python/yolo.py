@@ -208,6 +208,18 @@ class YOLOTransform(BaseObjectDetector):
         self.engine_helper.engine_name = "yolo-engine"
         EngineFactory.register(self.engine_helper.engine_name, YoloEngine)
 
+    # make engine_name read only
+    @GObject.Property(type=str)
+    def engine_name(self):
+        """Machine Learning Engine (read-only in this class)."""
+        return self.engine_helper.engine_name
+
+    @engine_name.setter
+    def engine_name(self, value):
+        raise ValueError(
+            "The 'engine_name' property cannot be set in this derived class."
+        )
+
     def do_decode(self, buf, result, stream_idx=0):
         self.logger.debug(
             f"Decoding YOLO result for buffer {hex(id(buf))}, stream {stream_idx}: {result}"

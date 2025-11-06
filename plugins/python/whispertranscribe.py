@@ -63,8 +63,15 @@ class WhisperTranscribe(BaseTranscribe):
     def __init__(self):
         super().__init__()
         self.model_name = "medium"
+        # set engine name directly since property is read only
         self.engine_helper.engine_name = "whisper-engine"
         EngineFactory.register(self.engine_helper.engine_name, WhisperEngine)
+
+    # make engine_name read only
+    @GObject.Property(type=str)
+    def engine_name(self):
+        """Machine Learning Engine (read-only in this class)."""
+        return self.engine_helper.engine_name
 
     def do_load_model(self):
         if not self.engine_helper.get_model():

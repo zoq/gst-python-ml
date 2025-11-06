@@ -19,6 +19,8 @@
 import os
 import numpy as np
 import torch
+import traceback
+
 from torchvision import models
 from transformers import (
     AutoTokenizer,
@@ -93,7 +95,13 @@ class PyTorchEngine(MLEngine):
             return True
 
         except Exception as e:
-            self.logger.error(f"Error loading model '{model_name}': {e}")
+            stack_trace = (
+                traceback.format_stack()
+            )  # Capture the current call stack as a list of strings
+            self.logger.error(
+                f"Error loading model '{model_name}': {e}"
+                f"Stack trace:\n{''.join(stack_trace)}"  # Join and log the stack trace
+            )
             self.tokenizer = None
             self.model = None
             return False

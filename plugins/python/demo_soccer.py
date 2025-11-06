@@ -1106,7 +1106,7 @@ class DemoSoccer(BaseObjectDetector):
 
     def __init__(self):
         super().__init__()
-        self.engine_name = "yolo-ball-engine"
+        self.engine_helper.engine_name = "yolo-ball-engine"
         EngineFactory.register(self.engine_name, YoloAdvancedEngine)
 
         # Resolve YAMLs
@@ -1172,6 +1172,18 @@ class DemoSoccer(BaseObjectDetector):
         self.__coast_decay = 0.90
         self.__verbose = False
         self.__frame_rate = 30.0
+
+    # make engine_name read only
+    @GObject.Property(type=str)
+    def engine_name(self):
+        """Machine Learning Engine (read-only in this class)."""
+        return self.engine_helper.engine_name
+
+    @engine_name.setter
+    def engine_name(self, value):
+        raise ValueError(
+            "The 'engine_name' property cannot be set in this derived class."
+        )
 
     # Properties - all of them
     @GObject.Property(type=str, default="yolo11x")

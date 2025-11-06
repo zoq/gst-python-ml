@@ -191,6 +191,27 @@ class Caption(VideoTransform):
         ),
     )
 
+    def __init__(self):
+        super().__init__()
+        self.model_name = "phi-3.5-vision"
+        # set engine_name directly on engine_helper, as engine_name property is read only
+        self.engine_helper.engine_name = "caption-engine"
+        EngineFactory.register(self.engine_name, CaptionEngine)
+        self.__prompt = "What is shown in this image?"
+        self.text_src_pad = None
+
+    # make read only
+    @GObject.Property(type=str)
+    def engine_name(self):
+        "Machine Learning Engine to use : pytorch, tflite, tensorflow, onnx or openvino, or custom engine name"
+        return self.engine_helper.engine_name
+
+    @engine_name.setter
+    def engine_name(self, value):
+        raise ValueError(
+            "The 'engine_name' property cannot be set in this derived class."
+        )
+
     @GObject.Property(type=str, default="What is shown in this image?")
     def prompt(self):
         "Custom prompt text for image analysis"
@@ -201,14 +222,6 @@ class Caption(VideoTransform):
         self.__prompt = value
         if self.engine_helper.engine:
             self.engine_helper.engine.prompt = value
-
-    def __init__(self):
-        super().__init__()
-        self.model_name = "phi-3.5-vision"
-        self.engine_name = "caption-engine"
-        EngineFactory.register(self.engine_name, CaptionEngine)
-        self.__prompt = "What is shown in this image?"
-        self.text_src_pad = None
 
     def do_request_new_pad(self, template, name, caps):
         if self.text_src_pad:

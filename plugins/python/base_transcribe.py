@@ -153,8 +153,7 @@ class BaseTranscribe(BaseAggregator):
         audio_collected = False
 
         try:
-            if self.device:
-                self.do_load_model()
+            self.do_load_model()
 
             # Map the buffer to access the audio data
             success, map_info = buf.map(Gst.MapFlags.READ)

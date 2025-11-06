@@ -177,26 +177,22 @@ class PyTorchEngine(MLEngine):
         """Handle inference for classification models like ResNet."""
         self.model.eval()
         is_batch = frames.ndim == 4  # (B, H, W, C) vs (H, W, C)
-        img_tensor = (
-            torch.from_numpy(np.array(frames, copy=True))
-            .permute(
-                0 if is_batch else 2,
-                1 if is_batch else 0,
-                2 if is_batch else 1,
-                3 if is_batch else None,
-            )
-            .float()
-        )
-        img_tensor /= 255.0
-        if not is_batch:
-            img_tensor = img_tensor.unsqueeze(0)  # Add batch dim for single frame
+        # Create tensor and normalize (moved here for consistency)
+        img_tensor = torch.from_numpy(np.array(frames, copy=True)).float() / 255.0
+
+        if is_batch:
+            img_tensor = img_tensor.permute(0, 3, 1, 2)  # (B, H, W, C) -> (B, C, H, W)
+        else:
+            img_tensor = img_tensor.permute(2, 0, 1)  # (H, W, C) -> (C, H, W)
+            img_tensor = img_tensor.unsqueeze(0)  # Add batch dim: (1, C, H, W)
+
         img_tensor = img_tensor.to(self.device)
 
         with torch.inference_mode():
             results = self.model(img_tensor)
         return (
-            results.squeeze() if not is_batch else results
-        )  # Remove batch dim if single
+            results.squeeze(0) if not is_batch else results
+        )  # Squeeze batch dim if single
 
     def forward(self, frames):
         """Handle inference for different types of models, supporting single frames or batches."""

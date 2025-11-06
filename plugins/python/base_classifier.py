@@ -44,8 +44,8 @@ class BaseClassifier(VideoTransform):
         """
         Runs classification inference and returns a label with a confidence score.
         """
-        if self.engine:
-            return self.engine.forward(frame)
+        if self.engine_helper.engine:
+            return self.engine_helper.engine.forward(frame)
         self.logger.error("No model loaded in BaseClassifier.")
         return None
 
@@ -87,13 +87,13 @@ class BaseClassifier(VideoTransform):
         Decodes classification output and attaches metadata.
         """
         if isinstance(output, dict):
-            label = output.get("labels")  # ✅ FIXED: Correct key
-            score = output.get("scores")  # ✅ FIXED: Correct key
+            label = output.get("labels")  # e.g., [405]
+            score = output.get("scores")  # e.g., [0.057...]
 
-            # Convert NumPy arrays to standard Python types
-            if isinstance(label, np.ndarray) and label.size > 0:
+            # Convert to scalars, handling both NumPy arrays and lists
+            if isinstance(label, (np.ndarray, list)) and len(label) > 0:
                 label = int(label[0])
-            if isinstance(score, np.ndarray) and score.size > 0:
+            if isinstance(score, (np.ndarray, list)) and len(score) > 0:
                 score = float(score[0])
 
         elif isinstance(output, list) and len(output) == 2:

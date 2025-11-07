@@ -56,13 +56,13 @@ class CaptionQwenEngine(PyTorchEngine):
         try:
             quantization_config = BitsAndBytesConfig(load_in_4bit=True)
             self.model = Qwen2VLForConditionalGeneration.from_pretrained(
-                "Qwen/Qwen2-VL-2B-Instruct",
+                model_name,
                 quantization_config=quantization_config,
                 device_map="auto",
                 torch_dtype=torch.float16,
             )
             self.processor = AutoProcessor.from_pretrained(
-                "Qwen/Qwen2-VL-2B-Instruct", trust_remote_code=True
+                model_name, trust_remote_code=True
             )
             self.logger.info(
                 "Qwen2-VL-2B-Instruct model and processor loaded successfully."
@@ -200,7 +200,7 @@ class CaptionQwen(BaseCaption):
 
     def __init__(self):
         super().__init__()
-        self.model_name = "pyml_caption_qwen_model"
+        self.model_name = "Qwen/Qwen2-VL-2B-Instruct"
         # set engine_name directly on engine_helper, as engine_name property is read only
         self.engine_helper.engine_name = "pyml_caption_qwen_engine"
         EngineFactory.register(self.engine_name, CaptionQwenEngine)

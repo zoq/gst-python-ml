@@ -55,7 +55,7 @@ class CaptionPhiEngine(PyTorchEngine):
         try:
             quantization_config = BitsAndBytesConfig(load_in_4bit=True)
             self.model = AutoModelForCausalLM.from_pretrained(
-                "microsoft/Phi-3.5-vision-instruct",
+                model_name,
                 quantization_config=quantization_config,
                 device_map="auto",
                 torch_dtype=torch.float16,
@@ -63,7 +63,7 @@ class CaptionPhiEngine(PyTorchEngine):
                 _attn_implementation="flash_attention_2",
             )
             self.processor = AutoProcessor.from_pretrained(
-                "microsoft/Phi-3.5-vision-instruct", trust_remote_code=True
+                model_name, trust_remote_code=True
             )
             self.logger.info("Phi-3.5-vision model and processor loaded successfully.")
             self.model.eval()
@@ -183,7 +183,6 @@ class CaptionPhi(BaseCaption):
 
     def __init__(self):
         super().__init__()
-        self.model_name = "pyml_caption_phi_model"
         # set engine_name directly on engine_helper, as engine_name property is read only
         self.engine_helper.engine_name = "pyml_caption_phi_engine"
         EngineFactory.register(self.engine_name, CaptionPhiEngine)

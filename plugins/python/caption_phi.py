@@ -1,4 +1,4 @@
-# caption.py
+# CaptionPhi
 # Copyright (C) 2024-2025 Collabora Ltd.
 #
 # This library is free software; you can redistribute it and/or
@@ -175,9 +175,9 @@ class CaptionPhi(BaseCaption):
     """
 
     __gstmetadata__ = (
-        "Caption",
+        "CaptionPhi",
         "Transform",
-        "Captions video clips",
+        "Captions video clips using Phi Vision model",
         "Aaron Boxer <aaron.boxer@collabora.com>",
     )
 

@@ -1,4 +1,4 @@
-# caption.py
+# CaptionQwen
 # Copyright (C) 2024-2025 Collabora Ltd.
 #
 # This library is free software; you can redistribute it and/or
@@ -34,10 +34,11 @@ try:
 
     import torch
     from transformers import (
-        AutoModelForCausalLM,
+        Qwen2VLForConditionalGeneration,
         AutoProcessor,
         BitsAndBytesConfig,
     )
+    from qwen_vl_utils import process_vision_info
     from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
     from base_caption import BaseCaption
@@ -51,21 +52,21 @@ except ImportError as e:
 
 class CaptionQwenEngine(PyTorchEngine):
     def load_model(self, model_name, **kwargs):
-        """Load a Phi-3-vision model from Hugging Face."""
+        """Load a Qwen2-VL model from Hugging Face."""
         try:
             quantization_config = BitsAndBytesConfig(load_in_4bit=True)
-            self.model = AutoModelForCausalLM.from_pretrained(
-                "microsoft/Phi-3.5-vision-instruct",
+            self.model = Qwen2VLForConditionalGeneration.from_pretrained(
+                "Qwen/Qwen2-VL-2B-Instruct",
                 quantization_config=quantization_config,
                 device_map="auto",
                 torch_dtype=torch.float16,
-                trust_remote_code=True,
-                _attn_implementation="flash_attention_2",
             )
             self.processor = AutoProcessor.from_pretrained(
-                "microsoft/Phi-3.5-vision-instruct", trust_remote_code=True
+                "Qwen/Qwen2-VL-2B-Instruct", trust_remote_code=True
             )
-            self.logger.info("Phi-3.5-vision model and processor loaded successfully.")
+            self.logger.info(
+                "Qwen2-VL-2B-Instruct model and processor loaded successfully."
+            )
             self.model.eval()
 
             # Skip .to() for 4-bit models
@@ -80,12 +81,12 @@ class CaptionQwenEngine(PyTorchEngine):
 
         except Exception as e:
             self.logger.error(f"Error loading model '{model_name}': {e}")
-            self.tokenizer = None
+            self.processor = None
             self.model = None
             return False
 
     def forward(self, frames):
-        """Handle inference for phi3.5 vision, supporting single frames or batches."""
+        """Handle inference for Qwen2-VL, supporting single frames or batches."""
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4  # (B, H, W, C)
         if not isinstance(frames, (np.ndarray, str)):
             self.logger.error(f"Invalid input type for forward: {type(frames)}")
@@ -99,24 +100,31 @@ class CaptionQwenEngine(PyTorchEngine):
 
                 # Convert frames to PIL images
                 if is_batch:
-                    images = [Image.fromarray(np.uint8(frame)) for frame in frames]
+                    pil_images = [Image.fromarray(np.uint8(frame)) for frame in frames]
                 else:
-                    images = [Image.fromarray(np.uint8(frames))]
+                    pil_images = [Image.fromarray(np.uint8(frames))]
 
-                # Create prompt with placeholders for all images
-                prompt_content = (
-                    "\n".join([f"<|image_{i+1}|>" for i in range(len(images))])
-                    + f"\n{self.prompt}"
-                )
-                messages = [{"role": "user", "content": prompt_content}]
-                prompt = self.processor.tokenizer.apply_chat_template(
+                # Create content list with images and prompt
+                content = [{"type": "image", "image": img} for img in pil_images]
+                content.append({"type": "text", "text": self.prompt})
+                messages = [{"role": "user", "content": content}]
+
+                # Apply chat template
+                text = self.processor.apply_chat_template(
                     messages, tokenize=False, add_generation_prompt=True
                 )
 
+                # Process vision inputs
+                image_inputs, video_inputs = process_vision_info(messages)
+
                 # Process inputs for batch inference
-                inputs = self.processor(prompt, images, return_tensors="pt").to(
-                    self.device
-                )
+                inputs = self.processor(
+                    text=[text],
+                    images=image_inputs,
+                    videos=video_inputs,
+                    padding=True,
+                    return_tensors="pt",
+                ).to(self.device)
 
                 # Run inference
                 generation_args = {
@@ -125,27 +133,36 @@ class CaptionQwenEngine(PyTorchEngine):
                     "do_sample": False,
                 }
                 with torch.inference_mode():
-                    generate_ids = self.model.generate(
+                    generated_ids = self.model.generate(
                         **inputs,
                         eos_token_id=self.processor.tokenizer.eos_token_id,
                         **generation_args,
                     )
 
+                # Trim to only generated tokens
+                generated_ids_trimmed = [
+                    out_ids[len(in_ids) :]
+                    for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+                ]
+
                 # Decode response
-                generate_ids = generate_ids[:, inputs["input_ids"].shape[1] :]
-                response = self.processor.batch_decode(
-                    generate_ids,
+                output_text = self.processor.batch_decode(
+                    generated_ids_trimmed,
                     skip_special_tokens=True,
                     clean_up_tokenization_spaces=False,
-                )[0]
+                )
+                if not output_text:
+                    self.logger.error("No output text generated.")
+                    return None
+                response = output_text[0]
 
                 # Split response into per-frame captions (adjust based on model output)
                 if is_batch:
                     # Assume response contains captions separated by newlines or repeated
                     captions = (
-                        response.split("\n")[: len(images)]
+                        response.split("\n")[: len(pil_images)]
                         if "\n" in response
-                        else [response] * len(images)
+                        else [response] * len(pil_images)
                     )
                 else:
                     captions = [response]
@@ -153,7 +170,7 @@ class CaptionQwenEngine(PyTorchEngine):
                 self.logger.info(f"Generated captions: {captions}")
 
                 # Clean up
-                del inputs, generate_ids
+                del inputs, generated_ids
                 torch.cuda.empty_cache()
                 gc.collect()
 
@@ -175,9 +192,9 @@ class CaptionQwen(BaseCaption):
     """
 
     __gstmetadata__ = (
-        "Caption",
+        "CaptionQwen",
         "Transform",
-        "Captions video clips",
+        "Captions video clips using Qwen Vision model",
         "Aaron Boxer <aaron.boxer@collabora.com>",
     )
 

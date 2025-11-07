@@ -87,8 +87,6 @@ class BaseCaption(VideoTransform):
     @prompt.setter
     def prompt(self, value):
         self.__prompt = value
-        if self.engine_helper.engine:
-            self.engine_helper.engine.prompt = value
 
     def do_request_new_pad(self, template, name, caps):
         if self.text_src_pad:
@@ -137,8 +135,6 @@ class BaseCaption(VideoTransform):
         try:
             if self.get_model() is None:
                 self.do_load_model()
-
-            self.engine_helper.engine.prompt = self.prompt
 
             # Initialize MuxedBufferProcessor with default framerate
             muxed_processor = MuxedBufferProcessor(

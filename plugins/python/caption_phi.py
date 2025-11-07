@@ -45,7 +45,7 @@ try:
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
     GlobalLogger().warning(
-        f"The 'pyml_caption' element will not be available. Error {e}"
+        f"The 'pyml_caption_phi' element will not be available. Error {e}"
     )
 
 

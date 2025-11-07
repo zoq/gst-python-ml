@@ -119,6 +119,18 @@ class Demucs(BaseSeparate):
             "The 'engine_name' property cannot be set in this derived class."
         )
 
+    # make engine_name read only
+    @GObject.Property(type=str)
+    def engine_name(self):
+        """Machine Learning Engine (read-only in this class)."""
+        return self.engine_helper.engine_name
+
+    @engine_name.setter
+    def engine_name(self, value):
+        raise ValueError(
+            "The 'engine_name' property cannot be set in this derived class."
+        )
+
     def do_load_model(self):
         if not self.engine_helper.get_model():
             self.engine_helper.load_model(self.model_name)

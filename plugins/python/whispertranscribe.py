@@ -64,7 +64,7 @@ class WhisperTranscribe(BaseTranscribe):
         super().__init__()
         self.model_name = "medium"
         # set engine name directly since property is read only
-        self.engine_helper.engine_name = "whisper-engine"
+        self.engine_helper.engine_name = "pyml_whispertranscribe_engine"
         EngineFactory.register(self.engine_helper.engine_name, WhisperEngine)
 
     # make engine_name read only

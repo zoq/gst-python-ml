@@ -193,9 +193,9 @@ class Caption(VideoTransform):
 
     def __init__(self):
         super().__init__()
-        self.model_name = "phi-3.5-vision"
+        self.model_name = "pyml_caption_model"
         # set engine_name directly on engine_helper, as engine_name property is read only
-        self.engine_helper.engine_name = "caption-engine"
+        self.engine_helper.engine_name = "pyml_caption_engine"
         EngineFactory.register(self.engine_name, CaptionEngine)
         self.__prompt = "What is shown in this image?"
         self.text_src_pad = None

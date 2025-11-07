@@ -103,8 +103,8 @@ class Demucs(BaseSeparate):
 
     def __init__(self):
         super().__init__()
-        self.model_name = "hdemucs_high_musdb_plus"  # Placeholder, since we use bundle
-        self.engine_helper.engine_name = "demucs-engine"
+        self.model_name = "pyml_demucs_model"  # Placeholder, since we use bundle
+        self.engine_helper.engine_name = "pyml_demucs_engine"
         EngineFactory.register(self.engine_helper.engine_name, DemucsEngine)
 
     # make engine_name read only

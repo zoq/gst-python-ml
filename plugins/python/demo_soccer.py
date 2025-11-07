@@ -1106,7 +1106,7 @@ class DemoSoccer(BaseObjectDetector):
 
     def __init__(self):
         super().__init__()
-        self.engine_helper.engine_name = "yolo-ball-engine"
+        self.engine_helper.engine_name = "demo_engine"
         EngineFactory.register(self.engine_name, YoloAdvancedEngine)
 
         # Resolve YAMLs

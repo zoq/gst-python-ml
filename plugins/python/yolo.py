@@ -205,7 +205,7 @@ class YOLOTransform(BaseObjectDetector):
 
     def __init__(self):
         super().__init__()
-        self.engine_helper.engine_name = "yolo-engine"
+        self.engine_helper.engine_name = "pyml_yolo_engine"
         EngineFactory.register(self.engine_helper.engine_name, YoloEngine)
 
     # make engine_name read only

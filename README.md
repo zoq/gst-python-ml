@@ -55,9 +55,24 @@ source .venv/bin/activate
 uv sync
 ```
 
-Now manually install flash-attn wheel.
+Now manually install flash-attn wheel (must match your version of python, torch and cuda)
 eg:  
 `uv pip install ./flash_attn-2.8.3+cu128torch2.9-cp313-cp313-linux_x86_64.whl`
+
+A pre-built wheel can be found here:
+https://github.com/mjun0812/flash-attention-prebuild-wheels/releases
+
+
+For QWEN models:
+```
+uv pip install git+https://github.com/huggingface/transformers
+uv pip install qwen-vl-utils[decord]==0.0.8
+uv pip install autoawq
+
+```
+
+
+
 
 #### pip
 
@@ -450,6 +465,6 @@ model-name="microsoft/Phi-3.5-vision-instruct" name=cap ! queue ! textoverlay na
 
 ```
 GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale !  video/x-raw,width=640,height=480 !  pyml_caption_qwen device=cuda:0 prompt="What is the name of the game being played?" downsampled_width=320 downsampled_height=240 \
-name=cap ! queue ! textoverlay name=overlay !  videoconvert !  autovideosink cap.text_src \
+model-name="Qwen/Qwen2.5-VL-3B-Instruct-AWQ " name=cap ! queue ! textoverlay name=overlay !  videoconvert !  autovideosink cap.text_src \
 ! queue ! overlay.text_sink
 ```

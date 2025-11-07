@@ -26,7 +26,7 @@ try:
     gi.require_version("GstBase", "1.0")
     gi.require_version("GObject", "2.0")
     from gi.repository import Gst, GObject  # noqa: E402
-    from base_separate import BaseSeparate
+    from base_separate import BaseSeparate, SAMPLE_RATE
     import torch
     import torchaudio
     from torchaudio.pipelines import HDEMUCS_HIGH_MUSDB_PLUS
@@ -124,14 +124,18 @@ class Demucs(BaseSeparate):
             self.engine_helper.load_model(self.model_name)
 
     def do_separate(self, audio_data):
-        # audio_data: np.float32, shape (length,) at 16000 Hz mono
+        # audio_data: np.float32, shape (length,) at SAMPLE_RATE Hz mono
         engine = self.engine_helper.engine
-        original_rate = 16000
+        original_rate = SAMPLE_RATE
 
-        # Resample to model's sample rate (44100 Hz)
-        resample = Resample(original_rate, engine.sample_rate).to(engine.device)
-        audio_torch = torch.from_numpy(audio_data).float().to(engine.device)
-        audio_resampled = resample(audio_torch)
+        # Resample to model's sample rate (44100 Hz) if necessary
+        if original_rate != engine.sample_rate:
+            resample = Resample(original_rate, engine.sample_rate).to(engine.device)
+            audio_torch = torch.from_numpy(audio_data).float().to(engine.device)
+            audio_resampled = resample(audio_torch)
+        else:
+            audio_torch = torch.from_numpy(audio_data).float().to(engine.device)
+            audio_resampled = audio_torch
 
         # Convert mono to stereo by duplicating channel
         audio_stereo = audio_resampled.repeat(2, 1)  # (2, length)
@@ -157,9 +161,14 @@ class Demucs(BaseSeparate):
         # Average to mono
         selected_mono = selected.mean(0)  # (length,)
 
-        # Resample back to original rate
-        resample_back = Resample(engine.sample_rate, original_rate).to(engine.device)
-        selected_resampled = resample_back(selected_mono)
+        # Resample back to original rate if necessary
+        if original_rate != engine.sample_rate:
+            resample_back = Resample(engine.sample_rate, original_rate).to(
+                engine.device
+            )
+            selected_resampled = resample_back(selected_mono)
+        else:
+            selected_resampled = selected_mono
 
         return selected_resampled.cpu().numpy()  # float32
 

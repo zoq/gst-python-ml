@@ -21,7 +21,6 @@ import sys
 from abc import abstractmethod
 
 import numpy as np
-from pysilero_vad import SileroVoiceActivityDetector
 import gi
 
 gi.require_version("Gst", "1.0")
@@ -34,11 +33,7 @@ from base_aggregator import BaseAggregator  # noqa: E402
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 
-SAMPLE_RATE = 16000  # Target sample rate for processing
-
-# Initialize VAD
-vad = SileroVoiceActivityDetector()
-vad_chunk_size = vad.chunk_samples()
+SAMPLE_RATE = 44100  # native sample rate of Demucs
 
 CAPS = Gst.Caps(
     Gst.Structure(
@@ -80,11 +75,6 @@ class BaseSeparate(BaseAggregator):
         super().__init__()
 
         self.clip_buffer = collections.deque()
-        self.active_clip = False
-        self.silence_counter = 0
-        chunk_duration_ms = (vad_chunk_size / SAMPLE_RATE) * 1000
-        silence_ms = 300
-        self.clip_silence_trigger_counter = int(silence_ms / chunk_duration_ms)
         self.__streaming = False
         self.__stem = "vocals"
 
@@ -123,7 +113,7 @@ class BaseSeparate(BaseAggregator):
 
     def do_process(self, buf):
         self.push_segment_if_needed()
-        """Process audio data from the input buffers using VAD and source separation."""
+        """Process audio data from the input buffers using source separation."""
         audio_collected = False
 
         try:
@@ -133,61 +123,49 @@ class BaseSeparate(BaseAggregator):
             success, map_info = buf.map(Gst.MapFlags.READ)
             if not success:
                 self.logger.error("Failed to map input buffer")
-                buf.unmap(map_info)
-                return Gst.FlowReturn.OK
+                return Gst.FlowReturn.ERROR
 
             # Convert buffer to numpy array (int16)
             audio_data = np.frombuffer(map_info.data, dtype=np.int16)
             audio_collected = True
 
-            if len(audio_data) < vad_chunk_size:
-                self.logger.warning("Insufficient audio data for processing")
-                buf.unmap(map_info)
-                return Gst.FlowReturn.OK
+            self.clip_buffer.extend(audio_data)
 
-            # Process audio data with VAD (Voice Activity Detection)
-            while len(audio_data) >= vad_chunk_size:
-                vad_chunk = audio_data[:vad_chunk_size]
-                audio_data = audio_data[vad_chunk_size:]
+            chunk_duration = 1.0 if self.streaming else 10.0
+            chunk_size = int(SAMPLE_RATE * chunk_duration)
 
-                vad_confidence = vad.process_chunk(vad_chunk.tobytes())
-                if vad_confidence >= 0.7:
-                    if self.streaming:
-                        separated = self._separate_audio(vad_chunk)
-                        if separated is None:
-                            self.logger.warning("Empty separated audio")
-                            buf.unmap(map_info)
-                            return Gst.FlowReturn.ERROR
+            while len(self.clip_buffer) >= chunk_size:
+                chunk = np.fromiter(
+                    (self.clip_buffer.popleft() for _ in range(chunk_size)),
+                    dtype=np.int16,
+                )
+                separated = self._separate_audio(chunk)
+                if separated is None:
+                    self.logger.warning("Empty separated audio")
+                    buf.unmap(map_info)
+                    return Gst.FlowReturn.ERROR
 
-                        self._process_and_send(separated, buf)
-                    else:
-                        # VAD detects voice activity, add to buffer
-                        self.active_clip = True
-                        self.silence_counter = 0
-                        self.clip_buffer.extend(vad_chunk)
-                else:
-                    # Increment silence counter when no voice is detected
-                    self.silence_counter += 1
+                self._process_and_send(separated, buf)
 
-                    # If silence is detected for too long, end the current segment
-                    if (
-                        self.active_clip
-                        and self.silence_counter > self.clip_silence_trigger_counter
-                    ):
-                        self.active_clip = False
-                        if not self.streaming:
-                            # Perform separation in batch mode
-                            separated = self._separate_audio(self.clip_buffer)
-                            if separated is None:
-                                self.logger.warning("Empty separated audio")
-                                buf.unmap(map_info)
-                                return Gst.FlowReturn.ERROR
+            # Handle remaining buffer on EOS
+            if buf.flags & Gst.BufferFlags.LAST:
+                if len(self.clip_buffer) > 0:
+                    chunk = np.fromiter(self.clip_buffer, dtype=np.int16)
+                    separated = self._separate_audio(chunk)
+                    if separated is None:
+                        self.logger.warning("Empty separated audio")
+                        buf.unmap(map_info)
+                        return Gst.FlowReturn.ERROR
 
-                            self._process_and_send(separated, buf)
-                            self.clip_buffer.clear()  # Clear the buffer for the next speech
+                    self._process_and_send(separated, buf)
+                    self.clip_buffer.clear()
+
             buf.unmap(map_info)
         except Exception as e:
             self.logger.error(f"Error during buffer processing: {e}")
+            if audio_collected:
+                buf.unmap(map_info)
+            return Gst.FlowReturn.ERROR
 
         if not audio_collected:
             self.logger.warning("No audio data collected from sink pads.")
@@ -214,7 +192,7 @@ class BaseSeparate(BaseAggregator):
         """
         try:
             # Get the current audio data from the buffer for separation
-            audio_data = np.array(chunk).astype(np.float32) / 32768.0
+            audio_data = chunk.astype(np.float32) / 32768.0
             result = self.do_separate(audio_data)
             # Convert back to int16
             separated = np.clip(result * 32768, -32768, 32767).astype(np.int16)

@@ -433,11 +433,16 @@ https://huggingface.co/models?sort=trending&search=Helsinki
 
 #### Caption
 
-#### caption + yolo
+#### caption phi + yolo
 
-`GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale ! video/x-raw,width=640,height=480 ! pyml_yolo model-name=yolo11m device=cuda:0 track=True ! pyml_caption device=cuda:0 name=cap ! queue ! textoverlay name=overlay !  pyml_overlay ! videoconvert !  autovideosink cap.text_src ! queue ! overlay.text_sink`
+`GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale ! video/x-raw,width=640,height=480 ! pyml_yolo model-name=yolo11m device=cuda:0 track=True ! pyml_caption_phi device=cuda:0 name=cap ! queue ! textoverlay name=overlay !  pyml_overlay ! videoconvert !  autovideosink cap.text_src ! queue ! overlay.text_sink`
 
 
-#### caption with prompt
+#### caption phi with prompt
 
-`GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale !  video/x-raw,width=640,height=480 !  pyml_caption device=cuda:0 prompt="What is the name of the game being played?" downsampled_width=320 downsampled_height=240 name=cap ! queue ! textoverlay name=overlay !  videoconvert !  autovideosink cap.text_src ! queue ! overlay.text_sink`
+`GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale !  video/x-raw,width=640,height=480 !  pyml_caption_phi device=cuda:0 prompt="What is the name of the game being played?" downsampled_width=320 downsampled_height=240 name=cap ! queue ! textoverlay name=overlay !  videoconvert !  autovideosink cap.text_src ! queue ! overlay.text_sink`
+
+
+#### caption qwen with prompt
+
+`GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale !  video/x-raw,width=640,height=480 !  pyml_caption_qwen device=cuda:0 prompt="What is the name of the game being played?" downsampled_width=320 downsampled_height=240 name=cap ! queue ! textoverlay name=overlay !  videoconvert !  autovideosink cap.text_src ! queue ! overlay.text_sink`

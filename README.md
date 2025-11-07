@@ -381,6 +381,14 @@ GST_DEBUG=4 gst-launch-1.0 filesrc location=data/air_traffic_korean_with_english
 GST_DEBUG=4 gst-launch-1.0 filesrc location=data/air_traffic_korean_with_english.wav ! decodebin ! audioconvert ! pyml_whispertranscribe device=cuda language=ko translate=yes ! fakesink
 ```
 
+#### demucs audio separation
+
+
+```
+GST_DEBUG=4 gst-launch-1.0 filesrc location=data/air_traffic_korean_with_english.wav ! decodebin ! audioconvert ! audioresample ! pyml_demucs device=cuda ! wavenc ! filesink location=separated_vocals.wav
+```
+
+
 #### coquitts
 
 ```

@@ -38,11 +38,11 @@ try:
         AutoProcessor,
     )
     from qwen_vl_utils import process_vision_info
-    from engine.pytorch_engine import PyTorchEngine
+    from engine.pytorch_vision_engine import PyTorchVisionEngine
     from engine.engine_factory import EngineFactory
     from base_caption import BaseCaption
 
-    class CaptionQwenEngine(PyTorchEngine):
+    class CaptionQwenEngine(PyTorchVisionEngine):
         def load_model(self, model_name, **kwargs):
             """Load a Qwen2.5-VL model from Hugging Face."""
             try:
@@ -74,109 +74,28 @@ try:
                 self.model = None
                 return False
 
-        def forward(self, frames):
-            """Handle inference for Qwen2.5-VL, supporting single frames or batches."""
-            is_batch = (
-                isinstance(frames, np.ndarray) and frames.ndim == 4
-            )  # (B, H, W, C)
-            if not isinstance(frames, (np.ndarray, str)):
-                self.logger.error(f"Invalid input type for forward: {type(frames)}")
-                return None
+        def _prepare_messages(self, images):
+            content = [{"type": "image", "image": img} for img in images]
+            content.append({"type": "text", "text": self.prompt})
+            return [{"role": "user", "content": content}]
 
-            if self.processor:
-                try:
-                    from PIL import Image
-                    import torch
-                    import gc
+        def _process_inputs(self, prompt_text, images):
+            image_inputs, video_inputs = process_vision_info(
+                self._prepare_messages(images)
+            )  # Note: Uses messages directly
+            return self.processor(
+                text=[prompt_text],
+                images=image_inputs,
+                videos=video_inputs,
+                padding=True,
+                return_tensors="pt",
+            ).to(self.device)
 
-                    # Convert frames to PIL images
-                    if is_batch:
-                        pil_images = [
-                            Image.fromarray(np.uint8(frame)) for frame in frames
-                        ]
-                    else:
-                        pil_images = [Image.fromarray(np.uint8(frames))]
-
-                    # Create content list with images and prompt
-                    content = [{"type": "image", "image": img} for img in pil_images]
-                    content.append({"type": "text", "text": self.prompt})
-                    messages = [{"role": "user", "content": content}]
-
-                    # Apply chat template
-                    text = self.processor.apply_chat_template(
-                        messages, tokenize=False, add_generation_prompt=True
-                    )
-
-                    # Process vision inputs
-                    image_inputs, video_inputs = process_vision_info(messages)
-
-                    # Process inputs for batch inference
-                    inputs = self.processor(
-                        text=[text],
-                        images=image_inputs,
-                        videos=video_inputs,
-                        padding=True,
-                        return_tensors="pt",
-                    ).to(self.device)
-
-                    # Run inference
-                    generation_args = {
-                        "max_new_tokens": 500,
-                        "temperature": 0.0,
-                        "do_sample": False,
-                    }
-                    with torch.inference_mode():
-                        generated_ids = self.model.generate(
-                            **inputs,
-                            eos_token_id=self.processor.tokenizer.eos_token_id,
-                            **generation_args,
-                        )
-
-                    # Trim to only generated tokens
-                    generated_ids_trimmed = [
-                        out_ids[len(in_ids) :]
-                        for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
-                    ]
-
-                    # Decode response
-                    output_text = self.processor.batch_decode(
-                        generated_ids_trimmed,
-                        skip_special_tokens=True,
-                        clean_up_tokenization_spaces=False,
-                    )
-                    if not output_text:
-                        self.logger.error("No output text generated.")
-                        return None
-                    response = output_text[0]
-
-                    # Split response into per-frame captions (adjust based on model output)
-                    if is_batch:
-                        # Assume response contains captions separated by newlines or repeated
-                        captions = (
-                            response.split("\n")[: len(pil_images)]
-                            if "\n" in response
-                            else [response] * len(pil_images)
-                        )
-                    else:
-                        captions = [response]
-
-                    self.logger.info(f"Generated captions: {captions}")
-
-                    # Clean up
-                    del inputs, generated_ids
-                    torch.cuda.empty_cache()
-                    gc.collect()
-
-                    return captions if is_batch else captions[0]
-
-                except Exception as e:
-                    self.logger.error(f"Vision-language inference error: {e}")
-                    return None
-
-        # no-op
-        def generate(self, input_text, max_length=100):
-            """Generate LLM text."""
-            pass
+        def _trim_generated_ids(self, inputs, generate_ids):
+            return [
+                out_ids[len(in_ids) :]
+                for in_ids, out_ids in zip(inputs.input_ids, generate_ids)
+            ]
 
     class CaptionQwen(BaseCaption):
         """

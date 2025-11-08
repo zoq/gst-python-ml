@@ -89,6 +89,9 @@ class CaptionPhiEngine(PyTorchVisionEngine):
     def _process_inputs(self, prompt_text, images):
         return self.processor(prompt_text, images, return_tensors="pt").to(self.device)
 
+    def _trim_generated_ids(self, inputs, generate_ids):
+        return generate_ids[:, inputs["input_ids"].shape[1] :]
+
 
 class CaptionPhi(BaseCaption):
     """

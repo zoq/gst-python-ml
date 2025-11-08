@@ -16,6 +16,7 @@
 # Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
+from abc import abstractmethod
 import gi
 import numpy as np
 from PIL import Image
@@ -94,17 +95,14 @@ class PyTorchVisionEngine(PyTorchEngine):
             return None
 
     # Abstract methods for model-specific parts
+    @abstractmethod
     def _prepare_messages(self, images):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def _process_inputs(self, prompt_text, images):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def _trim_generated_ids(self, inputs, generate_ids):
-        # Default to Phi's style; override if needed
-        return generate_ids[:, inputs["input_ids"].shape[1] :]
-
-    # no-op
-    def generate(self, input_text, max_length=100):
-        """Generate LLM text."""
         pass

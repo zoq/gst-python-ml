@@ -43,6 +43,7 @@ except ImportError as e:
         f"The 'pyml_caption_qwen' element will not be available. Error {e}"
     )
 
+
 class CaptionQwenEngine(PyTorchVisionEngine):
     def load_model(self, model_name, **kwargs):
         """Load a Qwen2.5-VL model from Hugging Face."""

@@ -105,7 +105,7 @@ class PyTorchEngine(MLEngine):
             self.model = None
             return False
 
-    def set_device(self, device):
+    def do_set_device(self, device):
         """Set PyTorch device for the model."""
         self.device = device
         self.logger.info(f"Setting device to {device}")

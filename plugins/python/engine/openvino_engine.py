@@ -116,7 +116,7 @@ class OpenVinoEngine(MLEngine):
             self.ov_model = None
             return False
 
-    def set_device(self, device):
+    def do_set_device(self, device):
         """Set OpenVINO device for the model."""
         self.device = device.upper()  # OpenVINO uses uppercase like "CPU", "GPU"
         self.logger.info(f"Setting device to {self.device}")

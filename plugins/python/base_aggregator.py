@@ -62,7 +62,7 @@ class BaseAggregator(GstBase.Aggregator):
 
     @device.setter
     def device(self, value):
-        self.engine_helper.set_device(value)
+        self.engine_helper.do_set_device(value)
 
     @GObject.Property(type=int, default=1)
     def batch_size(self):

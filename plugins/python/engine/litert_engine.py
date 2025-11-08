@@ -124,7 +124,7 @@ class LiteRTEngine(MLEngine):
             self.image_processor = None
             return False
 
-    def set_device(self, device):
+    def do_set_device(self, device):
         """Set the device/delegate for TFLite."""
         self.device = device
         self.logger.info(f"Setting device to {device}")

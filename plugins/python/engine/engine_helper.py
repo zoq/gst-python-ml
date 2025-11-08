@@ -41,10 +41,10 @@ class EngineHelper:
         if not self.engine and self.engine_name:
             self.initialize_engine()
 
-    def set_device(self, device):
+    def do_set_device(self, device):
         self.device = device
         if self.engine:
-            self.engine.set_device(device)
+            self.engine.do_set_device(device)
 
     def do_load_model(self, model_name):
         self.initialize_engine_if_needed()

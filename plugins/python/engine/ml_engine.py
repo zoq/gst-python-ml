@@ -47,7 +47,7 @@ class MLEngine(ABC):
         pass
 
     @abstractmethod
-    def set_device(self, device):
+    def do_set_device(self, device):
         """Set the device (e.g., cpu, cuda)."""
         pass
 

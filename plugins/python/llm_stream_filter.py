@@ -197,7 +197,7 @@ class LLMStreamFilter(VideoTransform):
 
             # Initialize LLM engine with enhanced quantization
             if not self.llm_engine:
-                self.llm_engine_helper.set_device(
+                self.llm_engine_helper.do_set_device(
                     self.device if hasattr(self, "device") else "cuda:0"
                 )
                 self.llm_engine_helper.initialize_engine()

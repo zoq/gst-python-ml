@@ -165,7 +165,7 @@ class BaseCaption(VideoTransform):
                     )
 
                 if self.engine_helper.engine:
-                    result = self.engine_helper.engine.forward(frame)
+                    result = self.engine_helper.engine.do_forward(frame)
                     if result:
                         self.caption = result
                         meta = GstAnalytics.buffer_add_analytics_relation_meta(buf)
@@ -218,7 +218,7 @@ class BaseCaption(VideoTransform):
                     )
 
                 if self.engine_helper.engine:
-                    results = self.engine_helper.engine.forward(frames)
+                    results = self.engine_helper.engine.do_forward(frames)
                     if results is None:
                         self.logger.error("Inference returned None")
                         return Gst.FlowReturn.ERROR

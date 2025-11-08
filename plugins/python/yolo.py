@@ -133,7 +133,7 @@ class YoloEngine(PyTorchEngine):
         except Exception as e:
             raise ValueError(f"Failed to load YOLO model '{model_name}'. Error: {e}")
 
-    def forward(self, frames):
+    def do_forward(self, frames):
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4
         writable_frames = np.array(frames, copy=True)
         batch_size = writable_frames.shape[0] if is_batch else 1

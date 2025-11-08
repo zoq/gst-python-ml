@@ -79,7 +79,7 @@ class DemucsEngine(PyTorchEngine):
         while start < length - overlap_frames:
             chunk = mix[:, :, start:end]
             with torch.no_grad():
-                out = self.model.forward(chunk)
+                out = self.model.do_forward(chunk)
             out = fade(out)
             final[:, :, :, start:end] += out
             if start == 0:

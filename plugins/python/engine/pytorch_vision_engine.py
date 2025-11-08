@@ -27,7 +27,7 @@ from engine.pytorch_engine import PyTorchEngine
 
 
 class PyTorchVisionEngine(PyTorchEngine):
-    def forward(self, frames):
+    def do_forward(self, frames):
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4
         if not isinstance(frames, (np.ndarray, str)):
             self.logger.error(f"Invalid input type for forward: {type(frames)}")

@@ -60,13 +60,13 @@ class BaseObjectDetector(VideoTransform):
         if self.engine_helper.engine:
             self.engine_helper.engine.track = value
 
-    def forward(self, frames):
+    def do_forward(self, frames):
         self.logger.info(
             f"Forward called with frames shape: {frames.shape if frames is not None else 'None'}"
         )
         if self.engine_helper.engine:
             self.engine_helper.engine.track = self.track
-            result = self.engine_helper.engine.forward(frames)
+            result = self.engine_helper.engine.do_forward(frames)
             self.logger.debug(f"Forward result: {result} (type: {type(result)})")
             return result
         return None
@@ -97,7 +97,7 @@ class BaseObjectDetector(VideoTransform):
                 return Gst.FlowReturn.ERROR
 
             # Process frames (single or batch)
-            results = self.forward(frames)
+            results = self.do_forward(frames)
             if results is None:
                 self.logger.error("Inference returned None")
                 return Gst.FlowReturn.ERROR

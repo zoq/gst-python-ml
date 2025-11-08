@@ -338,7 +338,7 @@ class LLMStreamFilter(VideoTransform):
                             f"Resized to {self.downsampled_width}x{self.downsampled_height}"
                         )
 
-                    result = self.engine.forward(frame)
+                    result = self.engine.do_forward(frame)
                     captions.append(result if result else "")
                 else:
                     if (
@@ -362,7 +362,7 @@ class LLMStreamFilter(VideoTransform):
                             f"Resized batch to {self.downsampled_width}x{self.downsampled_height}"
                         )
 
-                    results = self.engine.forward(frames)
+                    results = self.engine.do_forward(frames)
                     results_list = (
                         results
                         if isinstance(results, list)

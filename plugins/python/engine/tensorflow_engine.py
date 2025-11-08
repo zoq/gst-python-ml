@@ -132,7 +132,7 @@ class TensorFlowEngine(MLEngine):
             results = self.model(img_tensor, training=False)
         return results[0] if not is_batch else results  # Remove batch dim if single
 
-    def forward(self, frames):
+    def do_forward(self, frames):
         """Handle inference for different types of models, supporting single frames or batches."""
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4  # (B, H, W, C)
         if not isinstance(frames, (np.ndarray, str)):

@@ -40,12 +40,12 @@ class BaseClassifier(VideoTransform):
         runtime_check_gstreamer_version()
         self.logger.info("BaseClassifier initialized.")
 
-    def forward(self, frame):
+    def do_forward(self, frame):
         """
         Runs classification inference and returns a label with a confidence score.
         """
         if self.engine_helper.engine:
-            return self.engine_helper.engine.forward(frame)
+            return self.engine_helper.engine.do_forward(frame)
         self.logger.error("No model loaded in BaseClassifier.")
         return None
 
@@ -68,7 +68,7 @@ class BaseClassifier(VideoTransform):
                 )
 
                 # Perform classification
-                results = self.forward(frame)
+                results = self.do_forward(frame)
                 if not results:
                     self.logger.warning("Classification returned no results.")
                     return Gst.FlowReturn.ERROR

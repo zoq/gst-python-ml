@@ -52,7 +52,7 @@ class MLEngine(ABC):
         pass
 
     @abstractmethod
-    def forward(self, frames):
+    def do_forward(self, frames):
         """Execute inference on a single frame or batch of frames.
         Input can be a single NumPy array (H, W, C) or a batch (B, H, W, C)."""
         pass

@@ -752,7 +752,7 @@ class YoloAdvancedEngine(PyTorchEngine):
             self.logger.error(f"Core model load failed: {e}")
             return False  # No raise—let base handle
 
-    def forward(self, frames):
+    def do_forward(self, frames):
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4
         if is_batch:
             frame_bgr = frames[0]  # Assume single for stateful; extend if needed

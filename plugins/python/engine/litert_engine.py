@@ -167,7 +167,7 @@ class LiteRTEngine(MLEngine):
         ]
         return results[0] if not is_batch else results
 
-    def forward(self, frames):
+    def do_forward(self, frames):
         """Handle inference for different types of models, supporting single frames or batches."""
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4
         if not isinstance(frames, (np.ndarray, str)):

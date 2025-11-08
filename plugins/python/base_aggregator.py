@@ -51,6 +51,7 @@ class BaseAggregator(GstBase.Aggregator):
         self.__frame_stride = 1
         self.__model_name = None
         self.__device_queue_id = 0
+        self.__system_prompt = None
         self._prompt = None
         self.segment_pushed = False
 
@@ -113,6 +114,15 @@ class BaseAggregator(GstBase.Aggregator):
         self.__device_queue_id = value
         if self.engine_helper.engine:
             self.engine_helper.engine.device_queue_id = value
+
+    @GObject.Property(type=str)
+    def system_prompt(self):
+        "Custom system prompt text"
+        return self.__system_prompt
+
+    @system_prompt.setter
+    def system_prompt(self, value):
+        self.__system_prompt = value
 
     @GObject.Property(type=str)
     def prompt(self):

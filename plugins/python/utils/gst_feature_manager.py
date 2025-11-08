@@ -21,7 +21,6 @@ import os
 import gi
 
 gi.require_version("Gst", "1.0")
-from gi.repository import Gst
 
 DEBUG_MODE = os.getenv("GST_FEATURE_DEBUG", "0") == "1"
 

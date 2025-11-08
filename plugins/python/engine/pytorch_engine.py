@@ -158,7 +158,7 @@ class PyTorchEngine(MLEngine):
                 try:
                     if not any(p.is_meta for p in self.model.parameters()):
                         self.model = self.model.cpu()
-                        self.logger.info(f"Model moved to CPU")
+                        self.logger.info("Model moved to CPU")
                     else:
                         self.logger.error(
                             "Model contains meta tensors, cannot move to CPU"

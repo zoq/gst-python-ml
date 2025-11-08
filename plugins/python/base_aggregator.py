@@ -24,7 +24,6 @@ gi.require_version("GstBase", "1.0")
 gi.require_version("GLib", "2.0")
 from gi.repository import Gst, GObject, GstBase  # noqa: E402
 
-from engine.engine_factory import EngineFactory
 from log.logger_factory import LoggerFactory
 from engine.engine_helper import EngineHelper
 
@@ -147,7 +146,7 @@ class BaseAggregator(GstBase.Aggregator):
             )
             return
         if self.model_name is None:
-            self.logger.warning(f"Cannot load model as model name is not set")
+            self.logger.warning("Cannot load model as model name is not set")
             return
         self.engine_helper.do_load_model(self.model_name)
 

@@ -31,7 +31,6 @@ from gi.repository import Gst, GObject, GstAnalytics, GLib, GstBase  # noqa: E40
 import numpy as np
 import cv2
 from video_transform import VideoTransform
-import traceback
 
 TEXT_CAPS = Gst.Caps.from_string("text/x-raw, format=utf8")
 

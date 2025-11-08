@@ -7,7 +7,6 @@
 # of the License, or (at your option) any later version.
 
 import numpy as np
-import gi
 from gi.repository import Gst
 
 from utils.format_converter import FormatConverter

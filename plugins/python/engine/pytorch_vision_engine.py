@@ -17,7 +17,6 @@
 # Boston, MA 02110-1301, USA.
 
 from abc import abstractmethod
-import gi
 import numpy as np
 from PIL import Image
 import gc

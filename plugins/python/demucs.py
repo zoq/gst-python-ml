@@ -28,7 +28,6 @@ try:
     from gi.repository import Gst, GObject  # noqa: E402
     from base_separate import BaseSeparate, SAMPLE_RATE
     import torch
-    import torchaudio
     from torchaudio.pipelines import HDEMUCS_HIGH_MUSDB_PLUS
     from torchaudio.transforms import Fade, Resample
 

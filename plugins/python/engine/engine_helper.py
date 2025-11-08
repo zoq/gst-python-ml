@@ -34,7 +34,7 @@ class EngineHelper:
         if self.engine_name:
             self.engine = EngineFactory.create(self.engine_name, self.device)
         else:
-            self.logger.error(f"Unsupported ML engine: {engine_name}")
+            self.logger.error(f"Unsupported ML engine: {self.engine_name}")
 
     def initialize_engine_if_needed(self):
         """Initialize the engine if it hasn't been initialized yet."""

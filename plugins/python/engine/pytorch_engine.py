@@ -29,7 +29,6 @@ from transformers import (
     VisionEncoderDecoderModel,
     BitsAndBytesConfig,
 )
-from faster_whisper import WhisperModel
 
 from .ml_engine import MLEngine
 

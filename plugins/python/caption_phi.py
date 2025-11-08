@@ -23,14 +23,8 @@ try:
     import gi
 
     gi.require_version("Gst", "1.0")
-    gi.require_version("GstBase", "1.0")
-    gi.require_version("GstVideo", "1.0")
-    gi.require_version("GLib", "2.0")
 
-    from gi.repository import Gst, GObject, GstAnalytics, GLib, GstBase  # noqa: E402
-    import numpy as np
-    import cv2
-    import traceback
+    from gi.repository import Gst, GObject  # noqa: E402
 
     import torch
     from transformers import (

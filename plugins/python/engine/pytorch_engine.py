@@ -292,7 +292,7 @@ class PyTorchEngine(MLEngine):
         else:
             raise ValueError("Unsupported model type or missing processor/tokenizer.")
 
-    def generate(self, input_text, max_length=100):
+    def do_generate(self, input_text, max_length=100):
         inputs = self.tokenizer(input_text, return_tensors="pt").to(self.device)
         outputs = self.model.generate(**inputs, max_length=max_length)
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)

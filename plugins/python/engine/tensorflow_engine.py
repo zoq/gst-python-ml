@@ -250,7 +250,7 @@ class TensorFlowEngine(MLEngine):
         else:
             raise ValueError("Unsupported model type or missing processor/tokenizer.")
 
-    def generate(self, input_text, max_length=100):
+    def do_generate(self, input_text, max_length=100):
         inputs = self.tokenizer(input_text, return_tensors="tf")
         with tf.device(self.device):
             outputs = self.model.generate(**inputs, max_length=max_length)

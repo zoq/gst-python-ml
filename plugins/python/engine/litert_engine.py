@@ -267,7 +267,7 @@ class LiteRTEngine(MLEngine):
                 output_np = [out.squeeze() if not is_batch else out for out in outputs]
                 return output_np[0] if len(output_np) == 1 else output_np
 
-    def generate(self, input_text, max_length=100):
+    def do_generate(self, input_text, max_length=100):
         if self.model_type != "llm":
             raise ValueError("Generate is only supported for LLM models.")
         # Basic greedy generation loop; assumes model exported as single-step autoregressive

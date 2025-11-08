@@ -205,14 +205,14 @@ class YOLOTransform(BaseObjectDetector):
 
     def __init__(self):
         super().__init__()
-        self.engine_helper.engine_name = "pyml_yolo_engine"
-        EngineFactory.register(self.engine_helper.engine_name, YoloEngine)
+        self.mgr.engine_name = "pyml_yolo_engine"
+        EngineFactory.register(self.mgr.engine_name, YoloEngine)
 
     # make engine_name read only
     @GObject.Property(type=str)
     def engine_name(self):
         """Machine Learning Engine (read-only in this class)."""
-        return self.engine_helper.engine_name
+        return self.mgr.engine_name
 
     @engine_name.setter
     def engine_name(self, value):
@@ -226,7 +226,7 @@ class YOLOTransform(BaseObjectDetector):
         )
         boxes = result.boxes
         masks = None
-        if not self.engine_helper.engine.track:
+        if not self.mgr.engine.track:
             masks = result.masks
 
         if boxes is None or len(boxes) == 0:
@@ -251,11 +251,7 @@ class YOLOTransform(BaseObjectDetector):
             class_name = COCO_CLASSES.get(label_num, f"unknown_{label_num}")
 
             # Use class name for detection, track_id for tracking
-            if (
-                self.engine_helper.engine.track
-                and hasattr(boxes, "id")
-                and boxes.id is not None
-            ):
+            if self.mgr.engine.track and hasattr(boxes, "id") and boxes.id is not None:
                 track_id = boxes.id[i]
                 track_id_int = int(track_id.item())
                 qk_string = f"stream_{stream_idx}_id_{track_id_int}"
@@ -283,11 +279,7 @@ class YOLOTransform(BaseObjectDetector):
             )
 
             # Tracking metadata only when track=True
-            if (
-                self.engine_helper.engine.track
-                and hasattr(boxes, "id")
-                and boxes.id is not None
-            ):
+            if self.mgr.engine.track and hasattr(boxes, "id") and boxes.id is not None:
                 ret, tracking_mtd = meta.add_tracking_mtd(
                     track_id_int, Gst.util_get_timestamp()
                 )

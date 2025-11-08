@@ -107,8 +107,8 @@ class CaptionPhi(BaseCaption):
 
     def __init__(self):
         super().__init__()
-        # set engine_name directly on engine_helper, as engine_name property is read only
-        self.engine_helper.engine_name = "pyml_caption_phi_engine"
+        # set engine_name directly on mgr, as engine_name property is read only
+        self.mgr.engine_name = "pyml_caption_phi_engine"
         EngineFactory.register(self.engine_name, CaptionPhiEngine)
 
 

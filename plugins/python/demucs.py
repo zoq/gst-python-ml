@@ -103,14 +103,14 @@ class Demucs(BaseSeparate):
     def __init__(self):
         super().__init__()
         self.model_name = "pyml_demucs_model"  # Placeholder, since we use bundle
-        self.engine_helper.engine_name = "pyml_demucs_engine"
-        EngineFactory.register(self.engine_helper.engine_name, DemucsEngine)
+        self.mgr.engine_name = "pyml_demucs_engine"
+        EngineFactory.register(self.mgr.engine_name, DemucsEngine)
 
     # make engine_name read only
     @GObject.Property(type=str)
     def engine_name(self):
         """Machine Learning Engine (read-only in this class)."""
-        return self.engine_helper.engine_name
+        return self.mgr.engine_name
 
     @engine_name.setter
     def engine_name(self, value):
@@ -122,7 +122,7 @@ class Demucs(BaseSeparate):
     @GObject.Property(type=str)
     def engine_name(self):
         """Machine Learning Engine (read-only in this class)."""
-        return self.engine_helper.engine_name
+        return self.mgr.engine_name
 
     @engine_name.setter
     def engine_name(self, value):
@@ -131,12 +131,12 @@ class Demucs(BaseSeparate):
         )
 
     def do_load_model(self):
-        if not self.engine_helper.get_model():
-            self.engine_helper.do_load_model(self.model_name)
+        if not self.mgr.get_model():
+            self.mgr.do_load_model(self.model_name)
 
     def do_separate(self, audio_data):
         # audio_data: np.float32, shape (length,) at SAMPLE_RATE Hz mono
-        engine = self.engine_helper.engine
+        engine = self.mgr.engine
         original_rate = SAMPLE_RATE
 
         # Resample to model's sample rate (44100 Hz) if necessary

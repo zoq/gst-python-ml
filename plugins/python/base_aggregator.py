@@ -25,7 +25,7 @@ gi.require_version("GLib", "2.0")
 from gi.repository import Gst, GObject, GstBase  # noqa: E402
 
 from log.logger_factory import LoggerFactory
-from engine.engine_helper import EngineHelper
+from engine.engine_manager import EngineManager
 
 
 class BaseAggregator(GstBase.Aggregator):
@@ -45,7 +45,7 @@ class BaseAggregator(GstBase.Aggregator):
     def __init__(self):
         super().__init__()
         self.logger = LoggerFactory.get(LoggerFactory.LOGGER_TYPE_GST)
-        self.engine_helper = EngineHelper(self.logger)
+        self.mgr = EngineManager(self.logger)
         self.kwargs = {}
         self.__batch_size = 1
         self.__frame_stride = 1
@@ -58,11 +58,11 @@ class BaseAggregator(GstBase.Aggregator):
     @GObject.Property(type=str)
     def device(self):
         "Device to run the inference on (cpu, cuda, cuda:0, cuda:1, etc.)"
-        return self.engine_helper.device
+        return self.mgr.device
 
     @device.setter
     def device(self, value):
-        self.engine_helper.do_set_device(value)
+        self.mgr.do_set_device(value)
 
     @GObject.Property(type=int, default=1)
     def batch_size(self):
@@ -72,8 +72,8 @@ class BaseAggregator(GstBase.Aggregator):
     @batch_size.setter
     def batch_size(self, value):
         self.__batch_size = value
-        if self.engine_helper.engine:
-            self.engine_helper.engine.batch_size = value
+        if self.mgr.engine:
+            self.mgr.engine.batch_size = value
 
     @GObject.Property(type=int, default=1)
     def frame_stride(self):
@@ -83,8 +83,8 @@ class BaseAggregator(GstBase.Aggregator):
     @frame_stride.setter
     def frame_stride(self, value):
         self.__frame_stride = value
-        if self.engine_helper.engine:
-            self.engine_helper.engine.frame_stride = value
+        if self.mgr.engine:
+            self.mgr.engine.frame_stride = value
 
     @GObject.Property(type=str)
     def model_name(self):
@@ -98,11 +98,11 @@ class BaseAggregator(GstBase.Aggregator):
     @GObject.Property(type=str)
     def engine_name(self):
         "Machine Learning Engine to use : pytorch, tflite, tensorflow, onnx or openvino, or custom engine name"
-        return self.engine_helper.engine_name
+        return self.mgr.engine_name
 
     @engine_name.setter
     def engine_name(self, value):
-        self.engine_helper.engine_name = value
+        self.mgr.engine_name = value
 
     @GObject.Property(type=int, default=1)
     def device_queue_id(self):
@@ -112,8 +112,8 @@ class BaseAggregator(GstBase.Aggregator):
     @device_queue_id.setter
     def device_queue_id(self, value):
         self.__device_queue_id = value
-        if self.engine_helper.engine:
-            self.engine_helper.engine.device_queue_id = value
+        if self.mgr.engine:
+            self.mgr.engine.device_queue_id = value
 
     @GObject.Property(type=str)
     def system_prompt(self):
@@ -134,23 +134,21 @@ class BaseAggregator(GstBase.Aggregator):
         self.__prompt = value
 
     def _initialize_engine_if_needed(self):
-        self.engine_helper.initialize_engine_if_needed()
+        self.mgr.initialize_engine_if_needed()
 
     def initialize_engine(self):
-        if self.engine_helper.engine_name:
-            self.engine_helper.initialize_engine()
-            self.engine_helper.engine.batch_size = self.__batch_size
-            self.engine_helper.engine.frame_stride = self.__frame_stride
+        if self.mgr.engine_name:
+            self.mgr.initialize_engine()
+            self.mgr.engine.batch_size = self.__batch_size
+            self.mgr.engine.frame_stride = self.__frame_stride
             if self.__device_queue_id:
-                self.engine_helper.engine.device_queue_id = self.__device_queue_id
+                self.mgr.engine.device_queue_id = self.__device_queue_id
         else:
-            self.logger.error(
-                f"Unsupported ML engine: {self.engine_helper.engine_name}"
-            )
+            self.logger.error(f"Unsupported ML engine: {self.mgr.engine_name}")
 
     def do_load_model(self):
         self._initialize_engine_if_needed()
-        if self.engine_helper.engine is None:
+        if self.mgr.engine is None:
             self.logger.error(
                 f"Cannot load model {self.model_name}: engine not initialized"
             )
@@ -158,36 +156,36 @@ class BaseAggregator(GstBase.Aggregator):
         if self.model_name is None:
             self.logger.warning("Cannot load model as model name is not set")
             return
-        self.engine_helper.do_load_model(self.model_name)
+        self.mgr.do_load_model(self.model_name)
 
     def get_model(self):
         """Gets the model from the engine."""
         self._initialize_engine_if_needed()
-        if self.engine_helper.engine is None:
+        if self.mgr.engine is None:
             self.logger.error(
                 f"Cannot get model {self.model_name}: engine not initialized"
             )
             return None
         """Gets the model from the engine."""
-        if self.engine_helper.engine:
-            return self.engine_helper.engine.get_model()
+        if self.mgr.engine:
+            return self.mgr.engine.get_model()
         return None
 
     def set_model(self, model):
         """Sets the model in the engine."""
         self._initialize_engine_if_needed()
-        if self.engine_helper.engine is None:
+        if self.mgr.engine is None:
             self.logger.error("Cannot load model: engine not initialized")
             return False
-        self.engine_helper.engine.model = model
+        self.mgr.engine.model = model
         self.logger.info("Model set successfully in the engine.")
 
     def get_tokenizer(self):
         self._initialize_engine_if_needed()
-        if self.engine_helper.engine is None:
+        if self.mgr.engine is None:
             self.logger.error("Cannot get tokenizer: engine not initialized")
             return None
-        return self.engine_helper.get_tokenizer()
+        return self.mgr.get_tokenizer()
 
     def push_segment_if_needed(self):
         if not self.segment_pushed:

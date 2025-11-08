@@ -1,4 +1,4 @@
-# EngineHelper
+# EngineManager
 # Copyright (C) 2024-2025 Collabora Ltd.
 #
 # This library is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@ import traceback
 from .engine_factory import EngineFactory
 
 
-class EngineHelper:
+class EngineManager:
     def __init__(self, logger, default_engine=EngineFactory.PYTORCH_ENGINE):
         self.logger = logger
         self.engine_name = default_engine

@@ -69,10 +69,10 @@ class BaseLlm(BaseAggregator):
             self.logger.info(f"Received text for LLM processing: {input_text}")
 
             # Ensure engine is initialized
-            if not self.engine_helper.engine:
+            if not self.mgr.engine:
                 self.logger.info("Engine not initialized, initializing now")
-                self.engine_helper.initialize_engine()
-                self.engine_helper.do_load_model(self.model_name)
+                self.mgr.initialize_engine()
+                self.mgr.do_load_model(self.model_name)
 
             # Retry model loading if tokenizer or model is missing
             tokenizer = self.get_tokenizer()
@@ -84,7 +84,7 @@ class BaseLlm(BaseAggregator):
                     f"Tokenizer initialized: {tokenizer is not None}, Model initialized: {model is not None}"
                 )
                 self.logger.warning("Attempting to reload model")
-                if not self.engine_helper.do_load_model(self.model_name):
+                if not self.mgr.do_load_model(self.model_name):
                     self.logger.error("Model reload failed")
                     buf.unmap(map_info)
                     return Gst.FlowReturn.ERROR
@@ -96,7 +96,7 @@ class BaseLlm(BaseAggregator):
                     return Gst.FlowReturn.ERROR
 
             # Generate text using the engine
-            generated_text = self.engine_helper.engine.do_generate(input_text)
+            generated_text = self.mgr.engine.do_generate(input_text)
             self.logger.info(f"Generated text: {generated_text}")
 
             buf.unmap(map_info)

@@ -64,18 +64,18 @@ class WhisperTranscribe(BaseTranscribe):
         super().__init__()
         self.model_name = "medium"
         # set engine name directly since property is read only
-        self.engine_helper.engine_name = "pyml_whispertranscribe_engine"
-        EngineFactory.register(self.engine_helper.engine_name, WhisperEngine)
+        self.mgr.engine_name = "pyml_whispertranscribe_engine"
+        EngineFactory.register(self.mgr.engine_name, WhisperEngine)
 
     # make engine_name read only
     @GObject.Property(type=str)
     def engine_name(self):
         """Machine Learning Engine (read-only in this class)."""
-        return self.engine_helper.engine_name
+        return self.mgr.engine_name
 
     def do_load_model(self):
-        if not self.engine_helper.get_model():
-            self.engine_helper.do_load_model(self.model_name)
+        if not self.mgr.get_model():
+            self.mgr.do_load_model(self.model_name)
 
     def do_transcribe(self, audio_data, task):
         result, _ = self.get_model().transcribe(

@@ -45,7 +45,7 @@ except ImportError as e:
 
 
 class CaptionPhiEngine(PyTorchVisionEngine):
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         """Load a Phi-3-vision model from Hugging Face."""
         try:
             quantization_config = BitsAndBytesConfig(load_in_4bit=True)

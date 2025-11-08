@@ -45,7 +45,7 @@ except ImportError as e:
 
 
 class CaptionQwenEngine(PyTorchVisionEngine):
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         """Load a Qwen2.5-VL model from Hugging Face."""
         try:
             self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(

@@ -72,7 +72,7 @@ class BaseLlm(BaseAggregator):
             if not self.engine_helper.engine:
                 self.logger.info("Engine not initialized, initializing now")
                 self.engine_helper.initialize_engine()
-                self.engine_helper.load_model(self.model_name)
+                self.engine_helper.do_load_model(self.model_name)
 
             # Retry model loading if tokenizer or model is missing
             tokenizer = self.get_tokenizer()
@@ -84,7 +84,7 @@ class BaseLlm(BaseAggregator):
                     f"Tokenizer initialized: {tokenizer is not None}, Model initialized: {model is not None}"
                 )
                 self.logger.warning("Attempting to reload model")
-                if not self.engine_helper.load_model(self.model_name):
+                if not self.engine_helper.do_load_model(self.model_name):
                     self.logger.error("Model reload failed")
                     buf.unmap(map_info)
                     return Gst.FlowReturn.ERROR

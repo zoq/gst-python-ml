@@ -46,7 +46,7 @@ class EngineHelper:
         if self.engine:
             self.engine.set_device(device)
 
-    def load_model(self, model_name):
+    def do_load_model(self, model_name):
         self.initialize_engine_if_needed()
         if self.engine is None:
             self.logger.warning(
@@ -64,7 +64,7 @@ class EngineHelper:
             return False
         try:
             self.logger.info(f"Loading model: {model_name}")
-            self.engine.load_model(model_name, **self.kwargs)
+            self.engine.do_load_model(model_name, **self.kwargs)
             self.logger.info(f"Model {model_name} loaded successfully")
             return True
         except Exception as e:

@@ -53,7 +53,7 @@ class LiteRTEngine(MLEngine):
             self.logger.error(f"Failed to load delegate from '{delegate_path}': {e}")
             return None
 
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model and convert to TFLite if necessary."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
@@ -136,7 +136,7 @@ class LiteRTEngine(MLEngine):
 
         # Reload the model with the new delegate
         if self.model_name:
-            self.load_model(self.model_name, **self.kwargs)
+            self.do_load_model(self.model_name, **self.kwargs)
 
     def _forward_classification(self, frames):
         """Handle inference for classification models."""

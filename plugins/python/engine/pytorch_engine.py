@@ -34,7 +34,7 @@ from .ml_engine import MLEngine
 
 
 class PyTorchEngine(MLEngine):
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from TorchVision, Transformers, or a local path."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
@@ -128,7 +128,7 @@ class PyTorchEngine(MLEngine):
                 torch.cuda.set_device(int(self.device_index))
                 self.logger.info(f"CUDA device set to cuda:{self.device_index}")
 
-                # Model placement is handled by device_map="auto" in load_model
+                # Model placement is handled by device_map="auto" in do_load_model
                 # Only move model if it exists and is not already on the correct device
                 if self.model and hasattr(self.model, "to"):
                     current_devices = {

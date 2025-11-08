@@ -132,7 +132,7 @@ class LLMStreamFilter(VideoTransform):
         elif prop.name == "llm-model-name":
             self.llm_model_name = value
             if self.llm_engine:
-                self.llm_engine_helper.load_model(self.llm_model_name)
+                self.llm_engine_helper.do_load_model(self.llm_model_name)
                 self.llm_engine = self.llm_engine_helper.engine
             self.logger.info(f"Updated llm_model_name to: {value}")
         elif prop.name == "caption-file":
@@ -190,7 +190,7 @@ class LLMStreamFilter(VideoTransform):
                     if not self.engine:
                         self.logger.error("Failed to initialize caption engine")
                         return False
-                self.engine.load_model(self.model_name)
+                self.engine.do_load_model(self.model_name)
                 if not self.engine.get_model():
                     self.logger.error("Failed to load caption model")
                     return False
@@ -208,7 +208,7 @@ class LLMStreamFilter(VideoTransform):
                         bnb_4bit_compute_dtype=torch.bfloat16,
                     )
                 }
-                self.llm_engine_helper.load_model(self.llm_model_name)
+                self.llm_engine_helper.do_load_model(self.llm_model_name)
                 self.llm_engine = self.llm_engine_helper.engine
                 if not self.llm_engine:
                     self.logger.error("Failed to load LLM engine")

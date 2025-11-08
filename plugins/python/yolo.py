@@ -125,7 +125,7 @@ COCO_CLASSES = {
 
 
 class YoloEngine(PyTorchEngine):
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         try:
             self.model = YOLO(f"{model_name}.pt")
             self.execute_with_stream(lambda: self.model.to(self.device))

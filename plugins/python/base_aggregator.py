@@ -149,7 +149,7 @@ class BaseAggregator(GstBase.Aggregator):
         if self.model_name is None:
             self.logger.warning(f"Cannot load model as model name is not set")
             return
-        self.engine_helper.load_model(self.model_name)
+        self.engine_helper.do_load_model(self.model_name)
 
     def get_model(self):
         """Gets the model from the engine."""

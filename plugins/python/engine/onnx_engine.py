@@ -43,7 +43,7 @@ class ONNXEngine(MLEngine):
         self.input_names = None
         self.output_names = None
 
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from TorchVision, Transformers (via Optimum ONNX), or a local ONNX path."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
@@ -170,7 +170,7 @@ class ONNXEngine(MLEngine):
 
         # Reload model if already loaded
         if self.model_name:
-            self.load_model(self.model_name, **self.kwargs)
+            self.do_load_model(self.model_name, **self.kwargs)
 
     def _forward_classification(self, frames):
         """Handle inference for classification models."""

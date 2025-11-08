@@ -31,7 +31,7 @@ from .ml_engine import MLEngine
 
 
 class TensorFlowEngine(MLEngine):
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from keras.applications, Transformers, or a local path."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")

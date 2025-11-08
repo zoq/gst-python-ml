@@ -47,7 +47,7 @@ class DemucsEngine(PyTorchEngine):
         super().__init__(device)
         self.sample_rate = 0
 
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         if not model_name:
             return
         self.logger.info(f"Loading Demucs model on device: {self.device}")
@@ -133,7 +133,7 @@ class Demucs(BaseSeparate):
 
     def do_load_model(self):
         if not self.engine_helper.get_model():
-            self.engine_helper.load_model(self.model_name)
+            self.engine_helper.do_load_model(self.model_name)
 
     def do_separate(self, audio_data):
         # audio_data: np.float32, shape (length,) at SAMPLE_RATE Hz mono

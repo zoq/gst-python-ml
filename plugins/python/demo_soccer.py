@@ -707,7 +707,7 @@ class YoloAdvancedEngine(PyTorchEngine):
         self.coast_decay = kwargs.get("coast_decay", 0.90)
         self.verbose = kwargs.get("verbose", False)
 
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         try:
             # YOLO load unchanged...
             self.det_model = YOLO(f"{model_name}.pt")
@@ -1194,7 +1194,7 @@ class DemoSoccer(BaseObjectDetector):
     def model(self, value):
         self.__model = value
         if self.engine_helper.engine:
-            self.engine_helper.engine.load_model(value)
+            self.engine_helper.engine.do_load_model(value)
 
     @GObject.Property(type=str, default="auto")
     def device(self):
@@ -1719,8 +1719,8 @@ class DemoSoccer(BaseObjectDetector):
             "verbose": self.verbose,
             "frame_rate": self.frame_rate,
         }
-        # Call engine's load_model with current model name + synced kwargs
-        return self.engine_helper.engine.load_model(self.model, **kwargs)
+        # Call engine's do_load_model with current model name + synced kwargs
+        return self.engine_helper.engine.do_load_model(self.model, **kwargs)
 
     def do_decode(self, buf, result, stream_idx=0):
         self.logger.debug(

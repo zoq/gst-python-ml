@@ -40,7 +40,7 @@ except ImportError as e:
 
 
 class WhisperEngine(PyTorchEngine):
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         if not model_name:
             return
         compute_type = "float16" if self.device.startswith("cuda") else "int8"
@@ -75,7 +75,7 @@ class WhisperTranscribe(BaseTranscribe):
 
     def do_load_model(self):
         if not self.engine_helper.get_model():
-            self.engine_helper.load_model(self.model_name)
+            self.engine_helper.do_load_model(self.model_name)
 
     def do_transcribe(self, audio_data, task):
         result, _ = self.get_model().transcribe(

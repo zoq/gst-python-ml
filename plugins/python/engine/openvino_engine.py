@@ -39,7 +39,7 @@ class OpenVinoEngine(MLEngine):
         self.model_name = None
         self.kwargs = None
 
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from TorchVision, Transformers (via Optimum OpenVINO), or a local IR path."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
@@ -133,7 +133,7 @@ class OpenVinoEngine(MLEngine):
 
         # Recompile model if already loaded
         if self.model_name:
-            self.load_model(self.model_name, **self.kwargs)
+            self.do_load_model(self.model_name, **self.kwargs)
 
     def _forward_classification(self, frames):
         """Handle inference for classification models."""

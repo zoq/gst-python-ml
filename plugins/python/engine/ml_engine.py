@@ -42,7 +42,7 @@ class MLEngine(ABC):
 
     # Interface #
     @abstractmethod
-    def load_model(self, model_name, **kwargs):
+    def do_load_model(self, model_name, **kwargs):
         """Load a model by name or path, with additional options."""
         pass
 

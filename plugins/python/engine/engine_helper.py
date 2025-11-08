@@ -88,9 +88,3 @@ class EngineHelper:
         else:
             self.logger.warning("Engine is not present, unable to get the tokenizer.")
             return None
-
-    def update_engine_properties(self, batch_size, frame_stride, device_queue_id):
-        if self.engine:
-            self.engine.batch_size = batch_size
-            self.engine.frame_stride = frame_stride
-            self.engine.device_queue_id = device_queue_id

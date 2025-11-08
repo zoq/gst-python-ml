@@ -71,15 +71,6 @@ class BaseCaption(VideoTransform):
             "The 'engine_name' property cannot be set in this derived class."
         )
 
-    @GObject.Property(type=str, default="What is shown in this image?")
-    def prompt(self):
-        "Custom prompt text for image analysis"
-        return self.__prompt
-
-    @prompt.setter
-    def prompt(self, value):
-        self.__prompt = value
-
     def do_request_new_pad(self, template, name, caps):
         if self.text_src_pad:
             self.logger.error("Element already has a text_src")

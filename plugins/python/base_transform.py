@@ -50,6 +50,7 @@ class BaseTransform(GstBase.BaseTransform):
         self.__frame_stride = 1
         self.__model_name = None
         self.__device_queue_id = 0
+        self.__prompt = None
 
     @GObject.Property(type=str)
     def device(self):
@@ -110,6 +111,15 @@ class BaseTransform(GstBase.BaseTransform):
         self.__device_queue_id = value
         if self.engine_helper.engine:
             self.engine_helper.engine.device_queue_id = value
+
+    @GObject.Property(type=str)
+    def prompt(self):
+        "Custom prompt text"
+        return self.__prompt
+
+    @prompt.setter
+    def prompt(self, value):
+        self.__prompt = value
 
     def _initialize_engine_if_needed(self):
         self.engine_helper.initialize_engine_if_needed()

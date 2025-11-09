@@ -30,20 +30,37 @@ from transformers import (
     BitsAndBytesConfig,
 )
 
+try:
+    import executorch.pybindings as et  # ExecuTorch Python runtime bindings
+except ImportError:
+    et = None  # Fallback if not installed
+
 from .ml_engine import MLEngine
 
 
 class PyTorchEngine(MLEngine):
+    def __init__(
+        self, device="cpu", *args, **kwargs
+    ):  # Explicit device for visibility, plus flex args
+        super().__init__(device=device, *args, **kwargs)
+        self.is_executorch = False  # Flag for ExecuTorch models
+
     def do_load_model(self, model_name, **kwargs):
-        """Load a pre-trained model by name from TorchVision, Transformers, or a local path."""
+        """Load a pre-trained model by name from TorchVision, Transformers, or a local path (including .pte for ExecuTorch)."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
         compile_model = kwargs.get("compile", False)
 
         try:
             if os.path.isfile(model_name):
-                self.model = torch.load(model_name)
-                self.logger.info(f"Model loaded from local path: {model_name}")
+                if model_name.endswith(".pte") and et is not None:
+                    # Load ExecuTorch model
+                    self.model = et.Module(model_name)  # Load .pte file
+                    self.is_executorch = True
+                    self.logger.info(f"ExecuTorch model loaded from: {model_name}")
+                else:
+                    self.model = torch.load(model_name)
+                    self.logger.info(f"Model loaded from local path: {model_name}")
             else:
                 if hasattr(models, model_name):
                     self.model = getattr(models, model_name)(pretrained=True)
@@ -88,13 +105,14 @@ class PyTorchEngine(MLEngine):
                         f"Pre-trained LLM model '{model_name}' loaded from Transformers."
                     )
 
-            if hasattr(self.model, "to") and callable(getattr(self.model, "to")):
-                self.execute_with_stream(lambda: self.model.to(self.device))
-                self.logger.info(f"Model moved to {self.device}")
+            if not self.is_executorch:
+                if hasattr(self.model, "to") and callable(getattr(self.model, "to")):
+                    self.execute_with_stream(lambda: self.model.to(self.device))
+                    self.logger.info(f"Model moved to {self.device}")
 
-            if compile_model:
-                self.model = torch.compile(self.model)
-                self.logger.info(f"Model compiled with torch.compile")
+                if compile_model:
+                    self.model = torch.compile(self.model)
+                    self.logger.info(f"Model compiled with torch.compile")
 
             return True
 
@@ -111,7 +129,7 @@ class PyTorchEngine(MLEngine):
             return False
 
     def do_set_device(self, device):
-        """Set PyTorch device for the model."""
+        """Set PyTorch device for the model (ExecuTorch handles devices via export/backends)."""
         self.device = device
         self.logger.info(f"Setting device to {device}")
 
@@ -119,7 +137,7 @@ class PyTorchEngine(MLEngine):
             if not torch.cuda.is_available():
                 self.logger.warning("CUDA is not available, falling back to CPU")
                 self.device = "cpu"
-                if self.model and hasattr(self.model, "to"):
+                if self.model and not self.is_executorch and hasattr(self.model, "to"):
                     try:
                         self.model = self.model.cpu()
                         self.logger.info("Model moved to CPU due to unavailable CUDA")
@@ -135,7 +153,7 @@ class PyTorchEngine(MLEngine):
 
                 # Model placement is handled by device_map="auto" in do_load_model
                 # Only move model if it exists and is not already on the correct device
-                if self.model and hasattr(self.model, "to"):
+                if self.model and not self.is_executorch and hasattr(self.model, "to"):
                     current_devices = {
                         param.device for param in self.model.parameters()
                     }
@@ -155,11 +173,11 @@ class PyTorchEngine(MLEngine):
                 self.logger.error(f"Failed to set CUDA device: {e}")
                 self.logger.warning("Falling back to CPU")
                 self.device = "cpu"
-                if self.model and hasattr(self.model, "to"):
+                if self.model and not self.is_executorch and hasattr(self.model, "to"):
                     self.model = self.model.cpu()
 
         elif device == "cpu":
-            if self.model and hasattr(self.model, "to"):
+            if self.model and not self.is_executorch and hasattr(self.model, "to"):
                 try:
                     if not any(p.is_meta for p in self.model.parameters()):
                         self.model = self.model.cpu()
@@ -174,11 +192,13 @@ class PyTorchEngine(MLEngine):
         else:
             self.logger.error(f"Invalid device specified: {device}")
             self.device = "cpu"
-            if self.model and hasattr(self.model, "to"):
+            if self.model and not self.is_executorch and hasattr(self.model, "to"):
                 self.model = self.model.cpu()
 
     def _forward_classification(self, frames):
-        """Handle inference for classification models like ResNet."""
+        """Handle inference for classification models like ResNet (non-ExecuTorch only)."""
+        if self.is_executorch:
+            raise NotImplementedError("Classification not adapted for ExecuTorch yet")
         self.model.eval()
         is_batch = frames.ndim == 4  # (B, H, W, C) vs (H, W, C)
         # Create tensor and normalize (moved here for consistency)
@@ -199,7 +219,22 @@ class PyTorchEngine(MLEngine):
         )  # Squeeze batch dim if single
 
     def do_forward(self, frames):
-        """Handle inference for different types of models, supporting single frames or batches."""
+        """Handle inference for different types of models, supporting single frames or batches (with ExecuTorch adaptation)."""
+        if self.is_executorch:
+            if not isinstance(frames, np.ndarray):
+                self.logger.error(
+                    f"Invalid input for ExecuTorch forward: {type(frames)}"
+                )
+                return None
+            # Convert NumPy to ExecuTorch tensor (adapt as needed for your models)
+            et_tensor = et.Tensor(frames)  # Assuming ExecuTorch tensor from NumPy
+            outputs = self.model.forward(et_tensor)  # ExecuTorch forward
+            # Convert back to NumPy or your expected format
+            if isinstance(outputs, et.Tensor):
+                outputs = outputs.numpy()
+            self.logger.info(f"ExecuTorch forward results: {outputs}")
+            return outputs  # Adapt for batch/single as needed
+
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4  # (B, H, W, C)
         if not isinstance(frames, (np.ndarray, str)):
             self.logger.error(f"Invalid input type for forward: {type(frames)}")
@@ -298,6 +333,24 @@ class PyTorchEngine(MLEngine):
             raise ValueError("Unsupported model type or missing processor/tokenizer.")
 
     def do_generate(self, input_text, max_length=100):
+        if self.is_executorch:
+            if not self.tokenizer:
+                raise ValueError("Tokenizer required for ExecuTorch generation")
+            # Adapt for ExecuTorch (e.g., for LLMs; use tokenizer as usual)
+            inputs = self.tokenizer(input_text, return_tensors="pt")
+            et_inputs = et.Tensor(
+                inputs["input_ids"].numpy()
+            )  # Convert to ExecuTorch tensor
+            outputs = self.model.forward(et_inputs)  # Or use generate if supported
+            generated_tokens = torch.from_numpy(
+                outputs.numpy()
+            )  # Back to torch for decode
+            generated_text = self.tokenizer.decode(
+                generated_tokens[0], skip_special_tokens=True
+            )
+            self.logger.info(f"ExecuTorch generated text: {generated_text}")
+            return generated_text
+
         inputs = self.tokenizer(input_text, return_tensors="pt").to(self.device)
         outputs = self.model.generate(**inputs, max_length=max_length)
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)

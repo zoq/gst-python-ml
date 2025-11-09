@@ -137,21 +137,18 @@ class BaseAggregator(GstBase.Aggregator):
     def prompt(self, value):
         self.__prompt = value
 
-    def _initialize_engine_if_needed(self):
-        self.mgr.initialize_engine_if_needed()
-
     def initialize_engine(self):
-        if self.mgr.engine_name:
+        if not self.engine and self.mgr.engine_name:
             self.mgr.initialize_engine()
             self.engine.batch_size = self.__batch_size
             self.engine.frame_stride = self.__frame_stride
             if self.__device_queue_id:
                 self.engine.device_queue_id = self.__device_queue_id
-        else:
+        if not self.engine:
             self.logger.error(f"Unsupported ML engine: {self.mgr.engine_name}")
 
     def do_load_model(self):
-        self._initialize_engine_if_needed()
+        self.initialize_engine()
         if self.engine is None:
             self.logger.error(
                 f"Cannot load model {self.model_name}: engine not initialized"
@@ -164,7 +161,7 @@ class BaseAggregator(GstBase.Aggregator):
 
     def get_model(self):
         """Gets the model from the engine."""
-        self._initialize_engine_if_needed()
+        self.initialize_engine()
         if self.engine is None:
             self.logger.error(
                 f"Cannot get model {self.model_name}: engine not initialized"
@@ -177,7 +174,7 @@ class BaseAggregator(GstBase.Aggregator):
 
     def set_model(self, model):
         """Sets the model in the engine."""
-        self._initialize_engine_if_needed()
+        self.initialize_engine()
         if self.engine is None:
             self.logger.error("Cannot load model: engine not initialized")
             return False
@@ -185,7 +182,7 @@ class BaseAggregator(GstBase.Aggregator):
         self.logger.info("Model set successfully in the engine.")
 
     def get_tokenizer(self):
-        self._initialize_engine_if_needed()
+        self.initialize_engine()
         if self.engine is None:
             self.logger.error("Cannot get tokenizer: engine not initialized")
             return None

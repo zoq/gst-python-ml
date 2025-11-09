@@ -183,7 +183,7 @@ class LLMStreamFilter(VideoTransform):
         try:
             # Initialize caption engine (only if not using caption_file)
             if not self.caption_file:
-                self._initialize_engine_if_needed()
+                self.initialize_engine()
                 if not self.engine:
                     self.initialize_engine()
                     if not self.engine:

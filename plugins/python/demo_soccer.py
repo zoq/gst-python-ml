@@ -1665,7 +1665,7 @@ class DemoSoccer(BaseObjectDetector):
     def set_model(self):
         """Override: Create engine first, then load with all properties as kwargs."""
         if self.engine is None:
-            self._initialize_engine_if_needed()
+            self.initialize_engine()
         if self.engine is None:
             self.logger.error("Cannot load model: engine not initialized")
             return False

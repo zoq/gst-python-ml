@@ -41,7 +41,7 @@ class EngineManager:
         if not self.engine and self.engine_name:
             self.initialize_engine()
 
-    def do_set_device(self, device):
+    def set_device(self, device):
         self.device = device
         if self.engine:
             self.engine.do_set_device(device)

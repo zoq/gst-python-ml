@@ -39,11 +39,9 @@ from .ml_engine import MLEngine
 
 
 class PyTorchEngine(MLEngine):
-    def __init__(
-        self, device="cpu", *args, **kwargs
-    ):  # Explicit device for visibility, plus flex args
-        super().__init__(device=device, *args, **kwargs)
-        self.is_executorch = False  # Flag for ExecuTorch models
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.is_executorch = False
 
     def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from TorchVision, Transformers, or a local path (including .pte for ExecuTorch)."""

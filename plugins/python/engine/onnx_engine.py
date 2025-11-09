@@ -32,8 +32,8 @@ from .ml_engine import MLEngine
 
 
 class ONNXEngine(MLEngine):
-    def __init__(self, device="cpu"):
-        super().__init__(device)
+    def __init__(self):
+        super().__init__()
         self.model = None
         self.session = None
         self.model_type = None

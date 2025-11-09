@@ -31,8 +31,8 @@ from .ml_engine import MLEngine
 
 
 class LiteRTEngine(MLEngine):
-    def __init__(self, device="cpu"):
-        super().__init__(device)
+    def __init__(self):
+        super().__init__()
         self.interpreter = None
         self.input_details = None
         self.output_details = None

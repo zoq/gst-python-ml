@@ -32,7 +32,8 @@ class EngineManager:
 
     def initialize_engine(self):
         if self.engine_name:
-            self.engine = EngineFactory.create(self.engine_name, self.device)
+            self.engine = EngineFactory.create(self.engine_name)
+            self.engine.device = self.device
         else:
             self.logger.error(f"Unsupported ML engine: {self.engine_name}")
 

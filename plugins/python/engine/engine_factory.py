@@ -79,7 +79,7 @@ class EngineFactory:
         _engine_registry[engine_type] = engine_class
 
     @staticmethod
-    def create(engine_type: str, device: str = "cpu"):
+    def create(engine_type: str):
         if not engine_type:
             raise ValueError("Engine type not set")
         # Singleton-like: register builtins only once
@@ -89,6 +89,6 @@ class EngineFactory:
 
         try:
             cls = _engine_registry[engine_type]
-            return cls(device)
+            return cls()
         except KeyError:
             raise ValueError(f"Unsupported engine type: {engine_type}")

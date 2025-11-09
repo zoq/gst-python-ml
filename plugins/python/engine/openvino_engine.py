@@ -30,8 +30,8 @@ from .ml_engine import MLEngine
 
 
 class OpenVinoEngine(MLEngine):
-    def __init__(self, device="CPU"):
-        super().__init__(device)
+    def __init__(self):
+        super().__init__()
         self.core = ov.Core()
         self.compiled_model = None
         self.ov_model = None

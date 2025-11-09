@@ -25,9 +25,9 @@ class MLEngine(ABC):
     """Abstract base class for machine learning engines that load models, run inference on image frames,
     and generate text with language models."""
 
-    def __init__(self, device="cpu"):
+    def __init__(self):
         self.logger = LoggerFactory.get(LoggerFactory.LOGGER_TYPE_GST)
-        self.device = device
+        self.device = None
         self.device_index = 0
         self.model = None
         self.tokenizer = None

@@ -95,7 +95,7 @@ class CaptionPhiEngine(PyTorchVisionEngine):
 
 class CaptionPhi(BaseCaption):
     """
-    GStreamer element for captioning video frames.
+    GStreamer element for captioning video frames using Phi Vision.
     """
 
     __gstmetadata__ = (

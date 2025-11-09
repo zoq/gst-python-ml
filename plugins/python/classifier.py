@@ -36,7 +36,7 @@ except ImportError as e:
 
 class Classifier(BaseClassifier):
     """
-    GStreamer element for a general object detector where the user sets the model-name property.
+    GStreamer element for image classification.
     """
 
     __gstmetadata__ = (
@@ -48,10 +48,6 @@ class Classifier(BaseClassifier):
 
     def __init__(self):
         super().__init__()
-        self.logger.info(
-            "Classifier created without a model. Please set the 'model-name' property."
-        )
-
 
 if CAN_REGISTER_ELEMENT:
     GObject.type_register(Classifier)

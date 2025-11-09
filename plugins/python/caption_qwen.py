@@ -98,7 +98,7 @@ class CaptionQwenEngine(PyTorchVisionEngine):
 
 class CaptionQwen(BaseCaption):
     """
-    GStreamer element for captioning video frames.
+    GStreamer element for captioning video frames using Qwen Vision.
     """
 
     __gstmetadata__ = (
@@ -110,7 +110,6 @@ class CaptionQwen(BaseCaption):
 
     def __init__(self):
         super().__init__()
-        # self.model_name = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ"
         # set engine_name directly on mgr, as engine_name property is read only
         self.mgr.engine_name = "pyml_caption_qwen_engine"
         EngineFactory.register(self.engine_name, CaptionQwenEngine)

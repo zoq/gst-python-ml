@@ -9,8 +9,8 @@
 import numpy as np
 from gi.repository import Gst
 
-from utils.format_converter import FormatConverter
-from metadata import Metadata
+from .format_converter import FormatConverter
+from .metadata import Metadata
 
 
 class MuxedBufferProcessor:

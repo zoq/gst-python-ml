@@ -21,14 +21,14 @@ from utils.runtime_utils import runtime_check_gstreamer_version
 import gi
 from video_transform import VideoTransform
 from utils.format_converter import FormatConverter
-from muxed_buffer_processor import MuxedBufferProcessor  # Added import
+from utils.muxed_buffer_processor import MuxedBufferProcessor  # Added import
 
 gi.require_version("Gst", "1.0")
 gi.require_version("GstBase", "1.0")
 gi.require_version("GstAnalytics", "1.0")
 gi.require_version("GLib", "2.0")
 from gi.repository import Gst, GstAnalytics, GObject, GLib  # noqa: E402
-from metadata import Metadata  # noqa: E402
+from utils.metadata import Metadata  # noqa: E402
 
 
 class BaseObjectDetector(VideoTransform):

@@ -49,6 +49,7 @@ class Classifier(BaseClassifier):
     def __init__(self):
         super().__init__()
 
+
 if CAN_REGISTER_ELEMENT:
     GObject.type_register(Classifier)
     __gstelementfactory__ = ("pyml_classifier", Gst.Rank.NONE, Classifier)

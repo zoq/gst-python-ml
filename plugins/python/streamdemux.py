@@ -24,7 +24,7 @@ gi.require_version("GstAnalytics", "1.0")
 gi.require_version("GLib", "2.0")
 from gi.repository import Gst, GObject, GstAnalytics, GLib  # noqa: E402
 from log.logger_factory import LoggerFactory  # noqa: E402
-from metadata import Metadata  # noqa: E402
+from utils.metadata import Metadata  # noqa: E402
 from collections import defaultdict  # noqa: E402
 
 

@@ -32,7 +32,7 @@ try:
     import numpy as np
     import cv2
 
-    from muxed_buffer_processor import MuxedBufferProcessor
+    from utils.muxed_buffer_processor import MuxedBufferProcessor
     from video_transform import VideoTransform
     from engine.engine_manager import EngineManager
     from utils.caption_utils import load_captions

@@ -17,7 +17,7 @@
 # Boston, MA 02110-1301, USA.
 
 
-from muxed_buffer_processor import MuxedBufferProcessor  # Added import
+from utils.muxed_buffer_processor import MuxedBufferProcessor  # Added import
 
 import gi
 

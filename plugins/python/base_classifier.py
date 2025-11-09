@@ -44,8 +44,8 @@ class BaseClassifier(VideoTransform):
         """
         Runs classification inference and returns a label with a confidence score.
         """
-        if self.mgr.engine:
-            return self.mgr.engine.do_forward(frame)
+        if self.engine:
+            return self.engine.do_forward(frame)
         self.logger.error("No model loaded in BaseClassifier.")
         return None
 

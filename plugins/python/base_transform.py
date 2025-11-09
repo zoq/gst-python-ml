@@ -52,6 +52,10 @@ class BaseTransform(GstBase.BaseTransform):
         self.__system_prompt = None
         self.__prompt = None
 
+    @property
+    def engine(self):
+        return self.mgr.engine
+
     @GObject.Property(type=str)
     def device(self):
         "Device to run the inference on (cpu, cuda, cuda:0, cuda:1, etc.)"
@@ -69,8 +73,8 @@ class BaseTransform(GstBase.BaseTransform):
     @batch_size.setter
     def batch_size(self, value):
         self.__batch_size = value
-        if self.mgr.engine:
-            self.mgr.engine.batch_size = value
+        if self.engine:
+            self.engine.batch_size = value
 
     @GObject.Property(type=int, default=1)
     def frame_stride(self):
@@ -80,8 +84,8 @@ class BaseTransform(GstBase.BaseTransform):
     @frame_stride.setter
     def frame_stride(self, value):
         self.__frame_stride = value
-        if self.mgr.engine:
-            self.mgr.engine.frame_stride = value
+        if self.engine:
+            self.engine.frame_stride = value
 
     @GObject.Property(type=str)
     def model_name(self):
@@ -109,8 +113,8 @@ class BaseTransform(GstBase.BaseTransform):
     @device_queue_id.setter
     def device_queue_id(self, value):
         self.__device_queue_id = value
-        if self.mgr.engine:
-            self.mgr.engine.device_queue_id = value
+        if self.engine:
+            self.engine.device_queue_id = value
 
     @GObject.Property(type=str)
     def system_prompt(self):
@@ -136,16 +140,16 @@ class BaseTransform(GstBase.BaseTransform):
     def initialize_engine(self):
         if self.mgr.engine_name:
             self.mgr.initialize_engine()
-            self.mgr.engine.batch_size = self.__batch_size
-            self.mgr.engine.frame_stride = self.__frame_stride
+            self.engine.batch_size = self.__batch_size
+            self.engine.frame_stride = self.__frame_stride
             if self.__device_queue_id:
-                self.mgr.engine.device_queue_id = self.__device_queue_id
+                self.engine.device_queue_id = self.__device_queue_id
         else:
             self.logger.error(f"Unsupported ML engine: {self.mgr.engine_name}")
 
     def do_load_model(self):
         self._initialize_engine_if_needed()
-        if self.mgr.engine is None:
+        if self.engine is None:
             self.logger.error(
                 f"Cannot load model {self.model_name}: engine not initialized"
             )
@@ -158,21 +162,21 @@ class BaseTransform(GstBase.BaseTransform):
     def get_model(self):
         """Gets the model from the engine."""
         self._initialize_engine_if_needed()
-        if self.mgr.engine is None:
+        if self.engine is None:
             self.logger.error(
                 f"Cannot get model {self.model_name}: engine not initialized"
             )
             return None
         """Gets the model from the engine."""
-        if self.mgr.engine:
-            return self.mgr.engine.get_model()
+        if self.engine:
+            return self.engine.get_model()
         return None
 
     def set_model(self, model):
         """Sets the model in the engine."""
         self._initialize_engine_if_needed()
-        if self.mgr.engine is None:
+        if self.engine is None:
             self.logger.error("Cannot load model: engine not initialized")
             return False
-        self.mgr.engine.model = model
+        self.engine.model = model
         self.logger.info("Model set successfully in the engine.")

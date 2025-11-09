@@ -69,7 +69,7 @@ class BaseLlm(BaseAggregator):
             self.logger.info(f"Received text for LLM processing: {input_text}")
 
             # Ensure engine is initialized
-            if not self.mgr.engine:
+            if not self.engine:
                 self.logger.info("Engine not initialized, initializing now")
                 self.mgr.initialize_engine()
                 self.mgr.do_load_model(self.model_name)
@@ -96,7 +96,7 @@ class BaseLlm(BaseAggregator):
                     return Gst.FlowReturn.ERROR
 
             # Generate text using the engine
-            generated_text = self.mgr.engine.do_generate(input_text)
+            generated_text = self.engine.do_generate(input_text)
             self.logger.info(f"Generated text: {generated_text}")
 
             buf.unmap(map_info)

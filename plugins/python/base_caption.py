@@ -163,8 +163,8 @@ class BaseCaption(VideoTransform):
                         f"Resized to dimensions {self.downsampled_width}, {self.downsampled_height}"
                     )
 
-                if self.mgr.engine:
-                    result = self.mgr.engine.do_forward(frame)
+                if self.engine:
+                    result = self.engine.do_forward(frame)
                     if result:
                         self.caption = result
                         meta = GstAnalytics.buffer_add_analytics_relation_meta(buf)
@@ -216,8 +216,8 @@ class BaseCaption(VideoTransform):
                         f"Resized batch to dimensions {self.downsampled_width}, {self.downsampled_height}"
                     )
 
-                if self.mgr.engine:
-                    results = self.mgr.engine.do_forward(frames)
+                if self.engine:
+                    results = self.engine.do_forward(frames)
                     if results is None:
                         self.logger.error("Inference returned None")
                         return Gst.FlowReturn.ERROR

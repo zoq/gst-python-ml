@@ -38,6 +38,7 @@ class PyTorchEngine(MLEngine):
         """Load a pre-trained model by name from TorchVision, Transformers, or a local path."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
+        compile_model = kwargs.get("compile", False)
 
         try:
             if os.path.isfile(model_name):
@@ -90,6 +91,10 @@ class PyTorchEngine(MLEngine):
             if hasattr(self.model, "to") and callable(getattr(self.model, "to")):
                 self.execute_with_stream(lambda: self.model.to(self.device))
                 self.logger.info(f"Model moved to {self.device}")
+
+            if compile_model:
+                self.model = torch.compile(self.model)
+                self.logger.info(f"Model compiled with torch.compile")
 
             return True
 

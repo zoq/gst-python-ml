@@ -104,15 +104,13 @@ class BaseLlm(BaseAggregator):
             buf.unmap(map_info)
 
             # Push the generated text downstream
-            self.push_generated_text(generated_text)
-
-            return Gst.FlowReturn.OK
+            return self.push_generated_text(buf, generated_text)
 
         except Exception as e:
             self.logger.error(f"Error in LLM processing: {e}")
             return Gst.FlowReturn.ERROR
 
-    def push_generated_text(self, generated_text):
+    def push_generated_text(self, inbuf, generated_text):
         """
         Push the generated text downstream.
         """
@@ -126,10 +124,15 @@ class BaseLlm(BaseAggregator):
 
             map_info_out.data[: len(generated_bytes)] = generated_bytes
             outbuf.unmap(map_info_out)
+            outbuf.pts = inbuf.pts
+            outbuf.dts = inbuf.dts
+            outbuf.duration = inbuf.duration
 
             # Push the buffer downstream
-            self.srcpad.push(outbuf)
             self.logger.info("Pushed generated text downstream")
+            ret = self.srcpad.push(outbuf)
+
+            return ret
 
         except Exception as e:
             self.logger.error(f"Error pushing generated text: {e}")

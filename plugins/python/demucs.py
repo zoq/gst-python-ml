@@ -42,8 +42,8 @@ except ImportError as e:
 
 
 class DemucsEngine(PyTorchEngine):
-    def __init__(self, device="cpu"):
-        super().__init__(device)
+    def __init__(self):
+        super().__init__()
         self.sample_rate = 0
 
     def do_load_model(self, model_name, **kwargs):
@@ -78,7 +78,7 @@ class DemucsEngine(PyTorchEngine):
         while start < length - overlap_frames:
             chunk = mix[:, :, start:end]
             with torch.no_grad():
-                out = self.model.do_forward(chunk)
+                out = self.model.forward(chunk)
             out = fade(out)
             final[:, :, :, start:end] += out
             if start == 0:

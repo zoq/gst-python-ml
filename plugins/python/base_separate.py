@@ -97,10 +97,6 @@ class BaseSeparate(BaseAggregator):
         self.__stem = value
 
     @abstractmethod
-    def do_load_model(self):
-        pass
-
-    @abstractmethod
     def do_separate(self, audio_data):
         pass
 

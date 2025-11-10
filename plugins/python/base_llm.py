@@ -96,7 +96,9 @@ class BaseLlm(BaseAggregator):
                     return Gst.FlowReturn.ERROR
 
             # Generate text using the engine
-            generated_text = self.engine.do_generate(input_text)
+            generated_text = self.engine.do_generate(
+                input_text, system_prompt=self.system_prompt
+            )
             self.logger.info(f"Generated text: {generated_text}")
 
             buf.unmap(map_info)

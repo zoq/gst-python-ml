@@ -118,10 +118,6 @@ class Demucs(BaseSeparate):
             "The 'engine_name' property cannot be set in this derived class."
         )
 
-    def do_load_model(self):
-        if not self.mgr.get_model():
-            self.mgr.do_load_model(self.model_name)
-
     def do_separate(self, audio_data):
         # audio_data: np.float32, shape (length,) at SAMPLE_RATE Hz mono
         engine = self.engine

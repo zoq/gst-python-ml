@@ -155,7 +155,7 @@ class BaseTransform(GstBase.BaseTransform):
         if self.model_name is None:
             self.logger.warning("Cannot load model as model name is not set")
             return
-        self.mgr.do_load_model(self.model_name)
+        self.mgr.do_load_model(self.model_name, **self.kwargs)
 
     def get_model(self):
         """Gets the model from the engine."""

@@ -129,10 +129,6 @@ class BaseTranscribe(BaseAggregator):
         self.__streaming = value
 
     @abstractmethod
-    def do_load_model(self):
-        pass
-
-    @abstractmethod
     def do_transcribe(self, audio_data, task):
         pass
 

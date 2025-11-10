@@ -27,28 +27,24 @@ class EngineManager:
         self.logger = logger
         self.engine_name = default_engine
         self.engine = None
-        self.kwargs = {}
         self.device = "cpu"  # Manage device here
 
     def initialize_engine(self):
-        if self.engine_name:
+        if not self.engine and self.engine_name:
             self.engine = EngineFactory.create(self.engine_name)
             self.engine.device = self.device
-        else:
-            self.logger.error(f"Unsupported ML engine: {self.engine_name}")
-
-    def initialize_engine_if_needed(self):
-        """Initialize the engine if it hasn't been initialized yet."""
-        if not self.engine and self.engine_name:
-            self.initialize_engine()
+        if not self.engine:
+            self.logger.error(f"Unable to load ML engine: {self.engine_name}")
 
     def set_device(self, device):
         self.device = device
         if self.engine:
             self.engine.do_set_device(device)
 
-    def do_load_model(self, model_name):
-        self.initialize_engine_if_needed()
+    def do_load_model(self, model_name, **kwargs):
+        if self.engine.model:
+            return
+        self.initialize_engine()
         if self.engine is None:
             self.logger.warning(
                 f"Cannot load model {self.model_name}: engine not initialized"
@@ -65,7 +61,7 @@ class EngineManager:
             return False
         try:
             self.logger.info(f"Loading model: {model_name}")
-            self.engine.do_load_model(model_name, **self.kwargs)
+            self.engine.do_load_model(model_name, **kwargs)
             self.logger.info(f"Model {model_name} loaded successfully")
             return True
         except Exception as e:
@@ -75,7 +71,7 @@ class EngineManager:
             return False
 
     def get_model(self):
-        self.initialize_engine_if_needed()
+        self.initialize_engine()
         if self.engine is None:
             raise ValueError("Engine is not present, unable to get model")
         return self.engine.get_model()

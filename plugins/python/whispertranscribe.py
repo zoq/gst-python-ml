@@ -79,10 +79,6 @@ class WhisperTranscribe(BaseTranscribe):
             "The 'engine_name' property cannot be set in this derived class."
         )
 
-    def do_load_model(self):
-        if not self.mgr.get_model():
-            self.mgr.do_load_model(self.model_name)
-
     def do_transcribe(self, audio_data, task):
         result, _ = self.get_model().transcribe(
             audio_data,

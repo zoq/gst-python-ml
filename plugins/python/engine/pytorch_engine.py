@@ -403,7 +403,7 @@ class PyTorchEngine(MLEngine):
         else:
             raise ValueError("Unsupported model type or missing processor/tokenizer.")
 
-    def do_generate(self, input_text, max_length=100):
+    def do_generate(self, input_text, max_length=1000):
         if self.is_executorch:
             if not self.tokenizer:
                 raise ValueError("Tokenizer required for ExecuTorch generation")

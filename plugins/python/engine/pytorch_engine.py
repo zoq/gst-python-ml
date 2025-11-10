@@ -35,6 +35,11 @@ try:
 except ImportError:
     et = None  # Fallback if not installed
 
+try:
+    import torch_tensorrt  # For TensorRT compilation/integration
+except ImportError:
+    torch_tensorrt = None  # Fallback if not installed
+
 from .ml_engine import MLEngine
 
 
@@ -42,12 +47,20 @@ class PyTorchEngine(MLEngine):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.is_executorch = False
+        self.is_tensorrt = False  # Flag to track if TensorRT is used
 
     def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from TorchVision, Transformers, or a local path (including .pte for ExecuTorch)."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
         compile_model = kwargs.get("compile", False)
+        use_tensorrt = kwargs.get("use_tensorrt", False)  # Kwarg to enable TensorRT
+        trt_precision = kwargs.get(
+            "trt_precision", "fp16"
+        )  # Optional: fp16, int8, etc.
+        trt_input_shapes = kwargs.get(
+            "trt_input_shapes", None
+        )  # User-provided shapes, e.g., [(batch, channels, height, width)]
 
         try:
             if os.path.isfile(model_name):
@@ -108,7 +121,65 @@ class PyTorchEngine(MLEngine):
                     self.execute_with_stream(lambda: self.model.to(self.device))
                     self.logger.info(f"Model moved to {self.device}")
 
-                if compile_model:
+                # Compile with TensorRT if enabled and available
+                if (
+                    use_tensorrt
+                    and torch_tensorrt is not None
+                    and "cuda" in self.device
+                ):
+                    if not torch.cuda.is_available():
+                        self.logger.warning("TensorRT requires CUDA; skipping.")
+                    else:
+                        # Require input shapes; fail if not provided
+                        if trt_input_shapes is None:
+                            raise ValueError(
+                                "trt_input_shapes must be provided when using TensorRT. "
+                                "Example: [(1, 3, 224, 224)] for fixed shape or dict for dynamic."
+                            )
+
+                        # Convert shapes to torch_tensorrt.Input objects (supports fixed or dynamic)
+                        trt_inputs = []
+                        for shape in trt_input_shapes:
+                            if isinstance(shape, tuple):  # Fixed shape
+                                trt_inputs.append(torch_tensorrt.Input(shape))
+                            elif isinstance(
+                                shape, dict
+                            ):  # Dynamic: {'min': (1,3,224,224), 'opt': ..., 'max': ...}
+                                trt_inputs.append(torch_tensorrt.Input(**shape))
+                            else:
+                                raise ValueError(
+                                    f"Invalid trt_input_shape format: {shape}"
+                                )
+
+                        try:
+                            self.model = torch_tensorrt.compile(
+                                self.model,
+                                inputs=trt_inputs,
+                                enabled_precisions={
+                                    (
+                                        torch.half
+                                        if trt_precision == "fp16"
+                                        else torch.float
+                                    )
+                                },  # FP16 for speed
+                                workspace_size=1
+                                << 32,  # 4GB workspace; adjust as needed
+                            )
+                            self.is_tensorrt = True
+                            self.logger.info(
+                                f"Model compiled with TensorRT ({trt_precision} precision) using provided shapes"
+                            )
+                        except Exception as e:
+                            self.logger.error(f"Failed to compile with TensorRT: {e}")
+                            self.logger.warning("Falling back to standard PyTorch")
+                elif use_tensorrt:
+                    self.logger.warning(
+                        "torch-tensorrt not installed; install with 'pip install torch-tensorrt'"
+                    )
+
+                if (
+                    compile_model and not self.is_tensorrt
+                ):  # Standard torch.compile if not using TRT
                     self.model = torch.compile(self.model)
                     self.logger.info(f"Model compiled with torch.compile")
 
@@ -299,7 +370,9 @@ class PyTorchEngine(MLEngine):
             img_tensor = img_tensor.to(self.device)
 
             with torch.inference_mode():
-                results = self.model(img_tensor)  # Batch inference
+                results = self.model(
+                    img_tensor
+                )  # Batch inference (works with TRT-compiled model)
 
             # Convert results to NumPy for consistency
             output_np = [

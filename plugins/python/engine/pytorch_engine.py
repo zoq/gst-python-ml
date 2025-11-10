@@ -403,7 +403,18 @@ class PyTorchEngine(MLEngine):
         else:
             raise ValueError("Unsupported model type or missing processor/tokenizer.")
 
-    def do_generate(self, input_text, max_length=1000):
+    def do_generate(self, input_text, max_length=1000, system_prompt=None):
+
+        messages = [{"role": "user", "content": input_text}]
+        if system_prompt:
+            messages += ({"role": "system", "content": system_prompt},)
+        input_text = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+            enable_thinking=False,  # Switches between thinking and non-thinking modes. Default is True.
+        )
+
         if self.is_executorch:
             if not self.tokenizer:
                 raise ValueError("Tokenizer required for ExecuTorch generation")

@@ -58,7 +58,7 @@ class MLEngine(ABC):
         pass
 
     @abstractmethod
-    def do_generate(self, input_text, max_length=1000):
+    def do_generate(self, input_text, max_length=1000, system_prompt=None):
         """Generate LLM text."""
         pass
 

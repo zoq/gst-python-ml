@@ -308,7 +308,7 @@ class ONNXEngine(MLEngine):
         else:
             raise ValueError("Unsupported model type.")
 
-    def do_generate(self, input_text, max_length=1000):
+    def do_generate(self, input_text, max_length=1000, system_prompt=None):
         if self.model_type != "llm":
             raise ValueError("Generate is only supported for LLM models.")
         inputs = self.tokenizer(input_text, return_tensors="pt")

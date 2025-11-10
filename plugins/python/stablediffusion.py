@@ -29,7 +29,8 @@ try:
     from gi.repository import Gst, GObject, GstBase  # noqa: E402
     from base_aggregator import BaseAggregator
     import numpy as np
-    from diffusers import StableDiffusionPipeline
+
+    # from diffusers import StableDiffusionPipeline
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
     GlobalLogger().warning(
@@ -151,14 +152,14 @@ class StableDiffusion(BaseAggregator):
             self.logger.error(f"Error pushing image to pipeline: {e}")
 
 
-if CAN_REGISTER_ELEMENT:
-    GObject.type_register(StableDiffusion)
-    __gstelementfactory__ = (
-        "pyml_stablediffusion",
-        Gst.Rank.NONE,
-        StableDiffusion,
-    )
-else:
-    GlobalLogger().warning(
-        "The 'pyml_stablediffusion' element will not be registered because required modules are missing."
-    )
+# if CAN_REGISTER_ELEMENT:
+#     GObject.type_register(StableDiffusion)
+#     __gstelementfactory__ = (
+#         "pyml_stablediffusion",
+#         Gst.Rank.NONE,
+#         StableDiffusion,
+#     )
+# else:
+#     GlobalLogger().warning(
+#         "The 'pyml_stablediffusion' element will not be registered because required modules are missing."
+#     )

@@ -34,5 +34,5 @@ dependencies = [
     "whisperspeech",
     "webdataset",
     "easydict",
-    "pyflann-py3"
+    "pyflann-py3",
 ]

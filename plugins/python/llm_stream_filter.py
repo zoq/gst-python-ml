@@ -165,10 +165,6 @@ class LLMStreamFilter(VideoTransform):
         )
         self.add_pad(self.text_src_pad)
 
-        if not self.do_load_model():
-            self.logger.error("Failed to initialize engines or load models")
-            return False
-
         # Load captions if caption_file is set
         if self.caption_file:
             self.captions = load_captions(self.caption_file, self.logger)
@@ -280,13 +276,6 @@ class LLMStreamFilter(VideoTransform):
         In-place transformation: loads or generates captions, selects N streams, and outputs results.
         """
         try:
-            if not self.caption_file and (not self.engine or not self.llm_engine):
-                if not self.do_load_model():
-                    return Gst.FlowReturn.ERROR
-            elif self.caption_file and not self.llm_engine:
-                if not self.do_load_model():
-                    return Gst.FlowReturn.ERROR
-
             muxed_processor = MuxedBufferProcessor(
                 self.logger,
                 self.width,

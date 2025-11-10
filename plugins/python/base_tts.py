@@ -149,9 +149,6 @@ class BaseTts(BaseAggregator):
 
     async def process_transcript(self, transcript):
         try:
-            if self.get_model() is None:
-                self.do_load_model()
-
             tts_output = self.do_generate_speech(transcript)
             with io.BytesIO() as buffer:
                 sf.write(

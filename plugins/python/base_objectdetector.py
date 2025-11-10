@@ -77,10 +77,6 @@ class BaseObjectDetector(VideoTransform):
         """
         self.logger.info(f"Transforming buffer: {hex(id(buf))}")
         try:
-            if self.get_model() is None:
-                self.logger.info("Loading model")
-                self.do_load_model()
-
             # Use MuxedBufferProcessor to extract frames and metadata
             muxed_processor = MuxedBufferProcessor(
                 self.logger,

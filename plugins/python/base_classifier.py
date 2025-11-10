@@ -54,10 +54,6 @@ class BaseClassifier(VideoTransform):
         Processes an image and attaches classification metadata.
         """
         try:
-            if self.get_model() is None:
-                self.logger.debug("Model not loaded, calling do_load_model()")
-                self.do_load_model()
-
             with buf.map(Gst.MapFlags.READ | Gst.MapFlags.WRITE) as info:
                 if info.data is None:
                     self.logger.error("Buffer mapping returned None data.")

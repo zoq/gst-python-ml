@@ -115,9 +115,6 @@ class BaseCaption(VideoTransform):
         In-place transformation for captioning inference using MuxedBufferProcessor.
         """
         try:
-            if self.get_model() is None:
-                self.do_load_model()
-
             # Initialize MuxedBufferProcessor with default framerate
             muxed_processor = MuxedBufferProcessor(
                 self.logger,

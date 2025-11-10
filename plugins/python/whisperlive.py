@@ -156,9 +156,6 @@ class WhisperLive(BaseTranscribe):
         return result
 
     def do_process_text(self, transcript):
-        if self.device:
-            self.do_load_model()
-
         # Ensure LLM model and tokenizer are initialized
         if not self.llm_tokenizer or not self.llm_model:
             self.logger.error("Tokenizer or model not initialized.")

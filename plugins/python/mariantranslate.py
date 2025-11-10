@@ -64,9 +64,6 @@ class MarianTranslate(BaseTranslate):
         """
         Translates the input text using the MarianMT model.
         """
-        if self.get_model() is None or self.tokenizer is None:
-            self.do_load_model()
-
         if self.get_model() and self.tokenizer:
             inputs = self.tokenizer(text, return_tensors="pt", padding=True)
             translated = self.get_model().generate(**inputs)

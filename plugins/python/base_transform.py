@@ -135,6 +135,10 @@ class BaseTransform(GstBase.BaseTransform):
     def prompt(self, value):
         self.__prompt = value
 
+    def do_start(self):
+        self.do_load_model()
+        return True
+
     def initialize_engine(self):
         if not self.engine and self.mgr.engine_name:
             self.mgr.initialize_engine()

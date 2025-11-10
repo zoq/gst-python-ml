@@ -108,9 +108,6 @@ class StableDiffusion(BaseAggregator):
 
     async def process_text(self, text):
         try:
-            if self.get_model() is None:
-                self.do_load_model()
-
             image_data = self.generate_image(text)
 
             # Push the raw image buffer downstream

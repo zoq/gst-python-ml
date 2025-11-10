@@ -137,6 +137,11 @@ class BaseAggregator(GstBase.Aggregator):
     def prompt(self, value):
         self.__prompt = value
 
+    def do_change_state(self, transition):
+        if transition == Gst.StateChange.NULL_TO_READY:
+            self.do_load_model()
+        return Gst.Element.do_change_state(self, transition)
+
     def initialize_engine(self):
         if not self.engine and self.mgr.engine_name:
             self.mgr.initialize_engine()

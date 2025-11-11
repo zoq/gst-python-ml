@@ -448,28 +448,10 @@ https://huggingface.co/models?sort=trending&search=Helsinki
 
 #### Caption
 
-#### caption phi + yolo
-
-`GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale ! video/x-raw,width=640,height=480 ! pyml_yolo model-name=yolo11m device=cuda:0 track=True ! pyml_caption_phi device=cuda:0 name=cap ! queue ! textoverlay name=overlay !  pyml_overlay ! videoconvert !  autovideosink cap.text_src ! queue ! overlay.text_sink`
-
-
-#### caption phi with prompt
-
-```
-GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale !  video/x-raw,width=640,height=480 !  pyml_caption_phi device=cuda:0 prompt="What is the name of the game being played?" downsampled_width=320 downsampled_height=240 \
-model-name="microsoft/Phi-3.5-vision-instruct" name=cap ! queue ! textoverlay name=overlay !  videoconvert ! \
- autovideosink cap.text_src ! queue ! overlay.text_sink
-```
-
-#### caption qwen with prompt
-
-```
-GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale !  video/x-raw,width=640,height=480 !  pyml_caption_qwen device=cuda:0 prompt="In one sentence, describe what you see?" downsampled_width=320 downsampled_height=240 \
-model-name="Qwen/Qwen2.5-VL-3B-Instruct-AWQ " name=cap ! queue ! textoverlay name=overlay !  videoconvert !  autovideosink cap.text_src \
-! queue ! overlay.text_sink
-```
-
 #### caption qwen with history
 
+(should also work with "microsoft/Phi-3.5-vision-instruct" model)
 
+```
 GST_DEBUG=3 gst-launch-1.0 filesrc location=data/soccer_single_camera.mp4 ! decodebin ! videoconvertscale ! video/x-raw,width=640,height=480 ! tee name=t t. ! queue ! textoverlay name=overlay wait-text=false ! videoconvert ! autovideosink t. ! queue leaky=2 max-size-buffers=1 ! videoconvertscale ! video/x-raw,width=240,height=180 ! pyml_caption_qwen device=cuda:0 prompt="In one sentence, describe what you see?" model-name="Qwen/Qwen2.5-VL-3B-Instruct-AWQ" name=cap cap.src ! fakesink async=0 sync=0 cap.text_src ! queue ! coalescehistory history-length=10 ! pyml_llm model-name="Qwen/Qwen3-0.6B" device=cuda system-prompt="You receive the history of what happened in recent times, summarize it nicely with excitement but NEVER mention the specific times. Focus on the most recent events." ! queue ! overlay.text_sink
+```

@@ -404,10 +404,9 @@ class PyTorchEngine(MLEngine):
             raise ValueError("Unsupported model type or missing processor/tokenizer.")
 
     def do_generate(self, input_text, max_length=1000, system_prompt=None):
-
         messages = [{"role": "user", "content": input_text}]
         if system_prompt:
-            messages += ({"role": "system", "content": system_prompt},)
+            messages.append({"role": "system", "content": system_prompt})
         input_text = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
@@ -436,6 +435,16 @@ class PyTorchEngine(MLEngine):
         inputs = self.tokenizer(input_text, return_tensors="pt").to(self.device)
         outputs = self.model.generate(**inputs, max_length=max_length)
         generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        outputs = outputs[0][len(inputs.input_ids[0]) :].tolist()
+        try:
+            # rindex finding 151668 (</think>)
+            index = len(outputs) - outputs[::-1].index(151668)
+        except ValueError:
+            index = 0
+        generated_text = self.tokenizer.decode(
+            outputs[index:], skip_special_tokens=True
+        )
+
         self.logger.info(f"Generated text: {generated_text}")
         return generated_text
 

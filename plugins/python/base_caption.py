@@ -89,7 +89,7 @@ class BaseCaption(VideoTransform):
         pad.set_active(False)
         self.text_src_pad = None
 
-    def push_text_buffer(self, text, buf_pts, buf_duration):
+    def push_text_buffer(self, text, buf_pts, buf_dts, buf_duration):
         """
         Pushes a text buffer to the `text_src` pad with proper timestamps.
 
@@ -102,8 +102,9 @@ class BaseCaption(VideoTransform):
 
         # Set the text buffer timestamps
         text_buffer.pts = buf_pts
-        text_buffer.dts = buf_pts  # DTS is usually the same as PTS for text buffers
-        text_buffer.duration = buf_duration
+        text_buffer.dts = buf_dts
+        # Put a long duration so the subtitles are visible
+        text_buffer.duration = 60 * Gst.SECOND
 
         # Push the buffer
         ret = self.text_src_pad.push(text_buffer)
@@ -181,7 +182,9 @@ class BaseCaption(VideoTransform):
 
                         # Push text buffer if text_src pad is linked
                         if self.text_src_pad:
-                            self.push_text_buffer(self.caption, buf.pts, buf.duration)
+                            self.push_text_buffer(
+                                self.caption, buf.pts, buf.dts, buf.duration
+                            )
                         else:
                             self.logger.warning(
                                 "TextExtract: text_src pad is not linked, cannot push text buffer."

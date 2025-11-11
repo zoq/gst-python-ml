@@ -51,7 +51,7 @@ class PyTorchVisionEngine(PyTorchEngine):
 
             # Shared: Inference
             generation_args = {
-                "max_new_tokens": 500,
+                "max_new_tokens": 100,
                 "temperature": 0.0,
                 "do_sample": False,
             }

@@ -126,13 +126,11 @@ class BaseLlm(BaseAggregator):
             outbuf.unmap(map_info_out)
             outbuf.pts = inbuf.pts
             outbuf.dts = inbuf.dts
-            outbuf.duration = inbuf.duration
+            outbuf.duration = 60 * Gst.SECOND
 
             # Push the buffer downstream
             self.logger.info("Pushed generated text downstream")
-            ret = self.srcpad.push(outbuf)
-
-            return ret
+            return self.srcpad.push(outbuf)
 
         except Exception as e:
             self.logger.error(f"Error pushing generated text: {e}")

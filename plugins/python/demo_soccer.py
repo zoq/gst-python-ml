@@ -1111,7 +1111,7 @@ class DemoSoccer(BaseObjectDetector):
 
         # Resolve YAMLs
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        yaml_base = os.path.join(script_dir, "demo", "soccer")
+        yaml_base = os.path.join(script_dir, "data", "soccer")
         self.logger.info(f"YAML base resolved to: {yaml_base}")
         self.__tracker_people = os.path.join(yaml_base, "botsort_people_reid.yaml")
         self.__tracker_ball = os.path.join(yaml_base, "bytetrack_ball.yaml")

@@ -96,7 +96,7 @@ class CoalesceHistory(Gst.Element):
         # buf.copy_into(coalesced_buf, Gst.BufferCopyFlags.TIMESTAMPS | Gst.BufferCopyFlags.META, 0, GLib.MAXUINT64)
         coalesced_buf.pts = buf.pts
         coalesced_buf.dts = buf.dts
-        coalesced_buf.duration = 20 * Gst.SECOND
+        coalesced_buf.duration = 60 * Gst.SECOND
 
         print("pushing")
         ret = self.srcpad.push(coalesced_buf)

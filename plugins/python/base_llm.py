@@ -126,7 +126,7 @@ class BaseLlm(BaseAggregator):
             outbuf.unmap(map_info_out)
             outbuf.pts = inbuf.pts
             outbuf.dts = inbuf.dts
-            outbuf.duration = 60 * Gst.SECOND
+            outbuf.duration = inbuf.duration
 
             # Push the buffer downstream
             self.logger.info("Pushed generated text downstream")

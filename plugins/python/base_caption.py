@@ -145,22 +145,6 @@ class BaseCaption(VideoTransform):
             if num_sources == 1:
                 # Single-frame case
                 frame = frames
-                # Check if rescaling is needed
-                if (
-                    self.downsampled_width > 0
-                    and self.downsampled_width < self.width
-                    and self.downsampled_height > 0
-                    and self.downsampled_height < self.height
-                ):
-                    frame = cv2.resize(
-                        frame,
-                        (self.downsampled_width, self.downsampled_height),
-                        interpolation=cv2.INTER_AREA,
-                    )
-                    self.logger.info(
-                        f"Resized to dimensions {self.downsampled_width}, {self.downsampled_height}"
-                    )
-
                 if self.engine:
                     result = self.engine.do_forward(frame)
                     if result:
@@ -194,28 +178,6 @@ class BaseCaption(VideoTransform):
                 self.logger.info(
                     f"Processing batch with ID={id_str}, num_sources={num_sources}"
                 )
-                # Rescale frames if needed
-                if (
-                    self.downsampled_width > 0
-                    and self.downsampled_width < self.width
-                    and self.downsampled_height > 0
-                    and self.downsampled_height < self.height
-                ):
-                    frames = np.stack(
-                        [
-                            cv2.resize(
-                                frame,
-                                (self.downsampled_width, self.downsampled_height),
-                                interpolation=cv2.INTER_AREA,
-                            )
-                            for frame in frames
-                        ],
-                        axis=0,
-                    )
-                    self.logger.info(
-                        f"Resized batch to dimensions {self.downsampled_width}, {self.downsampled_height}"
-                    )
-
                 if self.engine:
                     results = self.engine.do_forward(frames)
                     if results is None:

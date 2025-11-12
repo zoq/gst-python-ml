@@ -45,38 +45,6 @@ class VideoTransform(BaseTransform):
         ),
     )
 
-    # Add properties using GObject.Property
-    downsampled_width = GObject.Property(
-        type=int,
-        default=0,
-        nick="Downsampled Width",
-        blurb="The width of a downsampled replica of the output video",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-
-    downsampled_height = GObject.Property(
-        type=int,
-        default=0,
-        nick="Downsampled Height",
-        blurb="The height of a downsampled replica of the output video",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-
-    def do_set_property(self, prop, value):
-        if prop.name == "downsampled-width":
-            self.downsampled_width = value
-        elif prop.name == "downsampled-height":
-            self.downsampled_height = value
-        else:
-            super().do_set_property(prop, value)
-
-    def do_get_property(self, prop):
-        if prop.name == "downsampled-width":
-            return self.downsampled_width
-        elif prop.name == "downsampled-height":
-            return self.downsampled_height
-        return super().do_get_property(prop)
-
     def do_set_caps(self, incaps, outcaps):
         struct = incaps.get_structure(0)
         self.width = struct.get_int("width").value

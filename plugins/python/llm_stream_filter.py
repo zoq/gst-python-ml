@@ -311,45 +311,9 @@ class LLMStreamFilter(VideoTransform):
                 # Generate captions using phi-3.5-vision
                 if num_sources == 1:
                     frame = frames
-                    if (
-                        self.downsampled_width > 0
-                        and self.downsampled_width < self.width
-                        and self.downsampled_height > 0
-                        and self.downsampled_height < self.height
-                    ):
-                        frame = cv2.resize(
-                            frame,
-                            (self.downsampled_width, self.downsampled_height),
-                            interpolation=cv2.INTER_AREA,
-                        )
-                        self.logger.info(
-                            f"Resized to {self.downsampled_width}x{self.downsampled_height}"
-                        )
-
                     result = self.engine.do_forward(frame)
                     captions.append(result if result else "")
                 else:
-                    if (
-                        self.downsampled_width > 0
-                        and self.downsampled_width < self.width
-                        and self.downsampled_height > 0
-                        and self.downsampled_height < self.height
-                    ):
-                        frames = np.stack(
-                            [
-                                cv2.resize(
-                                    frame,
-                                    (self.downsampled_width, self.downsampled_height),
-                                    interpolation=cv2.INTER_AREA,
-                                )
-                                for frame in frames
-                            ],
-                            axis=0,
-                        )
-                        self.logger.info(
-                            f"Resized batch to {self.downsampled_width}x{self.downsampled_height}"
-                        )
-
                     results = self.engine.do_forward(frames)
                     results_list = (
                         results

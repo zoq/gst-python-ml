@@ -20,10 +20,8 @@
 import gi
 
 gi.require_version("Gst", "1.0")
-gi.require_version("GstBase", "1.0")
 gi.require_version("GLib", "2.0")
-
-from gi.repository import Gst  # noqa: E402
+from gi.repository import Gst, GObject  # noqa: E402
 
 from base_aggregator import BaseAggregator
 
@@ -33,6 +31,24 @@ class BaseLlm(BaseAggregator):
     GStreamer base element that performs language model inference
     with a PyTorch model.
     """
+
+    @GObject.Property(type=str)
+    def system_prompt(self):
+        "Custom system prompt text"
+        return self.__system_prompt
+
+    @system_prompt.setter
+    def system_prompt(self, value):
+        self.__system_prompt = value
+
+    @GObject.Property(type=str)
+    def prompt(self):
+        "Custom prompt text"
+        return self.__prompt
+
+    @prompt.setter
+    def prompt(self, value):
+        self.__prompt = value
 
     __gsttemplates__ = (
         Gst.PadTemplate.new(
@@ -130,7 +146,9 @@ class BaseLlm(BaseAggregator):
 
             # Push the buffer downstream
             self.logger.info("Pushed generated text downstream")
-            return self.srcpad.push(outbuf)
+            ret = self.srcpad.push(outbuf)
+
+            return ret
 
         except Exception as e:
             self.logger.error(f"Error pushing generated text: {e}")

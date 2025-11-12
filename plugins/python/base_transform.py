@@ -117,24 +117,6 @@ class BaseTransform(GstBase.BaseTransform):
         if self.engine:
             self.engine.device_queue_id = value
 
-    @GObject.Property(type=str)
-    def system_prompt(self):
-        "Custom system prompt text"
-        return self.__system_prompt
-
-    @system_prompt.setter
-    def system_prompt(self, value):
-        self.__system_prompt = value
-
-    @GObject.Property(type=str)
-    def prompt(self):
-        "Custom prompt text"
-        return self.__prompt
-
-    @prompt.setter
-    def prompt(self, value):
-        self.__prompt = value
-
     def do_start(self):
         self.do_load_model()
         return True

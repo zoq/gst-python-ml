@@ -58,6 +58,24 @@ class BaseCaption(VideoTransform):
         self.__prompt = "What is shown in this image?"
         self.text_src_pad = None
 
+    @GObject.Property(type=str)
+    def system_prompt(self):
+        "Custom system prompt text"
+        return self.__system_prompt
+
+    @system_prompt.setter
+    def system_prompt(self, value):
+        self.__system_prompt = value
+
+    @GObject.Property(type=str)
+    def prompt(self):
+        "Custom prompt text"
+        return self.__prompt
+
+    @prompt.setter
+    def prompt(self, value):
+        self.__prompt = value
+
     # make read only
     @GObject.Property(type=str)
     def engine_name(self):

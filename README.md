@@ -148,13 +148,23 @@ sudo systemctl restart docker
 ##### Fedora
 
 ```
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | sudo tee /etc/yum.repos.d/
+nvidia-container-toolkit.repo
+
 sudo dnf install nvidia-container-toolkit
 sudo nvidia-ctk runtime configure --runtime=docker
+sudo nvidia-ctk runtime configure --runtime=containerd
+sudo systemctl restart containerd
 sudo systemctl restart docker
 ```
 
+To test:
 
+```
+docker pull nvidia/cuda:12.0.0-base-ubuntu22.04
+docker run --rm --runtime=nvidia --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 
+```
 
 
 #### Build Ubuntu 24.04 Container
@@ -195,9 +205,7 @@ docker image prune -a -f
 
 ### Language Elements
 
-1. To use the language elements included in this project, the `nvidia-cuda-toolkit`
-Ubuntu package must be installed, and additional pip requirements must be installed from
-`requirements/language.txt`
+1. To use the language elements included in this project, additional pip requirements must be installed from `requirements/language.txt`
 
 2. A specfic version of Cuda is required for these elements: LD_LIBRARY_PATH in `~/.bashrc` must be updated with the following line (!!! adjust for your python version) :
 

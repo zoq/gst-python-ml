@@ -65,6 +65,9 @@ class BaseTransform(GstBase.BaseTransform):
     @device.setter
     def device(self, value):
         self.mgr.set_device(value)
+        # todo why is this needed, for example for yolo ?
+        if self.engine_name:
+            self.initialize_engine()
 
     @GObject.Property(type=int, default=1)
     def batch_size(self):

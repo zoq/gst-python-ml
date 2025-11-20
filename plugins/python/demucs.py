@@ -26,7 +26,7 @@ try:
     gi.require_version("GstBase", "1.0")
     gi.require_version("GObject", "2.0")
     from gi.repository import Gst, GObject  # noqa: E402
-    from base_separate import BaseSeparate, SAMPLE_RATE
+    from base_separate import BaseSeparate
     import torch
     from torchaudio.pipelines import HDEMUCS_HIGH_MUSDB_PLUS
     from torchaudio.transforms import Fade, Resample

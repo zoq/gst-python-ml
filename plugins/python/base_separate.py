@@ -33,19 +33,6 @@ from base_aggregator import BaseAggregator  # noqa: E402
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 
-SAMPLE_RATE = 44100  # native sample rate of Demucs
-
-CAPS = Gst.Caps(
-    Gst.Structure(
-        "audio/x-raw",
-        format="S16LE",
-        layout="interleaved",
-        rate=SAMPLE_RATE,
-        channels=1,
-    )
-)
-
-
 class BaseSeparate(BaseAggregator):
     __gstmetadata__ = (
         "BaseSeparate",
@@ -53,6 +40,20 @@ class BaseSeparate(BaseAggregator):
         "Python element that separates audio sources",
         "Aaron Boxer <aaron.boxer@collabora.com>",
     )
+
+
+    SAMPLE_RATE = 44100  # native sample rate of Demucs
+
+    CAPS = Gst.Caps(
+        Gst.Structure(
+            "audio/x-raw",
+            format="S16LE",
+            layout="interleaved",
+            rate=SAMPLE_RATE,
+            channels=1,
+        )
+    )
+
 
     __gsttemplates__ = (
         Gst.PadTemplate.new_with_gtype(
@@ -126,7 +127,7 @@ class BaseSeparate(BaseAggregator):
             self.clip_buffer.extend(audio_data)
 
             chunk_duration = 1.0 if self.streaming else 10.0
-            chunk_size = int(SAMPLE_RATE * chunk_duration)
+            chunk_size = int(self.SAMPLE_RATE * chunk_duration)
 
             while len(self.clip_buffer) >= chunk_size:
                 chunk = np.fromiter(

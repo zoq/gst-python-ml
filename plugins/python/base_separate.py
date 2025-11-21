@@ -20,6 +20,7 @@ import collections
 import sys
 from abc import abstractmethod
 
+import traceback
 import numpy as np
 import gi
 
@@ -33,6 +34,7 @@ from base_aggregator import BaseAggregator  # noqa: E402
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 
+
 class BaseSeparate(BaseAggregator):
     __gstmetadata__ = (
         "BaseSeparate",
@@ -40,7 +42,6 @@ class BaseSeparate(BaseAggregator):
         "Python element that separates audio sources",
         "Aaron Boxer <aaron.boxer@collabora.com>",
     )
-
 
     SAMPLE_RATE = 44100  # native sample rate of Demucs
 
@@ -53,7 +54,6 @@ class BaseSeparate(BaseAggregator):
             channels=1,
         )
     )
-
 
     __gsttemplates__ = (
         Gst.PadTemplate.new_with_gtype(
@@ -195,5 +195,5 @@ class BaseSeparate(BaseAggregator):
             return separated
 
         except Exception as e:
-            self.logger.error(f"Error during separation: {e}")
+            self.logger.error(f"Error during separation: {e}\n{traceback.format_exc()}")
             return None

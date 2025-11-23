@@ -121,7 +121,7 @@ class Demucs(BaseSeparate):
     def do_separate(self, audio_data):
         # audio_data: np.float32, shape (length,) at SAMPLE_RATE Hz mono
         engine = self.engine
-        original_rate = SAMPLE_RATE
+        original_rate = self.SAMPLE_RATE
 
         # Resample to model's sample rate (44100 Hz) if necessary
         if original_rate != engine.sample_rate:

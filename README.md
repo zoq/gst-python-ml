@@ -63,16 +63,6 @@ A pre-built wheel can be found here:
 https://github.com/mjun0812/flash-attention-prebuild-wheels/releases
 
 
-For QWEN models:
-```
-uv pip install git+https://github.com/huggingface/transformers
-uv pip install qwen-vl-utils[decord]==0.0.8
-uv pip install autoawq
-
-```
-
-
-
 
 #### pip
 

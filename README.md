@@ -18,20 +18,15 @@ Supported functionality includes:
 ML toolkits are supported via the `MLEngine` abstraction - we have nominal support for
 TensorFlow, LiteRT and OpenVINO, but all testing thus far has been done with PyTorch.
 
-These elements will work with your distribution's GStreamer packages. They have been tested on Ubuntu 24 with GStreamer 1.24.
-
-## Python Version
-
-All elements have been tested with Python 3.12, the installed version of Python on Ubuntu 24
+These elements will work with your distribution's GStreamer packages for GStreamer versions >= 1.24.
 
 ## Install
 
-There are two installation options described below: installing on your host machine,
-or installing with a Docker container:
+There are two installation options described below: on host machine or on Docker container:
 
 ### Host Install (Ubuntu 24)
 
-#### Install packages
+#### Install distribution packages
 
 ```
 sudo apt update && sudo apt -y upgrade
@@ -42,7 +37,7 @@ sudo apt install -y python3-pip  python3-venv \
     libcairo2 libcairo2-dev git
 ```
 
-#### uv
+#### Manage Python packages with uv
 
 ##### install
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -70,7 +65,7 @@ https://github.com/mjun0812/flash-attention-prebuild-wheels/releases
 #### Update .bashrc
 
 ```
-export GST_PLUGIN_PATH=$HOME/src/gst-python-ml/plugins
+export GST_PLUGIN_PATH=$HOME/src/gst-python-ml/plugins:$GST_PLUGIN_PATH
 ```
 
 and then
@@ -101,11 +96,7 @@ curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dear
   && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
     sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-```
 
-Then
-
-```
 sudo apt update
 sudo apt install -y nvidia-container-toolkit
 sudo systemctl restart docker
@@ -124,7 +115,7 @@ sudo systemctl restart containerd
 sudo systemctl restart docker
 ```
 
-To test:
+GPU support can now be tested:
 
 ```
 docker pull nvidia/cuda:12.0.0-base-ubuntu22.04
@@ -134,6 +125,7 @@ docker run --rm --runtime=nvidia --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 
 
 
 #### Build Ubuntu 24.04 Container
+
 `docker build -f ./Dockerfile -t ubuntu24:latest .`
 
 #### Run Docker Container
@@ -176,7 +168,7 @@ To use `pyml_birdseye`, additional pip requirements must be installed from the `
 
 ## Post Install
 
-Run `gst-inspect-1.0 python` to see all of the pyml elements listed.
+Run `gst-inspect-1.0 python` to list pyml elements.
 
 # Building PyPI Package
 
@@ -205,86 +197,6 @@ Run `gst-inspect-1.0 python` to see all of the pyml elements listed.
 ## Pipelines
 
 Below are some sample pipelines for the various elements in this project.
-
-### kafkasink
-
-#### Setting up kafka network
-
-`docker network create kafka-network`
-
-and list networks
-
-`docker network ls`
-
-#### docker launch
-
-To launch a docker instance with the kafka network, add ` --network kafka-network  `
-to the docker launch command above.
-
-#### Set up kafka and zookeeper
-
-Note: setup below assumes you are running your pipeline in a docker container. 
-If running pipeline from host, then the port changes from `9092` to `29092`,
-and the broker changes from `kafka` to `localhost`.
-
-```
-docker stop kafka zookeeper
-docker rm kafka zookeeper
-docker run -d --name zookeeper --network kafka-network -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper:latest
-docker run -d --name kafka --network kafka-network \
-  -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 \
-  -e KAFKA_ADVERTISED_LISTENERS=INSIDE://kafka:9092,OUTSIDE://localhost:29092 \
-  -e KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT \
-  -e KAFKA_LISTENERS=INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:29092 \
-  -e KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE \
-  -e KAFKA_BROKER_ID=1 \
-  -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
-  -p 9092:9092 \
-  -p 29092:29092 \
-  confluentinc/cp-kafka:latest
-```
-
-#### Create test topic
-```
-docker exec kafka kafka-topics --create --topic test-kafkasink-topic --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1
-```
-
-#### list topics
-
-`docker exec -it kafka kafka-topics --list --bootstrap-server kafka:9092`
-
-
-#### delete topic
-
-`docker exec -it kafka kafka-topics --delete --topic test-topic --bootstrap-server kafka:9092`
-
-
-#### consume topic
-
-`docker exec -it kafka kafka-console-consumer --bootstrap-server kafka:9092 --topic test-kafkasink-topic --from-beginning`
-
-
-### non ML
-
-`GST_DEBUG=4 gst-launch-1.0 videotestsrc ! video/x-raw,width=1280,height=720 ! pyml_overlay meta-path=data/sample_metadata.json tracking=true ! videoconvert ! autovideosink`
-
-Note: make sure to set the following in `.bashrc` file :
-
-`export GST_PLUGIN_PATH=/home/$USER/src/gst-python-ml/plugins:$GST_PLUGIN_PATH`
-
-
-### streammux/streamdemux pipeline
-
-```
- GST_DEBUG=4 gst-launch-1.0   videotestsrc pattern=ball ! video/x-raw, width=320, height=240 ! queue ! pyml_streammux name=mux   videotestsrc pattern=smpte ! video/x-raw, width=320, height=240 ! queue ! mux.sink_1   videotestsrc pattern=smpte ! video/x-raw, width=320, height=240 ! queue ! mux.sink_2   mux.src ! queue ! pyml_streamdemux name=demux   demux.src_0 ! queue ! glimagesink  demux.src_1 ! queue ! glimagesink   demux.src_2 ! queue  ! glimagesink
-```
-
-
-### Bird's Eye View
-
-`GST_DEBUG=4 gst-launch-1.0 filesrc location=data/soccer_single_camera.mp4 ! decodebin ! videoconvert ! pyml_birdseye ! videoconvert ! autovideosink`
-
-`GST_DEBUG=4 gst-launch-1.0 filesrc location=data/soccer_single_camera.mp4 ! decodebin ! videorate ! video/x-raw,framerate=30/1 ! videoconvert ! pyml_birdseye ! videoconvert ! openh264enc ! h264parse ! matroskamux ! filesink location=output.mkv`
 
 ### Classification
 
@@ -419,4 +331,81 @@ https://huggingface.co/models?sort=trending&search=Helsinki
 
 ```
 GST_DEBUG=3 gst-launch-1.0 filesrc location=data/soccer_single_camera.mp4 ! decodebin ! videoconvertscale ! video/x-raw,width=640,height=480 ! tee name=t t. ! queue ! textoverlay name=overlay wait-text=false ! videoconvert ! autovideosink t. ! queue leaky=2 max-size-buffers=1 ! videoconvertscale ! video/x-raw,width=240,height=180 ! pyml_caption_qwen device=cuda:0 prompt="In one sentence, describe what you see?" model-name="Qwen/Qwen2.5-VL-3B-Instruct-AWQ" name=cap cap.src ! fakesink async=0 sync=0 cap.text_src ! queue ! coalescehistory history-length=10 ! pyml_llm model-name="Qwen/Qwen3-0.6B" device=cuda system-prompt="You receive the history of what happened in recent times, summarize it nicely with excitement but NEVER mention the specific times. Focus on the most recent events." ! queue ! overlay.text_sink
+```
+
+
+### Bird's Eye View
+
+`GST_DEBUG=4 gst-launch-1.0 filesrc location=data/soccer_single_camera.mp4 ! decodebin ! videoconvert ! pyml_birdseye ! videoconvert ! autovideosink`
+
+`GST_DEBUG=4 gst-launch-1.0 filesrc location=data/soccer_single_camera.mp4 ! decodebin ! videorate ! video/x-raw,framerate=30/1 ! videoconvert ! pyml_birdseye ! videoconvert ! openh264enc ! h264parse ! matroskamux ! filesink location=output.mkv`
+
+
+### kafkasink
+
+#### Setting up kafka network
+
+`docker network create kafka-network`
+
+and list networks
+
+`docker network ls`
+
+#### docker launch
+
+To launch a docker instance with the kafka network, add ` --network kafka-network  `
+to the docker launch command above.
+
+#### Set up kafka and zookeeper
+
+Note: setup below assumes you are running your pipeline in a docker container. 
+If running pipeline from host, then the port changes from `9092` to `29092`,
+and the broker changes from `kafka` to `localhost`.
+
+```
+docker stop kafka zookeeper
+docker rm kafka zookeeper
+docker run -d --name zookeeper --network kafka-network -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper:latest
+docker run -d --name kafka --network kafka-network \
+  -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 \
+  -e KAFKA_ADVERTISED_LISTENERS=INSIDE://kafka:9092,OUTSIDE://localhost:29092 \
+  -e KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT \
+  -e KAFKA_LISTENERS=INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:29092 \
+  -e KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE \
+  -e KAFKA_BROKER_ID=1 \
+  -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+  -p 9092:9092 \
+  -p 29092:29092 \
+  confluentinc/cp-kafka:latest
+```
+
+#### Create test topic
+```
+docker exec kafka kafka-topics --create --topic test-kafkasink-topic --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1
+```
+
+#### list topics
+
+`docker exec -it kafka kafka-topics --list --bootstrap-server kafka:9092`
+
+
+#### delete topic
+
+`docker exec -it kafka kafka-topics --delete --topic test-topic --bootstrap-server kafka:9092`
+
+
+#### consume topic
+
+`docker exec -it kafka kafka-console-consumer --bootstrap-server kafka:9092 --topic test-kafkasink-topic --from-beginning`
+
+
+### non ML
+
+`GST_DEBUG=4 gst-launch-1.0 videotestsrc ! video/x-raw,width=1280,height=720 ! pyml_overlay meta-path=data/sample_metadata.json tracking=true ! videoconvert ! autovideosink`
+
+
+### streammux/streamdemux pipeline
+
+```
+ GST_DEBUG=4 gst-launch-1.0   videotestsrc pattern=ball ! video/x-raw, width=320, height=240 ! queue ! pyml_streammux name=mux   videotestsrc pattern=smpte ! video/x-raw, width=320, height=240 ! queue ! mux.sink_1   videotestsrc pattern=smpte ! video/x-raw, width=320, height=240 ! queue ! mux.sink_2   mux.src ! queue ! pyml_streamdemux name=demux   demux.src_0 ! queue ! glimagesink  demux.src_1 ! queue ! glimagesink   demux.src_2 ! queue  ! glimagesink
 ```

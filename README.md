@@ -24,10 +24,11 @@ These elements will work with your distribution's GStreamer packages for GStream
 
 There are two installation options described below: on host machine or on Docker container:
 
-### Host Install (Ubuntu 24)
+### Host Install
 
 #### Install distribution packages
 
+##### Ubuntu
 ```
 sudo apt update && sudo apt -y upgrade
 sudo apt install -y python3-pip  python3-venv \
@@ -36,6 +37,18 @@ sudo apt install -y python3-pip  python3-venv \
     gir1.2-gst-plugins-bad-1.0 python3-gst-1.0 gstreamer1.0-python3-plugin-loader \
     libcairo2 libcairo2-dev git
 ```
+
+##### Fedora
+```
+sudo dnf upgrade -y
+sudo dnf install -y python3-pip \
+    gstreamer1-plugins-base gstreamer1-plugins-base-tools \
+    gstreamer1-plugins-good gstreamer1-plugins-bad-free \
+    gstreamer1-plugins-bad-free-devel python3-gstreamer1 \
+    cairo cairo-devel git
+```
+
+
 
 #### Manage Python packages with uv
 
@@ -88,9 +101,6 @@ To use the host GPU in a docker container, you will need to install the nvidia c
 
 
 ##### Ubuntu
-
-Add nvidia repository
-
 ```
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
   && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
@@ -103,7 +113,6 @@ sudo systemctl restart docker
 ```
 
 ##### Fedora
-
 ```
 curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | sudo tee /etc/yum.repos.d/
 nvidia-container-toolkit.repo
@@ -136,16 +145,11 @@ b) This command assumes you have set up a Kafka network as described below
 
 `docker run -v ~/src/gst-python-ml/:/root/gst-python-ml -it --rm --gpus all --name ubuntu24 ubuntu24:latest /bin/bash`
 
-In the container shell, run
+In the container shell, install `uv` following steps above
 
-`pip install -r requirements.txt`
+`cd gst-python-ml` to run the pipelines below.
 
-to install base requirements, and then
-
-`cd gst-python-ml` to run the pipelines below. After installing requirements,
-it is recommended to open another terminal on host and run
-
-`docker ps` to get the container id, and then run
+To persist the container, run `docker ps` to get the container id, and then run
 
 `docker commit $CONTAINER_ID` to commit the changes, where `$CONTAINER_ID`
 is the id for your docker instance.

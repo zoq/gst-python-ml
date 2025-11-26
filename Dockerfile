@@ -11,16 +11,6 @@ RUN apt-get install -y python3-pip  python3-venv \
     gir1.2-gst-plugins-bad-1.0 python3-gst-1.0 libcairo2 libcairo2-dev \
     git gstreamer1.0-python3-plugin-loader
 
-# Create and activate a virtual environment with access to system packages
-RUN python3 -m venv --system-site-packages /opt/venv
-RUN echo 'source /opt/venv/bin/activate' >> /root/.bashrc
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
-# Activate the virtual environment
-RUN /bin/bash -c "\
-    source /opt/venv/bin/activate && \
-    pip install --upgrade pip"
 
 # Set some environment variables
 ENV GST_PLUGIN_PATH=/root/gst-python-ml/plugins
@@ -28,7 +18,7 @@ ENV GST_PLUGIN_PATH=/root/gst-python-ml/plugins
 # allow Python to properly handle Unicode characters during logging.
 ENV PYTHONIOENCODING=utf-8
 
-COPY requirements.txt /root/
+COPY pyproject.toml /root/
 
 # Set the working directory (optional)
 WORKDIR /root

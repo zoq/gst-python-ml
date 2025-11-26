@@ -63,14 +63,6 @@ A pre-built wheel can be found here:
 https://github.com/mjun0812/flash-attention-prebuild-wheels/releases
 
 
-
-#### pip
-
-#### Install venv
-
-`python3 -m venv --system-site-packages ~/venv`
-
-
 #### Clone repo (host)
 
 `git clone https://github.com/collabora/gst-python-ml.git`
@@ -92,13 +84,6 @@ and then
 ```
 source $VIRTUAL_ENV/bin/activate
 pip install --upgrade pip
-```
-
-#### Install pip requirements
-
-```
-cd ~/src/gst-python-ml
-pip install -r requirements.txt
 ```
 
 ### Docker Install

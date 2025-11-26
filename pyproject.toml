@@ -5,9 +5,17 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gst-python-ml"
 version = "0.3.0"
-description = "Your project description"
+description = "An ML package for GStreamer"
 readme = "README.md"
-requires-python = "==3.13.*"
+requires-python = ">=3.13"  # Updated from setup.py; your original said ==3.13.*, but setup.py had >=3.6
+license-files = ["COPYING"]
+authors = [{name = "Aaron Boxer", email = "aaron.boxer@collabora.com"}]
+urls.Homepage = "https://github.com/collabora/gst-python-ml"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "pygobject",
     "torch==2.9.1",
@@ -23,10 +31,8 @@ dependencies = [
     "pycairo",
     "ultralytics",
     "bitsandbytes==0.46.1",
-    "pytest>=7.0",
     "confluent_kafka",
-    # flash-attn might need to be manually installed
-    #"flash-attn",
+    # "flash-attn",  # Commented as before
     "diffusers",
     "sentencepiece",
     "protobuf",
@@ -39,3 +45,26 @@ dependencies = [
     "pyflann-py3",
     "speechbrain"
 ]
+
+# Optional: For extras (replace the lists below with contents from your requirements/*.txt files)
+[project.optional-dependencies]
+# Example: If requirements/language.txt had deps, list them here
+language = []  # Add packages from language.txt
+# Add other extras as needed, e.g., another = [...]
+
+# Optional: For dev/test groups managed by uv (not part of the package install)
+[dependency-groups]
+test = [
+    "pytest>=7.0",
+    # Add other test tools
+]
+dev = [
+    {include-group = "test"},
+    # Add linting, etc., e.g., "ruff"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["plugins/python"]

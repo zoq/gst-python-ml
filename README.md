@@ -15,10 +15,11 @@ Supported functionality includes:
 1. LLMs
 1. serializing model metadata to Kafka server
 
-ML toolkits are supported via the `MLEngine` abstraction - we have nominal support for
+Different ML toolkits are supported via the `MLEngine` abstraction - we have nominal support for
 TensorFlow, LiteRT and OpenVINO, but all testing thus far has been done with PyTorch.
 
-These elements will work with your distribution's GStreamer packages for GStreamer versions >= 1.24.
+These elements will work with your distribution's GStreamer packages as long as the GStreamer version
+is >= 1.24.
 
 ## Install
 
@@ -64,26 +65,27 @@ uv sync
 ```
 
 Now manually install flash-attn wheel (must match your version of python, torch and cuda)
-eg:  
+For example:
+
 `uv pip install ./flash_attn-2.8.3+cu128torch2.9-cp313-cp313-linux_x86_64.whl`
 
-A pre-built wheel can be found here:
+Pe-built wheels can be found here:
 https://github.com/mjun0812/flash-attention-prebuild-wheels/releases
 
 
-#### Clone repo (host)
+#### Clone repo
 
-`git clone https://github.com/collabora/gst-python-ml.git`
+```
+cd $HOME/src
+git clone https://github.com/collabora/gst-python-ml.git
+```
 
 #### Update .bashrc
 
 ```
-export GST_PLUGIN_PATH=$HOME/src/gst-python-ml/plugins:$GST_PLUGIN_PATH
+echo 'export GST_PLUGIN_PATH=$HOME/src/gst-python-ml/plugins:$GST_PLUGIN_PATH' >> ~/.bashrc
+source ~/.bashrc
 ```
-
-and then
-
-`source ~/.bashrc`
 
 ### Docker Install
 
@@ -92,7 +94,7 @@ and then
 Important Note:
 
 This Dockerfile maps a local `gst-python-ml` repository to the container,
-and expects this repository to be located in `~/src` i.e.  `~/src/gst-python-ml`.
+and expects this repository to be located in `$HOME/src` i.e.  `$HOME/src/gst-python-ml`.
 
 
 #### Enable Docker GPU Support on Host
@@ -124,7 +126,7 @@ sudo systemctl restart containerd
 sudo systemctl restart docker
 ```
 
-GPU support can now be tested:
+##### Testing GPU Support
 
 ```
 docker pull nvidia/cuda:12.0.0-base-ubuntu22.04

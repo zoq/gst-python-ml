@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gst-python-ml"
-version = "0.3.0"
+version = "1.0.0"
 description = "An ML package for GStreamer"
 readme = "README.md"
-requires-python = ">=3.13"  # Updated from setup.py; your original said ==3.13.*, but setup.py had >=3.6
+requires-python = ">=3.13"
 license-files = ["COPYING"]
 authors = [{name = "Aaron Boxer", email = "aaron.boxer@collabora.com"}]
 urls.Homepage = "https://github.com/collabora/gst-python-ml"
@@ -32,7 +32,7 @@ dependencies = [
     "ultralytics",
     "bitsandbytes==0.46.1",
     "confluent_kafka",
-    # "flash-attn",  # Commented as before
+    # "flash-attn",
     "diffusers",
     "sentencepiece",
     "protobuf",
@@ -46,13 +46,11 @@ dependencies = [
     "speechbrain"
 ]
 
-# Optional: For extras (replace the lists below with contents from your requirements/*.txt files)
+# Optional
 [project.optional-dependencies]
-# Example: If requirements/language.txt had deps, list them here
-language = []  # Add packages from language.txt
-# Add other extras as needed, e.g., another = [...]
+language = []
 
-# Optional: For dev/test groups managed by uv (not part of the package install)
+# Optional
 [dependency-groups]
 test = [
     "pytest>=7.0",

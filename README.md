@@ -70,21 +70,12 @@ https://github.com/mjun0812/flash-attention-prebuild-wheels/releases
 #### Update .bashrc
 
 ```
-export VIRTUAL_ENV=$HOME/venv
-export PATH=$VIRTUAL_ENV/bin:$PATH
 export GST_PLUGIN_PATH=$HOME/src/gst-python-ml/plugins
 ```
 
 and then
 
 `source ~/.bashrc`
-
-#### Activate venv and install basic pip packages
-
-```
-source $VIRTUAL_ENV/bin/activate
-pip install --upgrade pip
-```
 
 ### Docker Install
 

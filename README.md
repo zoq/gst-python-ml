@@ -93,7 +93,7 @@ git clone https://github.com/collabora/gst-python-ml.git
 #### Update .bashrc
 
 ```
-echo 'export GST_PLUGIN_PATH=$HOME/src/gst-python-ml/plugins:$GST_PLUGIN_PATH' >> ~/.bashrc
+echo 'export GST_PLUGIN_PATH=$HOME/src/gst-python-ml/demos:$HOME/src/gst-python-ml/plugins:$GST_PLUGIN_PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 

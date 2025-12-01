@@ -40,13 +40,22 @@ sudo apt install -y python3-pip  python3-venv \
 ```
 
 ##### Fedora
+
+(adjust Fedora version from 42 to match your version number)
+
+```
+sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-42.noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-42.noarch.rpm
+sudo dnf update -y
+sudo dnf install akmod-nvidia xorg-x11-drv-nvidia-cuda -y
+```
+
 ```
 sudo dnf upgrade -y
 sudo dnf install -y python3-pip \
+    python3-devel cairo cairo-devel cairo-gobject-devel pkgconfig git \
     gstreamer1-plugins-base gstreamer1-plugins-base-tools \
     gstreamer1-plugins-good gstreamer1-plugins-bad-free \
-    gstreamer1-plugins-bad-free-devel python3-gstreamer1 \
-    cairo cairo-devel git
+    gstreamer1-plugins-bad-free-devel python3-gstreamer1
 ```
 
 
@@ -61,6 +70,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 uv venv --system-site-packages
 source .venv/bin/activate
+uv pip install --upgrade pip
 uv sync
 ```
 

@@ -221,24 +221,26 @@ Run `gst-inspect-1.0 python` to list pyml elements.
 # Building PyPI Package
 
 ## Setup
-1. Generate token on PyPI and add to `.pypirc` :
+1. Generate token on PyPI and copy to `.pypirc`
 
 ```
 [pypi]
   username = __token__
-  password = FOOBAR
+  password = $TOKEN
 ```
 
-2. `pip install setuptools wheel twine`
+2. Install build dependencies
 
-## Build
+```
+pip install setuptools wheel twine
+pip install --upgrade build
+```
+## Build and Upoad
 
-`python -m build`
-
-## Upload
-
-`twine upload dist/*`
-
+```
+python -m build
+twine upload dist/*
+```
 
 ## Using GStreamer Python ML Elements
 

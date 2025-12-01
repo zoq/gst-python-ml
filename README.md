@@ -125,23 +125,55 @@ sudo systemctl restart docker
 ```
 
 ##### Fedora
-```
-curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | sudo tee /etc/yum.repos.d/
-nvidia-container-toolkit.repo
 
-sudo dnf install nvidia-container-toolkit
-sudo nvidia-ctk runtime configure --runtime=docker
-sudo nvidia-ctk runtime configure --runtime=containerd
-sudo systemctl restart containerd
+```
+sudo dnf install docker
+sudo usermod -aG docker $USER
+# Then either log out/in completely, or:
+newgrp docker
+```
+
+
+```
+# 1. Add NVIDIA Container Toolkit repository
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo | \
+  sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo
+
+# 2. Remove Fedora's conflicting partial package (if present)
+sudo dnf remove -y golang-github-nvidia-container-toolkit 2>/dev/null || true
+
+# 3. Install the full NVIDIA Container Toolkit
+sudo dnf install -y nvidia-container-toolkit
+
+# 4. Configure Docker to use the NVIDIA runtime as default
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json > /dev/null <<EOF
+{
+  "runtimes": {
+    "nvidia": {
+      "path": "/usr/bin/nvidia-container-runtime",
+      "runtimeArgs": []
+    }
+  },
+  "default-runtime": "nvidia"
+}
+EOF
+
+# 5. Fix Fedora's broken dockerd ExecStart (required!)
+sudo mkdir -p /etc/systemd/system/docker.service.d
+sudo tee /etc/systemd/system/docker.service.d/override.conf >/dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+EOF
+
+# 6. Reload and restart Docker
+sudo systemctl daemon-reload
 sudo systemctl restart docker
-```
 
-##### Testing GPU Support
-
-```
-docker pull nvidia/cuda:12.0.0-base-ubuntu22.04
-docker run --rm --runtime=nvidia --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
-
+# 7. Verify it works
+docker info --format '{{.DefaultRuntime}}'   # → should print: nvidia
+docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 ```
 
 

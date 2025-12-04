@@ -1,0 +1,23 @@
+FROM fedora:42
+
+# Update and install dependencies
+RUN dnf update -y
+RUN dnf install -y gcc python3-pip python3-devel cairo cairo-devel cairo-gobject-devel pkgconf git \
+    gstreamer1-plugins-base gstreamer1-plugins-base-tools \
+    gstreamer1-plugins-good gstreamer1-plugins-bad-free \
+    gstreamer1-plugins-bad-free-devel python3-gstreamer1
+
+# Install uv via pip
+RUN pip install uv
+
+# Set some environment variables
+ENV GST_PLUGIN_PATH=/root/gst-python-ml/plugins
+
+# allow Python to properly handle Unicode characters during logging.
+ENV PYTHONIOENCODING=utf-8
+
+# Set the working directory (optional)
+WORKDIR /root
+
+# Set the entry point to bash for interactive use
+CMD ["/bin/bash"]

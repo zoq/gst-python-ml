@@ -820,7 +820,7 @@ http = [
 
 [[package]]
 name = "gst-python-ml"
-version = "1.0.1"
+version = "1.0.2"
 source = { editable = "." }
 dependencies = [
     { name = "accelerate" },
@@ -843,6 +843,7 @@ dependencies = [
     { name = "pysilero-vad" },
     { name = "qwen-vl-utils", extra = ["decord"] },
     { name = "sentencepiece" },
+    { name = "soundfile" },
     { name = "speechbrain" },
     { name = "torch" },
     { name = "torchaudio" },
@@ -883,6 +884,7 @@ requires-dist = [
     { name = "pysilero-vad" },
     { name = "qwen-vl-utils", extras = ["decord"], specifier = "==0.0.8" },
     { name = "sentencepiece" },
+    { name = "soundfile" },
     { name = "speechbrain" },
     { name = "torch", specifier = "==2.9.1" },
     { name = "torchaudio", specifier = "==2.9.1" },

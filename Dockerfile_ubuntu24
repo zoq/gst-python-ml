@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:24.04
 
 # Set environment variables to non-interactive
 ENV DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC

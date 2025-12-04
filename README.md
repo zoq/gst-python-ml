@@ -177,9 +177,12 @@ docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 ```
 
 
-#### Build Ubuntu 24.04 Container
+#### Build Container
 
-`docker build -f ./Dockerfile -t ubuntu24:latest .`
+`docker build -f ./Dockerfile_ubuntu24 -t ubuntu24:latest .`
+
+`docker build -f ./Dockerfile_fedora42 -t fedora42:latest .`
+
 
 #### Run Docker Container
 
@@ -188,6 +191,9 @@ a) If running on CPU, just remove `--gpus all` from command below
 b) This command assumes you have set up a Kafka network as described below
 
 `docker run -v ~/src/gst-python-ml/:/root/gst-python-ml -it --rm --gpus all --name ubuntu24 ubuntu24:latest /bin/bash`
+
+`docker run -v ~/src/gst-python-ml/:/root/gst-python-ml -it --rm --gpus all --name fedora42 fedora42:latest /bin/bash`
+
 
 In the container shell, install `uv` following steps above
 

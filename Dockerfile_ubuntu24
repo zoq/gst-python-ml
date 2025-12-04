@@ -11,14 +11,14 @@ RUN apt-get install -y python3-pip  python3-venv \
     gir1.2-gst-plugins-bad-1.0 python3-gst-1.0 libcairo2 libcairo2-dev \
     git gstreamer1.0-python3-plugin-loader
 
+# Install uv via pip
+RUN pip install uv
 
 # Set some environment variables
 ENV GST_PLUGIN_PATH=/root/gst-python-ml/plugins
 
 # allow Python to properly handle Unicode characters during logging.
 ENV PYTHONIOENCODING=utf-8
-
-COPY pyproject.toml /root/
 
 # Set the working directory (optional)
 WORKDIR /root

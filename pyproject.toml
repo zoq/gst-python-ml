@@ -45,6 +45,7 @@ dependencies = [
     "webdataset",
     "easydict",
     "pyflann-py3",
+    "soundfile",
     "speechbrain"
 ]
 

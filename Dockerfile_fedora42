@@ -17,7 +17,7 @@ ENV GST_PLUGIN_PATH=/root/gst-python-ml/plugins
 ENV PYTHONIOENCODING=utf-8
 
 # Set the working directory (optional)
-WORKDIR /root
+WORKDIR /root/gst-python-ml
 
 # Set the entry point to bash for interactive use
 CMD ["/bin/bash"]

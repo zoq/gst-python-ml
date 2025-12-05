@@ -186,32 +186,15 @@ docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 
 #### Run Docker Container
 
-a) If running on CPU, just remove `--gpus all` from command below
-
-b) This command assumes you have set up a Kafka network as described below
+Note: If running on CPU, just remove `--gpus all` from commands below:
 
 `docker run -v ~/src/gst-python-ml/:/root/gst-python-ml -it --rm --gpus all --name ubuntu24 ubuntu24:latest /bin/bash`
 
+or
+
 `docker run -v ~/src/gst-python-ml/:/root/gst-python-ml -it --rm --gpus all --name fedora42 fedora42:latest /bin/bash`
 
-
-In the container shell, install `uv` following steps above
-
-`cd gst-python-ml` to run the pipelines below.
-
-To persist the container, run `docker ps` to get the container id, and then run
-
-`docker commit $CONTAINER_ID` to commit the changes, where `$CONTAINER_ID`
-is the id for your docker instance.
-
-#### Docker Cleanup
-
-If you want to purge existing docker containers and images:
-
-```
-docker container prune -f
-docker image prune -a -f
-```
+Now, in the container shell, set up `uv` `venv` as detailed above.
 
 ## IMPORTANT NOTES
 

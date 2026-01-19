@@ -46,7 +46,8 @@ dependencies = [
     "easydict",
     "pyflann-py3",
     "soundfile",
-    "speechbrain"
+    "speechbrain",
+    "pyopengl"
 ]
 
 # Optional

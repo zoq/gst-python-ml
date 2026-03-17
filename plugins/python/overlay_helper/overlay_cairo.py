@@ -62,7 +62,13 @@ class CairoOverlayGraphics(OverlayGraphics):
                     point["center"], point["color"], point["opacity"]
                 )
 
+        classifications = [d for d in metadata if d.get("type") == "classification"]
+        if classifications:
+            self._draw_classification_labels(classifications)
+
         for data in metadata:
+            if data.get("type") == "classification":
+                continue
             box = data["box"]
             self.draw_bounding_box(box)
 
@@ -77,6 +83,23 @@ class CairoOverlayGraphics(OverlayGraphics):
                         "y": (box["y1"] + box["y2"]) / 2,
                     }
                     tracking_display.add_tracking_point(center, track_id)
+
+    def _draw_classification_labels(self, classifications):
+        """Draw zero-shot classification results as corner text."""
+        pad = 10
+        line_h = 22
+        font_size = 14
+        label_w = 220
+
+        for i, item in enumerate(classifications):
+            text = f"{item['label']}: {item['confidence']:.1%}"
+            x = pad
+            y = pad + line_h + i * line_h
+            # Dark background for readability
+            self.context.set_source_rgba(0, 0, 0, 0.6)
+            self.context.rectangle(x - 4, y - line_h + 4, label_w, line_h)
+            self.context.fill()
+            self.draw_text(text, x, y, Color(0, 1, 0, 1), font_size)
 
     def finalize(self):
         """Finalize and clean up drawing."""

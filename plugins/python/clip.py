@@ -20,7 +20,6 @@ from log.global_logger import GlobalLogger
 
 CAN_REGISTER_ELEMENT = True
 try:
-    import ctypes
     import threading
 
     import gi
@@ -35,7 +34,6 @@ try:
 
     from video_transform import VideoTransform
     from utils.muxed_buffer_processor import MuxedBufferProcessor
-    from utils.format_converter import FormatConverter
     from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
 
@@ -153,14 +151,6 @@ class CLIPTransform(VideoTransform):
         "Aaron Boxer <aaron.boxer@collabora.com>",
     )
 
-    visualize = GObject.Property(
-        type=bool,
-        default=True,
-        nick="Visualize",
-        blurb="Draw top-k classification labels directly on the video frame",
-        flags=GObject.ParamFlags.READWRITE,
-    )
-
     top_k = GObject.Property(
         type=int,
         default=3,
@@ -238,10 +228,8 @@ class CLIPTransform(VideoTransform):
 
     def do_stop(self):
         self._running = False
-        self._infer_event.set()
-        if self._infer_thread:
-            self._infer_thread.join(timeout=2.0)
-            self._infer_thread = None
+        self._infer_event.set()  # Wake the thread so it sees _running=False
+        self._infer_thread = None
         return True
 
     def _inference_worker(self):
@@ -287,61 +275,12 @@ class CLIPTransform(VideoTransform):
             if results is None:
                 return Gst.FlowReturn.OK
 
-            if self.visualize:
-                self._draw_labels(buf, frame, results)
-
             self._attach_metadata(buf, results)
             return Gst.FlowReturn.OK
 
         except Exception as e:
             self.logger.error(f"CLIP transform error: {e}")
             return Gst.FlowReturn.ERROR
-
-    def _draw_labels(self, buf, frame, results):
-        """Draw top-k classification labels on the frame."""
-        import cv2
-
-        try:
-            rgb = frame.astype(np.uint8)
-            bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
-
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            scale = 0.7
-            thickness = 2
-            pad = 8
-            line_h = 30
-
-            top = [(label, prob) for label, prob in results[:self.top_k]
-                   if prob >= self.threshold]
-
-            for i, (label, prob) in enumerate(top):
-                text = f"{label}: {prob:.1%}"
-                y = pad + line_h + i * line_h
-                cv2.rectangle(bgr, (pad, y - line_h + 4), (pad + 220, y + 6),
-                              (0, 0, 0), -1)
-                cv2.putText(bgr, text, (pad + 4, y), font, scale,
-                            (0, 255, 0), thickness, cv2.LINE_AA)
-
-            fmt = FormatConverter.get_video_format(buf, self.sinkpad)
-            if fmt in ("RGB",):
-                out = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-            elif fmt in ("RGBA",):
-                out = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGBA)
-            elif fmt in ("BGRA",):
-                out = cv2.cvtColor(bgr, cv2.COLOR_BGR2BGRA)
-            else:
-                out = bgr  # BGR passthrough
-
-            success, map_info = buf.map(Gst.MapFlags.WRITE)
-            if success:
-                try:
-                    frame_bytes = np.ascontiguousarray(out).tobytes()
-                    dst = (ctypes.c_char * map_info.size).from_buffer(map_info.data)
-                    ctypes.memmove(dst, frame_bytes, min(len(frame_bytes), map_info.size))
-                finally:
-                    buf.unmap(map_info)
-        except Exception as e:
-            self.logger.error(f"CLIP draw error: {e}")
 
     def _attach_metadata(self, buf, results):
         """Attach top-k classification results above threshold as GstAnalytics metadata."""

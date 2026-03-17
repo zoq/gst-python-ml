@@ -308,13 +308,21 @@ yolo11m-pose  (best accuracy)
 #### YOLO pose with skeleton visualization (rendered on frame)
 
 ```
-gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_yolo_pose model-name=yolo11n-pose device=cuda ! videoconvert ! autovideosink
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! pyml_yolo_pose model-name=yolo11n-pose device=cuda \
+    ! videoconvert ! autovideosink sync=false
 ```
 
 #### YOLO pose with bounding box overlay (metadata only, no in-element rendering)
 
 ```
-gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_yolo_pose model-name=yolo11n-pose device=cuda visualize=false ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! pyml_yolo_pose model-name=yolo11n-pose device=cuda visualize=false \
+    ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
 ```
 
 ### Depth Estimation
@@ -331,25 +339,42 @@ Available colormaps: `inferno` (default), `jet`, `viridis`, `plasma`, `magma`
 #### DepthAnything V2 with inferno colormap
 
 ```
-gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda ! videoconvert ! autovideosink
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda \
+    ! videoconvert ! autovideosink sync=false
 ```
 
 #### DepthAnything V2 with jet colormap
 
 ```
-gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda colormap=jet ! videoconvert ! autovideosink
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda colormap=jet \
+    ! videoconvert ! autovideosink sync=false
 ```
 
 #### Depth with reduced compute via frame-stride
 
 ```
-gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda frame-stride=2 ! videoconvert ! autovideosink
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda frame-stride=2 \
+    ! videoconvert ! autovideosink sync=false
 ```
 
 #### Depth with original video side-by-side (tee)
 
 ```
-gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! tee name=t t. ! queue ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda ! videoconvert ! autovideosink t. ! queue ! videoconvert ! autovideosink
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! tee name=t \
+    t. ! queue ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda ! videoconvert ! autovideosink sync=false \
+    t. ! queue ! videoconvert ! autovideosink sync=false
 ```
 
 ### Zero-Shot Classification (CLIP / SigLIP)
@@ -369,33 +394,33 @@ google/siglip-large-patch16-384    (SigLIP large)
 
 ```
 gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
-  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
     ! pyml_clip model-name=openai/clip-vit-base-patch32 device=cuda \
               labels="person, bicycle, car, dog, cat" top-k=3 \
-    ! videoconvert ! autovideosink \
-  d. ! queue ! fakesink async=false
+    ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
 ```
 
 #### SigLIP (better zero-shot accuracy than CLIP)
 
 ```
 gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
-  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
     ! pyml_clip model-name=google/siglip-base-patch16-224 device=cuda \
               labels="people walking, empty street, crowd, indoor scene" top-k=1 \
-    ! videoconvert ! autovideosink \
-  d. ! queue ! fakesink async=false
+    ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
 ```
 
 #### CLIP with threshold (only report labels above 20% confidence)
 
 ```
 gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
-  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  d. ! queue \
+    ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
     ! pyml_clip model-name=openai/clip-vit-base-patch32 device=cuda \
               labels="person, bicycle, car, dog, cat" threshold=0.2 \
-    ! videoconvert ! autovideosink \
-  d. ! queue ! fakesink async=false
+    ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
 ```
 
 ### Voice Activity Detection

@@ -110,10 +110,7 @@ class ClipEngine(PyTorchEngine):
 
             # logits_per_image: [1, num_labels]
             probs = outputs.logits_per_image.softmax(dim=1)[0]
-            results = [
-                (label, prob.item())
-                for label, prob in zip(self._labels, probs)
-            ]
+            results = [(label, prob.item()) for label, prob in zip(self._labels, probs)]
             results.sort(key=lambda x: x[1], reverse=True)
             return results
 
@@ -190,7 +187,7 @@ class CLIPTransform(VideoTransform):
         default="",
         nick="Labels",
         blurb="Comma-separated list of text labels to classify against, "
-              "e.g. 'person, car, bicycle, dog, cat'",
+        "e.g. 'person, car, bicycle, dog, cat'",
         flags=GObject.ParamFlags.READWRITE,
     )
     def labels(self):

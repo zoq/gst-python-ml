@@ -48,22 +48,43 @@ POSE_META_HEADER = b"GST-POSE:"
 
 # COCO 17-keypoint names
 COCO_KEYPOINT_NAMES = [
-    "nose", "left_eye", "right_eye", "left_ear", "right_ear",
-    "left_shoulder", "right_shoulder", "left_elbow", "right_elbow",
-    "left_wrist", "right_wrist", "left_hip", "right_hip",
-    "left_knee", "right_knee", "left_ankle", "right_ankle",
+    "nose",
+    "left_eye",
+    "right_eye",
+    "left_ear",
+    "right_ear",
+    "left_shoulder",
+    "right_shoulder",
+    "left_elbow",
+    "right_elbow",
+    "left_wrist",
+    "right_wrist",
+    "left_hip",
+    "right_hip",
+    "left_knee",
+    "right_knee",
+    "left_ankle",
+    "right_ankle",
 ]
 
 # Skeleton connections as (keypoint_index_a, keypoint_index_b) pairs
 SKELETON = [
-    (0, 1), (0, 2), (1, 3), (2, 4),    # face
-    (5, 6),                              # shoulders
-    (5, 7), (7, 9),                      # left arm
-    (6, 8), (8, 10),                     # right arm
-    (5, 11), (6, 12),                    # torso sides
-    (11, 12),                            # hips
-    (11, 13), (13, 15),                  # left leg
-    (12, 14), (14, 16),                  # right leg
+    (0, 1),
+    (0, 2),
+    (1, 3),
+    (2, 4),  # face
+    (5, 6),  # shoulders
+    (5, 7),
+    (7, 9),  # left arm
+    (6, 8),
+    (8, 10),  # right arm
+    (5, 11),
+    (6, 12),  # torso sides
+    (11, 12),  # hips
+    (11, 13),
+    (13, 15),  # left leg
+    (12, 14),
+    (14, 16),  # right leg
 ]
 
 
@@ -74,13 +95,9 @@ class YoloPoseEngine(PyTorchEngine):
         try:
             self.model = YOLO(f"{model_name}.pt")
             self.execute_with_stream(lambda: self.model.to(self.device))
-            self.logger.info(
-                f"YOLO pose model '{model_name}' loaded on {self.device}"
-            )
+            self.logger.info(f"YOLO pose model '{model_name}' loaded on {self.device}")
         except Exception as e:
-            raise ValueError(
-                f"Failed to load YOLO pose model '{model_name}': {e}"
-            )
+            raise ValueError(f"Failed to load YOLO pose model '{model_name}': {e}")
 
     def do_forward(self, frames):
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4
@@ -238,7 +255,9 @@ class YOLOPoseTransform(BaseObjectDetector):
                 try:
                     frame_bytes = np.ascontiguousarray(output).tobytes()
                     dst = (ctypes.c_char * map_info.size).from_buffer(map_info.data)
-                    ctypes.memmove(dst, frame_bytes, min(len(frame_bytes), map_info.size))
+                    ctypes.memmove(
+                        dst, frame_bytes, min(len(frame_bytes), map_info.size)
+                    )
                 finally:
                     buf.unmap(map_info)
         except Exception as e:

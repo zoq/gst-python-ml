@@ -207,9 +207,7 @@ class DepthTransform(VideoTransform):
 
         d_min, d_max = depth_map.min(), depth_map.max()
         if d_max > d_min:
-            depth_norm = (
-                (depth_map - d_min) / (d_max - d_min) * 255
-            ).astype(np.uint8)
+            depth_norm = ((depth_map - d_min) / (d_max - d_min) * 255).astype(np.uint8)
         else:
             depth_norm = np.zeros_like(depth_map, dtype=np.uint8)
 
@@ -225,7 +223,9 @@ class DepthTransform(VideoTransform):
                     try:
                         frame_bytes = np.ascontiguousarray(output).tobytes()
                         dst = (ctypes.c_char * map_info.size).from_buffer(map_info.data)
-                        ctypes.memmove(dst, frame_bytes, min(len(frame_bytes), map_info.size))
+                        ctypes.memmove(
+                            dst, frame_bytes, min(len(frame_bytes), map_info.size)
+                        )
                     finally:
                         buf.unmap(map_info)
 

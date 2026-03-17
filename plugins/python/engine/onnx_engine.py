@@ -39,7 +39,7 @@ class ONNXEngine(MLEngine):
         self.model_type = None
         self.model_name = None
         self.kwargs = None
-        self.provider = None
+        self.provider = "CPUExecutionProvider"
         self.input_names = None
         self.output_names = None
 
@@ -288,7 +288,8 @@ class ONNXEngine(MLEngine):
                         for j in range(boxes.shape[0])
                     ]
             else:
-                raise ValueError("Unexpected output format for detection model.")
+                self.logger.error("Unexpected output format for detection model.")
+                return []
             self.logger.debug(
                 f"Batch inference results: {len(results)} frames processed"
             )

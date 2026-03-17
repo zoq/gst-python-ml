@@ -35,6 +35,7 @@ class TensorFlowEngine(MLEngine):
         """Load a pre-trained model by name from keras.applications, Transformers, or a local path."""
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
+        self.model_type = None
 
         try:
             if os.path.isfile(model_name):
@@ -46,11 +47,13 @@ class TensorFlowEngine(MLEngine):
                 except Exception:
                     self.model = tf.saved_model.load(model_name)
                     self.logger.info(f"SavedModel loaded from local path: {model_name}")
+                self.model_type = "custom"
             else:
                 if hasattr(keras.applications, model_name):
                     self.model = getattr(keras.applications, model_name)(
                         weights="imagenet"
                     )
+                    self.model_type = "classification"
                     self.logger.info(
                         f"Pre-trained vision model '{model_name}' loaded from keras.applications"
                     )
@@ -60,7 +63,12 @@ class TensorFlowEngine(MLEngine):
                     )
                     self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
                     self.model = TFVisionEncoderDecoderModel.from_pretrained(model_name)
-                    self.frame_stride = self.model.config.encoder.num_frames
+                    self.frame_stride = (
+                        self.model.config.encoder.num_frames
+                        if hasattr(self.model.config.encoder, "num_frames")
+                        else 1
+                    )
+                    self.model_type = "vision_text"
                     self.logger.info(
                         f"Vision-Text model '{model_name}' loaded with processor and tokenizer."
                     )
@@ -73,6 +81,7 @@ class TensorFlowEngine(MLEngine):
                     self.model = TFAutoModelForCausalLM.from_pretrained(
                         model_name,
                     )
+                    self.model_type = "llm"
                     self.logger.info(
                         f"Pre-trained LLM model '{model_name}' loaded from Transformers."
                     )
@@ -139,7 +148,7 @@ class TensorFlowEngine(MLEngine):
             self.logger.error(f"Invalid input type for forward: {type(frames)}")
             return None
 
-        if hasattr(self, "image_processor") and self.image_processor and self.tokenizer:
+        if self.model_type == "vision_text":
             if is_batch:
                 self.logger.error(
                     "Batch processing not supported for vision-text models with frame buffering."
@@ -172,22 +181,35 @@ class TensorFlowEngine(MLEngine):
                     return None
             return None
 
-        elif not hasattr(self, "tokenizer") or not self.tokenizer:
-            if "ResNet" in self.model.__class__.__name__:
-                preds = self._forward_classification(frames)
-                preds = preds.numpy() if isinstance(preds, tf.Tensor) else preds
-                if not is_batch:
-                    preds = np.expand_dims(preds, 0)
-                probs = np.exp(preds) / np.sum(np.exp(preds), axis=1, keepdims=True)
-                top_classes = np.argmax(probs, axis=1)
-                confidences = np.max(probs, axis=1)
-                results = [
-                    {"labels": [int(c)], "scores": [float(s)]}
-                    for c, s in zip(top_classes, confidences)
-                ]
-                self.logger.info(f"Classification results: {results}")
-                return results[0] if not is_batch else results
+        elif self.model_type == "llm":
+            if is_batch:
+                self.logger.error("Batch processing not supported for LLM-only models.")
+                return None
+            inputs = self.tokenizer(frames, return_tensors="tf")
+            with tf.device(self.device):
+                generated_tokens = self.model.generate(**inputs)
+            generated_text = self.tokenizer.batch_decode(
+                generated_tokens, skip_special_tokens=True
+            )
+            self.logger.info(f"Generated text: {generated_text}")
+            return generated_text
 
+        elif self.model_type == "classification":
+            preds = self._forward_classification(frames)
+            preds = preds.numpy() if isinstance(preds, tf.Tensor) else preds
+            if not is_batch:
+                preds = np.expand_dims(preds, 0)
+            probs = np.exp(preds) / np.sum(np.exp(preds), axis=1, keepdims=True)
+            top_classes = np.argmax(probs, axis=1)
+            confidences = np.max(probs, axis=1)
+            results = [
+                {"labels": [int(c)], "scores": [float(s)]}
+                for c, s in zip(top_classes, confidences)
+            ]
+            self.logger.info(f"Classification results: {results}")
+            return results[0] if not is_batch else results
+
+        else:
             # General models (e.g., detection or custom) with true batch inference
             writable_frames = np.array(frames, copy=True)
             img_tensor = tf.convert_to_tensor(writable_frames, dtype=tf.float32) / 255.0
@@ -233,22 +255,6 @@ class TensorFlowEngine(MLEngine):
                 f"Batch inference results: {1 if not is_batch else len(frames)} frames processed"
             )
             return output_np
-
-        elif self.tokenizer and not hasattr(self, "image_processor"):
-            if is_batch:
-                self.logger.error("Batch processing not supported for LLM-only models.")
-                return None
-            inputs = self.tokenizer(frames, return_tensors="tf")
-            with tf.device(self.device):
-                generated_tokens = self.model.generate(**inputs)
-            generated_text = self.tokenizer.batch_decode(
-                generated_tokens, skip_special_tokens=True
-            )
-            self.logger.info(f"Generated text: {generated_text}")
-            return generated_text
-
-        else:
-            raise ValueError("Unsupported model type or missing processor/tokenizer.")
 
     def do_generate(self, input_text, max_length=1000, system_prompt=None):
         inputs = self.tokenizer(input_text, return_tensors="tf")

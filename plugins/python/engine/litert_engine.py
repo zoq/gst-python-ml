@@ -41,9 +41,6 @@ class LiteRTEngine(MLEngine):
         self.kwargs = None
         self.model_type = None
 
-        if "cpu" not in device:
-            self.delegate = self._create_delegate(device)
-
     def _create_delegate(self, delegate_path):
         try:
             delegate = tf.lite.experimental.load_delegate(delegate_path)

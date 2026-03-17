@@ -38,6 +38,7 @@ class OpenVinoEngine(MLEngine):
         self.model_type = None
         self.model_name = None
         self.kwargs = None
+        self.detection_threshold = 0.5
 
     def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from TorchVision, Transformers (via Optimum OpenVINO), or a local IR path."""
@@ -47,12 +48,12 @@ class OpenVinoEngine(MLEngine):
         self.kwargs = kwargs
 
         try:
-            bin_path = (
-                model_name if model_name.endswith(".bin") else f"{model_name}.bin"
-            )
-            xml_path = (
-                model_name if model_name.endswith(".xml") else f"{model_name}.xml"
-            )
+            if model_name.endswith((".xml", ".bin")):
+                base = model_name.rsplit(".", 1)[0]
+            else:
+                base = model_name
+            xml_path = f"{base}.xml"
+            bin_path = f"{base}.bin"
             if os.path.isfile(xml_path) and os.path.isfile(bin_path):
                 self.ov_model = self.core.read_model(xml_path)
                 self.model_type = "custom"
@@ -80,7 +81,7 @@ class OpenVinoEngine(MLEngine):
                     )
                     self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
                     self.compiled_model = OVModelForVision2Seq.from_pretrained(
-                        model_name, export=True, compile=False
+                        model_name, export=True
                     )
                     self.frame_stride = (
                         self.compiled_model.config.encoder.num_frames
@@ -91,17 +92,17 @@ class OpenVinoEngine(MLEngine):
                     self.logger.info(
                         f"Vision-Text model '{model_name}' loaded via Optimum OpenVINO."
                     )
-                    return True  # Compiled later
+                    return True
                 else:
                     self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                     self.compiled_model = OVModelForCausalLM.from_pretrained(
-                        model_name, export=True, compile=False
+                        model_name, export=True
                     )
                     self.model_type = "llm"
                     self.logger.info(
                         f"Pre-trained LLM model '{model_name}' loaded via Optimum OpenVINO."
                     )
-                    return True  # Compiled later
+                    return True
 
             self.compiled_model = self.core.compile_model(self.ov_model, self.device)
             self.logger.info(f"Model compiled on {self.device}")
@@ -233,7 +234,7 @@ class OpenVinoEngine(MLEngine):
                 boxes, labels, scores = outputs
                 results = []
                 for i in range(img_array.shape[0]):
-                    valid = scores[i] > 0.5  # Example threshold
+                    valid = scores[i] > self.detection_threshold
                     res = {
                         "boxes": boxes[i][valid],
                         "labels": labels[i][valid].astype(int),

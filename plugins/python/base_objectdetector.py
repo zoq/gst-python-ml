@@ -124,7 +124,7 @@ class BaseObjectDetector(VideoTransform):
                 count = GstAnalytics.relation_get_length(attached_meta)
                 self.logger.info(f"Total metadata relations attached: {count}")
             else:
-                self.logger.error("No metadata attached to buffer")
+                self.logger.debug("No detections on this buffer")
 
             return Gst.FlowReturn.OK
 

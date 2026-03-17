@@ -8,6 +8,7 @@ Supported functionality includes:
 1. tracking
 1. pose estimation (COCO 17-keypoint skeleton)
 1. monocular depth estimation
+1. zero-shot classification (CLIP / SigLIP)
 1. video captioning
 1. translation
 1. transcription
@@ -349,6 +350,52 @@ gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! vid
 
 ```
 gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! tee name=t t. ! queue ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda ! videoconvert ! autovideosink t. ! queue ! videoconvert ! autovideosink
+```
+
+### Zero-Shot Classification (CLIP / SigLIP)
+
+`pyml_clip` classifies each frame against a user-defined set of text labels
+with no fixed label set — labels are set at pipeline launch time.
+
+Supported models:
+```
+openai/clip-vit-base-patch32       (default, ~600 MB)
+openai/clip-vit-large-patch14      (more accurate, ~1.7 GB)
+google/siglip-base-patch16-224     (SigLIP, better zero-shot accuracy)
+google/siglip-large-patch16-384    (SigLIP large)
+```
+
+#### CLIP with custom labels
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! pyml_clip model-name=openai/clip-vit-base-patch32 device=cuda \
+              labels="person, bicycle, car, dog, cat" top-k=3 \
+    ! videoconvert ! autovideosink \
+  d. ! queue ! fakesink async=false
+```
+
+#### SigLIP (better zero-shot accuracy than CLIP)
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! pyml_clip model-name=google/siglip-base-patch16-224 device=cuda \
+              labels="people walking, empty street, crowd, indoor scene" top-k=1 \
+    ! videoconvert ! autovideosink \
+  d. ! queue ! fakesink async=false
+```
+
+#### CLIP with threshold (only report labels above 20% confidence)
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+    ! pyml_clip model-name=openai/clip-vit-base-patch32 device=cuda \
+              labels="person, bicycle, car, dog, cat" threshold=0.2 \
+    ! videoconvert ! autovideosink \
+  d. ! queue ! fakesink async=false
 ```
 
 ### Voice Activity Detection

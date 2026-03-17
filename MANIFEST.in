@@ -3,5 +3,3 @@ include COPYING
 recursive-include plugins/python *
 global-exclude __pycache__/*
 global-exclude *.pyc
-prune plugins/python/birdseye
-exclude plugins/python/birds_eye.py

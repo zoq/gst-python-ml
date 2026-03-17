@@ -6,9 +6,12 @@ Supported functionality includes:
 
 1. object detection
 1. tracking
+1. pose estimation (COCO 17-keypoint skeleton)
+1. monocular depth estimation
 1. video captioning
 1. translation
 1. transcription
+1. voice activity detection
 1. speech to text
 1. text to speech
 1. text to image
@@ -297,6 +300,76 @@ GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodeb
 GST_DEBUG=4 gst-launch-1.0 filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale ! video/x-raw,width=640,height=480 ! demo_soccer model-name=yolo11m device=cuda:0 ! pyml_overlay ! videoconvert ! autovideosink
 ```
 
+
+### Pose Estimation
+
+`pyml_yolo_pose` supports all YOLO pose models. Recommended model names:
+```
+yolo11n-pose  (fastest)
+yolo11s-pose
+yolo11m-pose  (best accuracy)
+```
+
+#### YOLO pose with skeleton visualization (rendered on frame)
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_yolo_pose model-name=yolo11n-pose device=cuda ! videoconvert ! autovideosink
+```
+
+#### YOLO pose with bounding box overlay (metadata only, no in-element rendering)
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_yolo_pose model-name=yolo11n-pose device=cuda visualize=false ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink
+```
+
+### Depth Estimation
+
+`pyml_depth` supports DepthAnything V2 models from HuggingFace. Available model sizes:
+```
+depth-anything/Depth-Anything-V2-Small-hf  (fastest, ~100 MB)
+depth-anything/Depth-Anything-V2-Base-hf
+depth-anything/Depth-Anything-V2-Large-hf  (most accurate)
+```
+
+Available colormaps: `inferno` (default), `jet`, `viridis`, `plasma`, `magma`
+
+#### DepthAnything V2 with inferno colormap
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda ! videoconvert ! autovideosink
+```
+
+#### DepthAnything V2 with jet colormap
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda colormap=jet ! videoconvert ! autovideosink
+```
+
+#### Depth with reduced compute via frame-stride
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda frame-stride=2 ! videoconvert ! autovideosink
+```
+
+#### Depth with original video side-by-side (tee)
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin ! videoconvert ! videoscale ! video/x-raw,width=640,height=480 ! tee name=t t. ! queue ! pyml_depth model-name=depth-anything/Depth-Anything-V2-Small-hf device=cuda ! videoconvert ! autovideosink t. ! queue ! videoconvert ! autovideosink
+```
+
+### Voice Activity Detection
+
+#### Standalone VAD with metadata (pass-through, speech probability attached to buffers)
+
+```
+GST_DEBUG=4 gst-launch-1.0 pulsesrc ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! pyml_vad threshold=0.7 ! fakesink
+```
+
+#### VAD gating before transcription (mute silent audio, reduce Whisper latency)
+
+```
+GST_DEBUG=4 gst-launch-1.0 filesrc location=data/air_traffic_korean_with_english.wav ! decodebin ! audioconvert ! audioresample ! audio/x-raw,format=S16LE,rate=16000,channels=1 ! pyml_vad threshold=0.6 gate=true ! pyml_whispertranscribe device=cuda language=ko ! fakesink
+```
 
 ### Transcription
 

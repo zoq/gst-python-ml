@@ -78,6 +78,18 @@ uv pip install --upgrade pip
 uv sync
 ```
 
+#### ONNX Runtime
+
+For CPU inference:
+```
+uv sync --extra onnx
+```
+
+For GPU inference (requires CUDA):
+```
+uv sync --extra onnx-gpu
+```
+
 Now manually install flash-attn wheel (must match your version of python, torch and cuda)
 For example:
 
@@ -295,6 +307,47 @@ GST_DEBUG=4 gst-launch-1.0   filesrc location=data/soccer_tracking.mp4 ! decodeb
 GST_DEBUG=4 gst-launch-1.0 filesrc location=data/soccer_tracking.mp4 ! decodebin ! videoconvertscale ! video/x-raw,width=640,height=480 ! demo_soccer model-name=yolo11m device=cuda:0 ! pyml_overlay ! videoconvert ! autovideosink
 ```
 
+
+#### ONNX Engine
+
+`pyml_objectdetector` supports any ONNX model via the `engine-name=onnx` property.
+YOLO11 ONNX output (`[B, 4+nc, anchors]`) is automatically decoded with NMS — no manual post-processing required.
+
+Export a YOLO11 model to ONNX with ultralytics:
+
+```
+yolo export model=yolo11m.pt format=onnx
+```
+
+##### YOLO11m ONNX object detection with overlay
+
+Use `input-format=nchw` because YOLO expects channels-first input, and
+`post-process=anchor_free` to decode the raw `[B, 4+nc, anchors]` output into
+bounding boxes before handing off to `pyml_overlay`.
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=640,height=640" \
+  ! pyml_objectdetector engine-name=onnx model-name=yolo11m.onnx device=cpu \
+              input-format=nchw post-process=anchor_free \
+  ! videoconvert ! "video/x-raw,format=RGBA" \
+  ! pyml_overlay ! videoconvert ! autovideosink
+```
+
+##### Generic ONNX passthrough (logs raw inference output)
+
+Use `pyml_inference` to test any ONNX model and inspect raw output:
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=640,height=640" \
+  ! pyml_inference engine-name=onnx model-name=yolo11m.onnx device=cpu \
+  ! fakesink
+```
+
+`pyml_inference` also accepts `engine-name=pytorch`, `engine-name=openvino`, etc.
 
 ### Pose Estimation
 

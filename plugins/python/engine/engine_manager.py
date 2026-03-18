@@ -32,7 +32,7 @@ class EngineManager:
     def initialize_engine(self):
         if not self.engine and self.engine_name:
             self.engine = EngineFactory.create(self.engine_name)
-            self.engine.device = self.device
+            self.engine.do_set_device(self.device)
         if not self.engine:
             self.logger.error(f"Unable to load ML engine: {self.engine_name}")
 

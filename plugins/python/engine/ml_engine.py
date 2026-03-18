@@ -39,6 +39,8 @@ class MLEngine(ABC):
         self.device_queue_id = None
         self.track = False
         self.prompt = "What is shown in this image?"  # Default prompt
+        self.input_format = "auto"   # "auto", "nhwc", "nchw"
+        self.post_process = "auto"   # "auto", "none", or a format key from detection_decoder
 
     # Interface #
     @abstractmethod
@@ -63,6 +65,32 @@ class MLEngine(ABC):
         pass
 
     # Implementation #
+    def _apply_input_format(self, img, is_batch):
+        """Normalize input to (B, ?, H, W) or (B, H, W, C) per self.input_format."""
+        import numpy as np
+        if not is_batch:
+            img = np.expand_dims(img, axis=0)
+        if self.input_format == "nchw":
+            img = np.transpose(img, (0, 3, 1, 2))
+        # "nhwc" or "auto" → leave as (B, H, W, C)
+        return img
+
+    def _apply_post_process(self, raw, is_batch):
+        """Apply post-processing to raw engine output per self.post_process."""
+        import numpy as np
+        pp = self.post_process
+        if pp == "auto":
+            if (isinstance(raw, np.ndarray) and raw.ndim == 3
+                    and raw.shape[1] >= 5 and raw.shape[2] > raw.shape[1]):
+                pp = "anchor_free"
+            else:
+                pp = "none"
+        if pp != "none" and not isinstance(raw, list):
+            from utils.detection_decoder import decode
+            results = decode(raw, pp)
+            return results[0] if not is_batch else results
+        return raw
+
     def set_prompt(self, prompt):
         """Set the custom prompt for generating responses."""
         self.prompt = prompt

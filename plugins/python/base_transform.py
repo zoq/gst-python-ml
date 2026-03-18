@@ -109,6 +109,30 @@ class BaseTransform(GstBase.BaseTransform):
     def engine_name(self, value):
         self.mgr.engine_name = value
 
+    @GObject.Property(type=str, default="auto")
+    def input_format(self):
+        "Input tensor layout: auto, nhwc, or nchw"
+        if self.engine:
+            return self.engine.input_format
+        return "auto"
+
+    @input_format.setter
+    def input_format(self, value):
+        if self.engine:
+            self.engine.input_format = value
+
+    @GObject.Property(type=str, default="auto")
+    def post_process(self):
+        "Post-processing format for raw engine output (auto, none, or a key from detection_decoder)"
+        if self.engine:
+            return self.engine.post_process
+        return "none"
+
+    @post_process.setter
+    def post_process(self, value):
+        if self.engine:
+            self.engine.post_process = value
+
     @GObject.Property(type=int, default=1)
     def device_queue_id(self):
         "ID of the DeviceQueue from the pool to use"

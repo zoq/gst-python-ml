@@ -17,16 +17,9 @@
 # Boston, MA 02110-1301, USA.
 
 import os
+import tempfile
 import numpy as np
 import onnxruntime as ort
-import torch
-import tempfile
-from torchvision import models
-from transformers import (
-    AutoTokenizer,
-    AutoImageProcessor,
-)
-from optimum.onnxruntime import ORTModelForCausalLM, ORTModelForVision2Seq
 
 from .ml_engine import MLEngine
 
@@ -43,6 +36,19 @@ class ONNXEngine(MLEngine):
         self.input_names = None
         self.output_names = None
 
+    def _providers(self):
+        """Return provider list with CPU fallback."""
+        if self.provider == "CPUExecutionProvider":
+            return ["CPUExecutionProvider"]
+        return [self.provider, "CPUExecutionProvider"]
+
+    def _input_is_nchw(self):
+        """Auto-detect whether the model's first input expects NCHW layout."""
+        if self.session is None:
+            return False
+        shape = self.session.get_inputs()[0].shape
+        return len(shape) == 4 and shape[1] in (1, 3, 4)
+
     def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from TorchVision, Transformers (via Optimum ONNX), or a local ONNX path."""
         processor_name = kwargs.get("processor_name")
@@ -53,22 +59,28 @@ class ONNXEngine(MLEngine):
         try:
             if os.path.isfile(model_name) and model_name.endswith(".onnx"):
                 self.session = ort.InferenceSession(
-                    model_name, providers=[self.provider]
+                    model_name, providers=self._providers()
                 )
                 self.model = self.session
                 self.model_type = "custom"
                 self.input_names = [inp.name for inp in self.session.get_inputs()]
                 self.output_names = [out.name for out in self.session.get_outputs()]
-                self.logger.info(f"ONNX model loaded from local path: {model_name}")
+                self.logger.info(
+                    f"ONNX model loaded from local path: {model_name} "
+                    f"(active providers: {self.session.get_providers()})"
+                )
                 return True
             else:
-                if hasattr(models, model_name):
-                    pt_model = getattr(models, model_name)(pretrained=True)
+                from torchvision import models as tv_models
+                if hasattr(tv_models, model_name):
+                    pt_model = getattr(tv_models, model_name)(pretrained=True)
                     self.model_type = "classification"
-                elif hasattr(models.detection, model_name):
-                    pt_model = getattr(models.detection, model_name)(pretrained=True)
+                elif hasattr(tv_models.detection, model_name):
+                    pt_model = getattr(tv_models.detection, model_name)(pretrained=True)
                     self.model_type = "detection"
                 elif processor_name and tokenizer_name:
+                    from transformers import AutoTokenizer, AutoImageProcessor
+                    from optimum.onnxruntime import ORTModelForVision2Seq
                     self.image_processor = AutoImageProcessor.from_pretrained(
                         processor_name
                     )
@@ -87,6 +99,8 @@ class ONNXEngine(MLEngine):
                     )
                     return True
                 else:
+                    from transformers import AutoTokenizer
+                    from optimum.onnxruntime import ORTModelForCausalLM
                     self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                     self.model = ORTModelForCausalLM.from_pretrained(
                         model_name, export=True, provider=self.provider
@@ -98,6 +112,7 @@ class ONNXEngine(MLEngine):
                     return True
 
                 # For TorchVision models, export to ONNX
+                import torch
                 pt_model.eval()
                 dummy_input = torch.randn(1, 3, 224, 224)
                 with tempfile.NamedTemporaryFile(
@@ -121,7 +136,7 @@ class ONNXEngine(MLEngine):
                         ),
                     )
                     self.session = ort.InferenceSession(
-                        tmp_file.name, providers=[self.provider]
+                        tmp_file.name, providers=self._providers()
                     )
                 os.unlink(tmp_file.name)
                 self.model = self.session
@@ -147,8 +162,8 @@ class ONNXEngine(MLEngine):
         self.logger.info(f"Setting device to {device}")
 
         if "cuda" in device:
-            if not ort.get_device() == "GPU":
-                self.logger.warning("GPU is not available, falling back to CPU")
+            if "CUDAExecutionProvider" not in ort.get_available_providers():
+                self.logger.warning("CUDAExecutionProvider not available, falling back to CPU")
                 self.device = "cpu"
                 self.provider = "CPUExecutionProvider"
             else:
@@ -297,14 +312,13 @@ class ONNXEngine(MLEngine):
 
         elif self.model_type == "custom":
             # Generic forward for custom ONNX models
-            input_tensor = (
-                np.expand_dims(frames.astype(np.float32), axis=0)
-                if not is_batch
-                else frames.astype(np.float32)
-            )
-            inputs = {self.input_names[0]: input_tensor}
-            outputs = self.session.run(self.output_names, inputs)
-            return outputs if len(outputs) > 1 else outputs[0]
+            fmt = self.input_format
+            if fmt == "auto" and self._input_is_nchw():
+                self.input_format = "nchw"
+            img = self._apply_input_format(frames.astype(np.float32) / 255.0, is_batch)
+            outputs = self.session.run(self.output_names, {self.input_names[0]: img})
+            raw = outputs if len(outputs) > 1 else outputs[0]
+            return self._apply_post_process(raw, is_batch)
 
         else:
             raise ValueError("Unsupported model type.")

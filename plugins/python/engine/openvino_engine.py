@@ -250,18 +250,15 @@ class OpenVinoEngine(MLEngine):
 
         elif self.model_type == "custom":
             # Generic forward for custom models
-            input_tensor = (
-                np.expand_dims(frames.astype(np.float32), axis=0)
-                if not is_batch
-                else frames.astype(np.float32)
-            )
+            img = self._apply_input_format(frames.astype(np.float32) / 255.0, is_batch)
             infer_request = self.compiled_model.create_infer_request()
-            infer_request.infer({0: input_tensor})
+            infer_request.infer({0: img})
             outputs = [
                 infer_request.get_output_tensor(i).data
                 for i in range(len(self.compiled_model.outputs))
             ]
-            return outputs if len(outputs) > 1 else outputs[0]
+            raw = outputs if len(outputs) > 1 else outputs[0]
+            return self._apply_post_process(raw, is_batch)
 
         else:
             raise ValueError("Unsupported model type.")

@@ -211,19 +211,10 @@ class TensorFlowEngine(MLEngine):
 
         else:
             # General models (e.g., detection or custom) with true batch inference
-            writable_frames = np.array(frames, copy=True)
-            img_tensor = tf.convert_to_tensor(writable_frames, dtype=tf.float32) / 255.0
-            if is_batch:
-                img_tensor = tf.transpose(
-                    img_tensor, perm=[0, 3, 1, 2]
-                )  # (B, H, W, C) -> (B, C, H, W)
-            else:
-                img_tensor = tf.transpose(
-                    img_tensor, perm=[2, 0, 1]
-                )  # (H, W, C) -> (C, H, W)
-                img_tensor = tf.expand_dims(
-                    img_tensor, 0
-                )  # Add batch dim: (1, C, H, W)
+            img = self._apply_input_format(
+                np.array(frames, copy=True, dtype=np.float32) / 255.0, is_batch
+            )
+            img_tensor = tf.convert_to_tensor(img)
 
             with tf.device(self.device):
                 if hasattr(self, "infer"):
@@ -245,16 +236,10 @@ class TensorFlowEngine(MLEngine):
                 output_np = (
                     results.numpy() if isinstance(results, tf.Tensor) else results
                 )
-            if (
-                not is_batch
-                and isinstance(output_np, (list, np.ndarray))
-                and len(output_np) == 1
-            ):
-                output_np = output_np[0]
             self.logger.debug(
                 f"Batch inference results: {1 if not is_batch else len(frames)} frames processed"
             )
-            return output_np
+            return self._apply_post_process(output_np, is_batch)
 
     def do_generate(self, input_text, max_length=1000, system_prompt=None):
         inputs = self.tokenizer(input_text, return_tensors="tf")

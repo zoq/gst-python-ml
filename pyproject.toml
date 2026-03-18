@@ -48,6 +48,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+onnx = [
+    "onnxruntime",
+]
+onnx-gpu = [
+    "onnxruntime-gpu",
+]
 vad = [
     "pysilero",
     "pysilero-vad",

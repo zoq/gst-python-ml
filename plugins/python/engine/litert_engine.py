@@ -225,20 +225,15 @@ class LiteRTEngine(MLEngine):
 
         else:  # Assume detection or custom
             input_shape = self.input_details[0]["shape"]
+            img = self._apply_input_format(frames.astype(np.float32) / 255.0, is_batch)
             if is_batch:
-                batch_size = frames.shape[0]
-                new_shape = [batch_size] + list(input_shape[1:])
+                new_shape = [img.shape[0]] + list(input_shape[1:])
                 self.interpreter.resize_tensor_input(
                     self.input_details[0]["index"], new_shape
                 )
                 self.interpreter.allocate_tensors()
-                writable_frames = frames.astype(np.float32) / 255.0
-            else:
-                writable_frames = np.expand_dims(
-                    frames.astype(np.float32) / 255.0, axis=0
-                )
 
-            self.interpreter.set_tensor(self.input_details[0]["index"], writable_frames)
+            self.interpreter.set_tensor(self.input_details[0]["index"], img)
             self.interpreter.invoke()
 
             outputs = [
@@ -246,11 +241,11 @@ class LiteRTEngine(MLEngine):
                 for output in self.output_details
             ]
 
-            # Assume standard detection outputs: [boxes, classes, scores, num_detections]
+            # Standard TFLite detection: [boxes, classes, scores, num_detections]
             if len(outputs) >= 4:
                 boxes, classes, scores, num_dets = outputs[:4]
                 results = []
-                for i in range(writable_frames.shape[0]):
+                for i in range(img.shape[0]):
                     n = int(num_dets[i])
                     res = {
                         "boxes": boxes[i][:n],
@@ -260,9 +255,8 @@ class LiteRTEngine(MLEngine):
                     results.append(res)
                 return results[0] if not is_batch else results
             else:
-                # For other models, return list of outputs
-                output_np = [out.squeeze() if not is_batch else out for out in outputs]
-                return output_np[0] if len(output_np) == 1 else output_np
+                raw = outputs[0] if len(outputs) == 1 else outputs
+                return self._apply_post_process(raw, is_batch)
 
     def do_generate(self, input_text, max_length=1000, system_prompt=None):
         if self.model_type != "llm":

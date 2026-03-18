@@ -829,7 +829,6 @@ dependencies = [
     { name = "confluent-kafka" },
     { name = "diffusers" },
     { name = "easydict" },
-    { name = "faster-whisper" },
     { name = "huggingface-hub" },
     { name = "lap" },
     { name = "numpy" },
@@ -840,8 +839,6 @@ dependencies = [
     { name = "pyflann-py3" },
     { name = "pygobject" },
     { name = "pyopengl" },
-    { name = "pysilero" },
-    { name = "pysilero-vad" },
     { name = "qwen-vl-utils", extra = ["decord"] },
     { name = "sentencepiece" },
     { name = "soundfile" },
@@ -853,6 +850,13 @@ dependencies = [
     { name = "ultralytics" },
     { name = "webdataset" },
     { name = "whisperspeech" },
+]
+
+[package.optional-dependencies]
+vad = [
+    { name = "faster-whisper" },
+    { name = "pysilero" },
+    { name = "pysilero-vad" },
 ]
 
 [package.dev-dependencies]
@@ -871,7 +875,7 @@ requires-dist = [
     { name = "confluent-kafka" },
     { name = "diffusers" },
     { name = "easydict" },
-    { name = "faster-whisper" },
+    { name = "faster-whisper", marker = "extra == 'vad'" },
     { name = "huggingface-hub" },
     { name = "lap" },
     { name = "numpy" },
@@ -882,8 +886,8 @@ requires-dist = [
     { name = "pyflann-py3" },
     { name = "pygobject" },
     { name = "pyopengl" },
-    { name = "pysilero" },
-    { name = "pysilero-vad" },
+    { name = "pysilero", marker = "extra == 'vad'" },
+    { name = "pysilero-vad", marker = "extra == 'vad'" },
     { name = "qwen-vl-utils", extras = ["decord"], specifier = "==0.0.8" },
     { name = "sentencepiece" },
     { name = "soundfile" },
@@ -896,7 +900,7 @@ requires-dist = [
     { name = "webdataset" },
     { name = "whisperspeech" },
 ]
-provides-extras = ["language"]
+provides-extras = ["vad"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=7.0" }]

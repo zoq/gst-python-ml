@@ -38,9 +38,6 @@ dependencies = [
     "diffusers",
     "sentencepiece",
     "protobuf",
-    "pysilero",
-    "faster_whisper",
-    "pysilero-vad",
     "whisperspeech",
     "webdataset",
     "easydict",
@@ -50,9 +47,12 @@ dependencies = [
     "pyopengl"
 ]
 
-# Optional
 [project.optional-dependencies]
-language = []
+vad = [
+    "pysilero",
+    "pysilero-vad",
+    "faster-whisper",
+]
 
 # Optional
 [dependency-groups]

@@ -19,12 +19,6 @@
 import os
 import numpy as np
 import openvino as ov
-from torchvision import models
-from transformers import (
-    AutoTokenizer,
-    AutoImageProcessor,
-)
-from optimum.intel import OVModelForCausalLM, OVModelForVision2Seq
 
 from .ml_engine import MLEngine
 
@@ -61,6 +55,7 @@ class OpenVinoEngine(MLEngine):
                     f"OpenVINO IR model loaded from local path: {model_name}"
                 )
             else:
+                from torchvision import models
                 if hasattr(models, model_name):
                     pt_model = getattr(models, model_name)(pretrained=True)
                     self.ov_model = ov.convert_model(pt_model)
@@ -76,6 +71,8 @@ class OpenVinoEngine(MLEngine):
                         f"Pre-trained detection model '{model_name}' converted to OpenVINO."
                     )
                 elif processor_name and tokenizer_name:
+                    from transformers import AutoTokenizer, AutoImageProcessor
+                    from optimum.intel import OVModelForVision2Seq
                     self.image_processor = AutoImageProcessor.from_pretrained(
                         processor_name
                     )
@@ -94,6 +91,8 @@ class OpenVinoEngine(MLEngine):
                     )
                     return True
                 else:
+                    from transformers import AutoTokenizer
+                    from optimum.intel import OVModelForCausalLM
                     self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                     self.compiled_model = OVModelForCausalLM.from_pretrained(
                         model_name, export=True
@@ -119,7 +118,11 @@ class OpenVinoEngine(MLEngine):
 
     def do_set_device(self, device):
         """Set OpenVINO device for the model."""
-        self.device = device.upper()  # OpenVINO uses uppercase like "CPU", "GPU"
+        # Map cuda/gpu aliases to OpenVINO device names (uppercase)
+        if "cuda" in device.lower() or device.lower() == "gpu":
+            self.device = "GPU"
+        else:
+            self.device = device.upper()
         self.logger.info(f"Setting device to {self.device}")
 
         available_devices = self.core.available_devices

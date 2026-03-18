@@ -349,6 +349,77 @@ gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
 
 `pyml_inference` also accepts `engine-name=pytorch`, `engine-name=openvino`, etc.
 
+#### OpenVINO Engine
+
+Export a YOLO11 model to OpenVINO IR format with ultralytics:
+
+```
+yolo export model=yolo11m.pt format=openvino
+```
+
+This produces `yolo11m_openvino_model/yolo11m.xml` and `yolo11m.bin`.
+
+##### YOLO11m OpenVINO object detection with overlay
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=640,height=640" \
+  ! pyml_objectdetector engine-name=openvino \
+              model-name=yolo11m_openvino_model/yolo11m.xml device=cpu \
+              input-format=nchw post-process=anchor_free \
+  ! videoconvert ! "video/x-raw,format=RGBA" \
+  ! pyml_overlay ! videoconvert ! autovideosink
+```
+
+Use `device=GPU` for Intel GPU acceleration (OpenVINO uses uppercase device names).
+
+#### LiteRT (TFLite) Engine
+
+Export a YOLO11 model to TFLite with ultralytics:
+
+```
+yolo export model=yolo11m.pt format=tflite
+```
+
+This produces `yolo11m_saved_model/yolo11m_float32.tflite`.
+
+##### YOLO11m TFLite object detection with overlay
+
+TFLite models expect NHWC input (default), so `input-format` does not need to be set.
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=640,height=640" \
+  ! pyml_objectdetector engine-name=tflite \
+              model-name=yolo11m_saved_model/yolo11m_float32.tflite device=cpu \
+              post-process=anchor_free \
+  ! videoconvert ! "video/x-raw,format=RGBA" \
+  ! pyml_overlay ! videoconvert ! autovideosink
+```
+
+#### TensorFlow Engine
+
+Export a YOLO11 model to TensorFlow SavedModel with ultralytics:
+
+```
+yolo export model=yolo11m.pt format=saved_model
+```
+
+##### YOLO11m TensorFlow object detection with overlay
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=640,height=640" \
+  ! pyml_objectdetector engine-name=tensorflow \
+              model-name=yolo11m_saved_model device=cuda \
+              post-process=anchor_free \
+  ! videoconvert ! "video/x-raw,format=RGBA" \
+  ! pyml_overlay ! videoconvert ! autovideosink
+```
+
 ### Pose Estimation
 
 `pyml_yolo_pose` supports all YOLO pose models. Recommended model names:

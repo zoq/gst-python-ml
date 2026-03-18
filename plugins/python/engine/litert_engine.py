@@ -128,7 +128,15 @@ class LiteRTEngine(MLEngine):
 
         if "cpu" in device:
             self.delegate = None
+        elif "cuda" in device.lower() or device.lower() == "gpu":
+            # TFLite has no CUDA delegate on desktop — fall back to CPU
+            self.logger.warning(
+                "TFLite has no CUDA/GPU delegate on desktop, falling back to CPU"
+            )
+            self.device = "cpu"
+            self.delegate = None
         else:
+            # Treat value as a path to a delegate .so
             self.delegate = self._create_delegate(device)
 
         # Reload the model with the new delegate

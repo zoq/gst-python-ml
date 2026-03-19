@@ -217,30 +217,6 @@ Now, in the container shell, set up `uv` `venv` as detailed above.
 
 Run `gst-inspect-1.0 python` to list pyml elements.
 
-# Building PyPI Package
-
-## Setup
-1. Generate token on PyPI and copy to `.pypirc`
-
-```
-[pypi]
-  username = __token__
-  password = $TOKEN
-```
-
-2. Install build dependencies
-
-```
-pip install setuptools wheel twine
-pip install --upgrade build
-```
-## Build and Upoad
-
-```
-python -m build
-twine upload dist/*
-```
-
 ## Using GStreamer Python ML Elements
 
 ## Pipelines

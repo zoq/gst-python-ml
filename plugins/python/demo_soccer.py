@@ -35,32 +35,38 @@ try:
     import cv2
     import os
     from collections import defaultdict, deque
-    from ultralytics import YOLO
     from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
 
-    try:
-        import torch
-    except Exception:
-        torch = None
+    BOT_OK = BYTE_OK = CFG_OK = True
+    BOTSORT = BYTETracker = get_cfg = Boxes = None
 
-    BOT_OK = BYTE_OK = True
-    try:
-        from ultralytics.trackers.bot_sort import BOTSORT
-    except Exception:
-        BOT_OK = False
-    try:
-        from ultralytics.trackers.byte_tracker import BYTETracker
-    except Exception:
-        BYTE_OK = False
+    def _init_ultralytics():
+        global BOT_OK, BYTE_OK, CFG_OK, BOTSORT, BYTETracker, get_cfg, Boxes
+        try:
+            from ultralytics.trackers.bot_sort import BOTSORT as _BS
 
-    CFG_OK = True
-    try:
-        from ultralytics.cfg import get_cfg
-    except Exception:
-        CFG_OK = False
+            BOTSORT = _BS
+        except Exception:
+            BOT_OK = False
+        try:
+            from ultralytics.trackers.byte_tracker import BYTETracker as _BT
 
-    from ultralytics.engine.results import Boxes
+            BYTETracker = _BT
+        except Exception:
+            BYTE_OK = False
+        try:
+            from ultralytics.cfg import get_cfg as _gcfg
+
+            get_cfg = _gcfg
+        except Exception:
+            CFG_OK = False
+        try:
+            from ultralytics.engine.results import Boxes as _Boxes
+
+            Boxes = _Boxes
+        except Exception:
+            pass
 
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
@@ -237,6 +243,7 @@ def classwise_keep(result, person_thr, ball_thr):
 
 
 def dets_to_boxes(dets_xyxy_conf_cls, frame_shape):
+    _init_ultralytics()
     if dets_xyxy_conf_cls is None or dets_xyxy_conf_cls.size == 0:
         import torch as _torch
 
@@ -708,7 +715,10 @@ class YoloAdvancedEngine(PyTorchEngine):
         self.verbose = kwargs.get("verbose", False)
 
     def do_load_model(self, model_name, **kwargs):
+        _init_ultralytics()
         try:
+            from ultralytics import YOLO
+
             # YOLO load unchanged...
             self.det_model = YOLO(f"{model_name}.pt")
             self.execute_with_stream(lambda: self.det_model.to(self.device))

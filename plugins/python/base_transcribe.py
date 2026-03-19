@@ -21,7 +21,6 @@ import sys
 from abc import abstractmethod
 
 import numpy as np
-from pysilero_vad import SileroVoiceActivityDetector
 import gi
 
 gi.require_version("Gst", "1.0")
@@ -35,10 +34,6 @@ sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 
 STT_SAMPLE_RATE = 16000  # Target sample rate for processing
-
-# Initialize VAD
-vad = SileroVoiceActivityDetector()
-vad_chunk_size = vad.chunk_samples()
 
 ICAPS = Gst.Caps(
     Gst.Structure(
@@ -81,10 +76,15 @@ class BaseTranscribe(BaseAggregator):
     def __init__(self):
         super().__init__()
 
+        from pysilero_vad import SileroVoiceActivityDetector
+
+        self._vad = SileroVoiceActivityDetector()
+        self._vad_chunk_size = self._vad.chunk_samples()
+
         self.clip_buffer = collections.deque()
         self.active_clip = False
         self.silence_counter = 0
-        chunk_duration_ms = (vad_chunk_size / STT_SAMPLE_RATE) * 1000
+        chunk_duration_ms = (self._vad_chunk_size / STT_SAMPLE_RATE) * 1000
         silence_ms = 300
         self.clip_silence_trigger_counter = int(silence_ms / chunk_duration_ms)
         self.__initial_prompt = ""
@@ -160,17 +160,17 @@ class BaseTranscribe(BaseAggregator):
             audio_data = np.frombuffer(map_info.data, dtype=np.int16)
             audio_collected = True
 
-            if len(audio_data) < vad_chunk_size:
+            if len(audio_data) < self._vad_chunk_size:
                 self.logger.warning("Insufficient audio data for processing")
                 buf.unmap(map_info)
                 return Gst.FlowReturn.OK
 
             # Process audio data with VAD (Voice Activity Detection)
-            while len(audio_data) >= vad_chunk_size:
-                vad_chunk = audio_data[:vad_chunk_size]
-                audio_data = audio_data[vad_chunk_size:]
+            while len(audio_data) >= self._vad_chunk_size:
+                vad_chunk = audio_data[: self._vad_chunk_size]
+                audio_data = audio_data[self._vad_chunk_size :]
 
-                vad_confidence = vad.process_chunk(vad_chunk.tobytes())
+                vad_confidence = self._vad.process_chunk(vad_chunk.tobytes())
                 if vad_confidence >= 0.7:
                     if self.streaming:
                         transcript = self._transcribe_audio(vad_chunk)

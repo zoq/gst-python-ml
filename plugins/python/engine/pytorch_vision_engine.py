@@ -21,12 +21,13 @@ import numpy as np
 from PIL import Image
 import gc
 
-import torch
 from engine.pytorch_engine import PyTorchEngine
 
 
 class PyTorchVisionEngine(PyTorchEngine):
     def do_forward(self, frames):
+        import torch
+
         is_batch = isinstance(frames, np.ndarray) and frames.ndim == 4
         if not isinstance(frames, (np.ndarray, str)):
             self.logger.error(f"Invalid input type for forward: {type(frames)}")

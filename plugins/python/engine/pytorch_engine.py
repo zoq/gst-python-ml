@@ -18,27 +18,7 @@
 
 import os
 import numpy as np
-import torch
 import traceback
-
-from torchvision import models
-from transformers import (
-    AutoTokenizer,
-    AutoModelForCausalLM,
-    AutoImageProcessor,
-    VisionEncoderDecoderModel,
-    BitsAndBytesConfig,
-)
-
-try:
-    import executorch.pybindings as et  # ExecuTorch Python runtime bindings
-except ImportError:
-    et = None  # Fallback if not installed
-
-try:
-    import torch_tensorrt  # For TensorRT compilation/integration
-except ImportError:
-    torch_tensorrt = None  # Fallback if not installed
 
 from .ml_engine import MLEngine
 
@@ -51,6 +31,25 @@ class PyTorchEngine(MLEngine):
 
     def do_load_model(self, model_name, **kwargs):
         """Load a pre-trained model by name from TorchVision, Transformers, or a local path (including .pte for ExecuTorch)."""
+        import torch
+        from torchvision import models
+        from transformers import (
+            AutoTokenizer,
+            AutoModelForCausalLM,
+            AutoImageProcessor,
+            VisionEncoderDecoderModel,
+            BitsAndBytesConfig,
+        )
+
+        try:
+            import executorch.pybindings as et
+        except ImportError:
+            et = None
+        try:
+            import torch_tensorrt
+        except ImportError:
+            torch_tensorrt = None
+
         processor_name = kwargs.get("processor_name")
         tokenizer_name = kwargs.get("tokenizer_name")
         compile_model = kwargs.get("compile", False)
@@ -199,6 +198,8 @@ class PyTorchEngine(MLEngine):
 
     def do_set_device(self, device):
         """Set PyTorch device for the model (ExecuTorch handles devices via export/backends)."""
+        import torch
+
         self.device = device
         self.logger.info(f"Setting device to {device}")
 
@@ -266,6 +267,8 @@ class PyTorchEngine(MLEngine):
 
     def _forward_classification(self, frames):
         """Handle inference for classification models like ResNet (non-ExecuTorch only)."""
+        import torch
+
         if self.is_executorch:
             raise NotImplementedError("Classification not adapted for ExecuTorch yet")
         self.model.eval()
@@ -289,6 +292,12 @@ class PyTorchEngine(MLEngine):
 
     def do_forward(self, frames):
         """Handle inference for different types of models, supporting single frames or batches (with ExecuTorch adaptation)."""
+        import torch
+
+        try:
+            import executorch.pybindings as et
+        except ImportError:
+            et = None
         if self.is_executorch:
             if not isinstance(frames, np.ndarray):
                 self.logger.error(
@@ -404,6 +413,12 @@ class PyTorchEngine(MLEngine):
             raise ValueError("Unsupported model type or missing processor/tokenizer.")
 
     def do_generate(self, input_text, max_length=1000, system_prompt=None):
+        import torch
+
+        try:
+            import executorch.pybindings as et
+        except ImportError:
+            et = None
         messages = [{"role": "user", "content": input_text}]
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
@@ -449,6 +464,8 @@ class PyTorchEngine(MLEngine):
         return generated_text
 
     def execute_with_stream(self, func, *args, **kwargs):
+        import torch
+
         if self.device_queue_id is not None and "cuda" in self.device:
             s = torch.cuda.Stream(
                 device=self.device, priority=0, stream_id=self.device_queue_id

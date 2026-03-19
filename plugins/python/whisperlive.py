@@ -27,11 +27,7 @@ try:
     gi.require_version("GObject", "2.0")
     from gi.repository import Gst, GObject, GstBase  # noqa: E402
     from base_transcribe import BaseTranscribe
-    from whisperspeech.pipeline import Pipeline
-    from transformers import AutoTokenizer, AutoModelForCausalLM
     import numpy as np
-    import torch
-    from faster_whisper import WhisperModel
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
     GlobalLogger().warning(
@@ -99,6 +95,11 @@ class WhisperLive(BaseTranscribe):
 
     def do_load_model(self):
         """Initialize or update the Whisper model when the device changes."""
+        from whisperspeech.pipeline import Pipeline
+        from transformers import AutoTokenizer, AutoModelForCausalLM
+        import torch
+        from faster_whisper import WhisperModel
+
         compute_type = "float16" if self.device.startswith("cuda") else "int8"
         self.logger.info(
             f"Loading Whisper model on device: {self.device} with compute_type: {compute_type}"

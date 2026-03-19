@@ -27,12 +27,6 @@ try:
     from gi.repository import Gst, GObject  # noqa: E402
     import traceback
 
-    import torch
-    from transformers import (
-        Qwen2_5_VLForConditionalGeneration,
-        AutoProcessor,
-    )
-    from qwen_vl_utils import process_vision_info
     from engine.pytorch_vision_engine import PyTorchVisionEngine
     from engine.engine_factory import EngineFactory
     from base_caption import BaseCaption
@@ -47,6 +41,9 @@ except ImportError as e:
 class CaptionQwenEngine(PyTorchVisionEngine):
     def do_load_model(self, model_name, **kwargs):
         """Load a Qwen2.5-VL model from Hugging Face."""
+        import torch
+        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+
         try:
             self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
                 model_name,
@@ -78,6 +75,8 @@ class CaptionQwenEngine(PyTorchVisionEngine):
         return [{"role": "user", "content": content}]
 
     def _process_inputs(self, prompt_text, images):
+        from qwen_vl_utils import process_vision_info
+
         image_inputs, video_inputs = process_vision_info(
             self._prepare_messages(images)
         )  # Note: Uses messages directly

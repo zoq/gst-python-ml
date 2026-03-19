@@ -72,6 +72,7 @@ class ONNXEngine(MLEngine):
                 return True
             else:
                 from torchvision import models as tv_models
+
                 if hasattr(tv_models, model_name):
                     pt_model = getattr(tv_models, model_name)(pretrained=True)
                     self.model_type = "classification"
@@ -81,6 +82,7 @@ class ONNXEngine(MLEngine):
                 elif processor_name and tokenizer_name:
                     from transformers import AutoTokenizer, AutoImageProcessor
                     from optimum.onnxruntime import ORTModelForVision2Seq
+
                     self.image_processor = AutoImageProcessor.from_pretrained(
                         processor_name
                     )
@@ -101,6 +103,7 @@ class ONNXEngine(MLEngine):
                 else:
                     from transformers import AutoTokenizer
                     from optimum.onnxruntime import ORTModelForCausalLM
+
                     self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                     self.model = ORTModelForCausalLM.from_pretrained(
                         model_name, export=True, provider=self.provider
@@ -113,6 +116,7 @@ class ONNXEngine(MLEngine):
 
                 # For TorchVision models, export to ONNX
                 import torch
+
                 pt_model.eval()
                 dummy_input = torch.randn(1, 3, 224, 224)
                 with tempfile.NamedTemporaryFile(
@@ -163,7 +167,9 @@ class ONNXEngine(MLEngine):
 
         if "cuda" in device:
             if "CUDAExecutionProvider" not in ort.get_available_providers():
-                self.logger.warning("CUDAExecutionProvider not available, falling back to CPU")
+                self.logger.warning(
+                    "CUDAExecutionProvider not available, falling back to CPU"
+                )
                 self.device = "cpu"
                 self.provider = "CPUExecutionProvider"
             else:

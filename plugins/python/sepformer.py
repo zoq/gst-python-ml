@@ -27,10 +27,6 @@ try:
     gi.require_version("GObject", "2.0")
     from gi.repository import Gst, GObject, GstBase  # noqa: E402
     from base_separate import BaseSeparate
-    import torch
-    from speechbrain.pretrained import SepformerSeparation
-    from torchaudio.transforms import Fade, Resample
-    from huggingface_hub import snapshot_download
     import os
     import numpy as np
 
@@ -50,6 +46,9 @@ class SepformerEngine(PyTorchEngine):
         self.sample_rate = 0
 
     def do_load_model(self, model_name, **kwargs):
+        from speechbrain.pretrained import SepformerSeparation
+        from huggingface_hub import snapshot_download
+
         if not model_name:
             return
         self.logger.info(f"Loading Sepformer-WhamR model on device: {self.device}")
@@ -74,6 +73,9 @@ class SepformerEngine(PyTorchEngine):
         segment=10.0,
         overlap=0.1,
     ):
+        import torch
+        from torchaudio.transforms import Fade
+
         device = mix.device
         batch, length = mix.shape  # For SpeechBrain, input is (batch, time)
         chunk_len = int(self.sample_rate * segment * (1 + overlap))
@@ -170,6 +172,8 @@ class Sepformer(BaseSeparate):
         raise ValueError("engine_name cannot be set")
 
     def do_separate(self, audio_data):
+        import torch
+
         engine = self.engine
         if engine.model is None:
             engine.do_load_model(self.model_name)

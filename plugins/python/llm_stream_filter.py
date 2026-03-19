@@ -36,8 +36,6 @@ try:
     from video_transform import VideoTransform
     from engine.engine_manager import EngineManager
     from utils.caption_utils import load_captions
-    import torch
-    from transformers import BitsAndBytesConfig
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
     GlobalLogger().warning(
@@ -176,6 +174,9 @@ class LLMStreamFilter(VideoTransform):
         """
         Load caption model (if not using caption_file) and LLM model.
         """
+        import torch
+        from transformers import BitsAndBytesConfig
+
         try:
             # Initialize caption engine (only if not using caption_file)
             if not self.caption_file:
@@ -275,6 +276,8 @@ class LLMStreamFilter(VideoTransform):
         """
         In-place transformation: loads or generates captions, selects N streams, and outputs results.
         """
+        import torch
+
         try:
             muxed_processor = MuxedBufferProcessor(
                 self.logger,

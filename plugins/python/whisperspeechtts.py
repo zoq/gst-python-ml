@@ -26,7 +26,6 @@ try:
     gi.require_version("GstBase", "1.0")
     from gi.repository import Gst, GObject, GstBase  # noqa: E402
     import numpy as np
-    from whisperspeech.pipeline import Pipeline
     from base_tts import BaseTts
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
@@ -68,6 +67,8 @@ class WhisperSpeechTTS(BaseTts):
     )
 
     def do_load_model(self):
+        from whisperspeech.pipeline import Pipeline
+
         self.logger.info(
             f"Initializing WhisperSpeech TTS model on device: {self.device}"
         )

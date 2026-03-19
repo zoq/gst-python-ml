@@ -32,7 +32,6 @@ try:
 
     import numpy as np
     import time
-    from ultralytics import YOLO
     from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
 
@@ -127,6 +126,8 @@ COCO_CLASSES = {
 class YoloEngine(PyTorchEngine):
     def do_load_model(self, model_name, **kwargs):
         try:
+            from ultralytics import YOLO
+
             self.model = YOLO(f"{model_name}.pt")
             self.execute_with_stream(lambda: self.model.to(self.device))
             self.logger.info(f"YOLO model '{model_name}' loaded on {self.device}")

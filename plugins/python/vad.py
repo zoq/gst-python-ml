@@ -25,7 +25,6 @@ try:
 
     import gi
     import numpy as np
-    from pysilero_vad import SileroVoiceActivityDetector
 
     gi.require_version("Gst", "1.0")
     gi.require_version("GstBase", "1.0")
@@ -113,6 +112,8 @@ class VoiceActivityDetector(GstBase.BaseTransform):
 
     def do_start(self):
         try:
+            from pysilero_vad import SileroVoiceActivityDetector
+
             self._vad = SileroVoiceActivityDetector()
             self._chunk_size = self._vad.chunk_samples()
             self.logger.info(

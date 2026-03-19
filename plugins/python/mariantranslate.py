@@ -25,7 +25,6 @@ try:
     gi.require_version("Gst", "1.0")
     from gi.repository import Gst, GObject  # noqa: E402
     from base_translate import BaseTranslate
-    from transformers import MarianMTModel, MarianTokenizer
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
     GlobalLogger().warning(
@@ -50,6 +49,8 @@ class MarianTranslate(BaseTranslate):
         Loads the MarianMT model based on the source
         and destination languages.
         """
+        from transformers import MarianMTModel, MarianTokenizer
+
         model_name = f"Helsinki-NLP/opus-mt-{self.src}-{self.target}"
         try:
             self.tokenizer = MarianTokenizer.from_pretrained(model_name)

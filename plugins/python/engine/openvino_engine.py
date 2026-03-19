@@ -56,6 +56,7 @@ class OpenVinoEngine(MLEngine):
                 )
             else:
                 from torchvision import models
+
                 if hasattr(models, model_name):
                     pt_model = getattr(models, model_name)(pretrained=True)
                     self.ov_model = ov.convert_model(pt_model)
@@ -73,6 +74,7 @@ class OpenVinoEngine(MLEngine):
                 elif processor_name and tokenizer_name:
                     from transformers import AutoTokenizer, AutoImageProcessor
                     from optimum.intel import OVModelForVision2Seq
+
                     self.image_processor = AutoImageProcessor.from_pretrained(
                         processor_name
                     )
@@ -93,6 +95,7 @@ class OpenVinoEngine(MLEngine):
                 else:
                     from transformers import AutoTokenizer
                     from optimum.intel import OVModelForCausalLM
+
                     self.tokenizer = AutoTokenizer.from_pretrained(model_name)
                     self.compiled_model = OVModelForCausalLM.from_pretrained(
                         model_name, export=True

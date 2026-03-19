@@ -27,8 +27,6 @@ try:
     gi.require_version("GObject", "2.0")
     from gi.repository import Gst, GObject  # noqa: E402
     from base_transcribe import BaseTranscribe
-    from faster_whisper import WhisperModel
-
     from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
 
@@ -41,6 +39,8 @@ except ImportError as e:
 
 class WhisperEngine(PyTorchEngine):
     def do_load_model(self, model_name, **kwargs):
+        from faster_whisper import WhisperModel
+
         if not model_name:
             return
         compute_type = "float16" if self.device.startswith("cuda") else "int8"

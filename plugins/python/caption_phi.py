@@ -26,13 +26,6 @@ try:
 
     from gi.repository import Gst, GObject  # noqa: E402
 
-    import torch
-    from transformers import (
-        AutoModelForCausalLM,
-        AutoProcessor,
-        BitsAndBytesConfig,
-    )
-
     from engine.pytorch_vision_engine import PyTorchVisionEngine
     from engine.engine_factory import EngineFactory
     from base_caption import BaseCaption
@@ -47,6 +40,9 @@ except ImportError as e:
 class CaptionPhiEngine(PyTorchVisionEngine):
     def do_load_model(self, model_name, **kwargs):
         """Load a Phi-3-vision model from Hugging Face."""
+        import torch
+        from transformers import AutoModelForCausalLM, AutoProcessor, BitsAndBytesConfig
+
         try:
             quantization_config = BitsAndBytesConfig(load_in_4bit=True)
             self.model = AutoModelForCausalLM.from_pretrained(

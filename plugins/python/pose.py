@@ -37,7 +37,6 @@ try:
     from utils.format_converter import FormatConverter
     from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
-    from ultralytics import YOLO
 
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
@@ -93,6 +92,8 @@ class YoloPoseEngine(PyTorchEngine):
 
     def do_load_model(self, model_name, **kwargs):
         try:
+            from ultralytics import YOLO
+
             self.model = YOLO(f"{model_name}.pt")
             self.execute_with_stream(lambda: self.model.to(self.device))
             self.logger.info(f"YOLO pose model '{model_name}' loaded on {self.device}")

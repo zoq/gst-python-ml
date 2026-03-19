@@ -27,9 +27,6 @@ try:
     gi.require_version("GObject", "2.0")
     from gi.repository import Gst, GObject  # noqa: E402
     from base_separate import BaseSeparate
-    import torch
-    from torchaudio.pipelines import HDEMUCS_HIGH_MUSDB_PLUS
-    from torchaudio.transforms import Fade, Resample
 
     from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
@@ -47,6 +44,8 @@ class DemucsEngine(PyTorchEngine):
         self.sample_rate = 0
 
     def do_load_model(self, model_name, **kwargs):
+        from torchaudio.pipelines import HDEMUCS_HIGH_MUSDB_PLUS
+
         if not model_name:
             return
         self.logger.info(f"Loading Demucs model on device: {self.device}")
@@ -65,6 +64,9 @@ class DemucsEngine(PyTorchEngine):
         segment=10.0,
         overlap=0.1,
     ):
+        import torch
+        from torchaudio.transforms import Fade
+
         device = mix.device
         batch, channels, length = mix.shape
         chunk_len = int(self.sample_rate * segment * (1 + overlap))
@@ -119,6 +121,9 @@ class Demucs(BaseSeparate):
         )
 
     def do_separate(self, audio_data):
+        import torch
+        from torchaudio.transforms import Resample
+
         # audio_data: np.float32, shape (length,) at SAMPLE_RATE Hz mono
         engine = self.engine
         original_rate = self.SAMPLE_RATE

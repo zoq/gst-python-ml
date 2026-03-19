@@ -58,20 +58,24 @@ def _decode_anchor_free(output, conf_threshold=0.25, iou_threshold=0.45):
         mask = confidences > conf_threshold
         p, confidences, class_ids = p[mask], confidences[mask], class_ids[mask]
         if len(p) == 0:
-            results.append({
-                "boxes": np.zeros((0, 4), dtype=np.float32),
-                "labels": np.array([], dtype=int),
-                "scores": np.array([], dtype=np.float32),
-            })
+            results.append(
+                {
+                    "boxes": np.zeros((0, 4), dtype=np.float32),
+                    "labels": np.array([], dtype=int),
+                    "scores": np.array([], dtype=np.float32),
+                }
+            )
             continue
         cx, cy, w, h = p[:, 0], p[:, 1], p[:, 2], p[:, 3]
         boxes = np.stack([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2], axis=1)
         keep = nms(boxes, confidences, iou_threshold)
-        results.append({
-            "boxes": boxes[keep],
-            "labels": class_ids[keep].astype(int),
-            "scores": confidences[keep],
-        })
+        results.append(
+            {
+                "boxes": boxes[keep],
+                "labels": class_ids[keep].astype(int),
+                "scores": confidences[keep],
+            }
+        )
     return results
 
 

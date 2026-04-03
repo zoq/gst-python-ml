@@ -21,7 +21,7 @@ import gi
 gi.require_version("Gst", "1.0")
 gi.require_version("GstBase", "1.0")
 gi.require_version("GstVideo", "1.0")
-from gi.repository import Gst, GObject  # noqa: E402
+from gi.repository import Gst  # noqa: E402
 
 from base_transform import BaseTransform  # noqa: E402
 

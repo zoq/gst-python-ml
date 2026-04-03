@@ -1207,8 +1207,6 @@ def main():
             else:
                 det_reject_streak = 0
 
-            did_update_trail = False
-
             if accept and ball_center_candidate is not None:
                 cx_raw, cy_raw = ball_center_candidate
                 alpha = float(args.ball_smooth_ema)
@@ -1258,7 +1256,6 @@ def main():
                 add_trail_point(
                     single_ball_trail, cx, cy, frames, densify=True, max_gap=5
                 )
-                did_update_trail = True
 
                 if from_track:
                     ball_state.update_from_xyxy(cand_box, frames)
@@ -1314,7 +1311,6 @@ def main():
                                 )
                             coast_streak += 1
                             coast_used += 1
-                            did_update_trail = True
                 else:
                     coast_streak = 0
 

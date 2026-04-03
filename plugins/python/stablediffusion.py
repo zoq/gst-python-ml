@@ -26,11 +26,9 @@ try:
     gi.require_version("Gst", "1.0")
     gi.require_version("GstBase", "1.0")
     gi.require_version("GObject", "2.0")
-    from gi.repository import Gst, GObject, GstBase  # noqa: E402
+    from gi.repository import Gst, GstBase  # noqa: E402
     from base_aggregator import BaseAggregator
     import numpy as np
-
-    # from diffusers import StableDiffusionPipeline
 except ImportError as e:
     CAN_REGISTER_ELEMENT = False
     GlobalLogger().warning(
@@ -71,6 +69,8 @@ class StableDiffusion(BaseAggregator):
         """
         Initialize the Stable Diffusion model
         """
+        from diffusers import StableDiffusionPipeline
+
         self.logger.info(f"Initializing Stable Diffusion model on {self.device}")
         self.set_model(
             StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4")

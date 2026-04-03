@@ -28,8 +28,6 @@ gi.require_version("GLib", "2.0")
 gi.require_version("GstAnalytics", "1.0")
 
 from gi.repository import Gst, GObject, GstAnalytics, GLib, GstBase  # noqa: E402
-import numpy as np
-import cv2
 from video_transform import VideoTransform
 
 TEXT_CAPS = Gst.Caps.from_string("text/x-raw, format=utf8")

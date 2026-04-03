@@ -180,7 +180,7 @@ class PyTorchEngine(MLEngine):
                     compile_model and not self.is_tensorrt
                 ):  # Standard torch.compile if not using TRT
                     self.model = torch.compile(self.model)
-                    self.logger.info(f"Model compiled with torch.compile")
+                    self.logger.info("Model compiled with torch.compile")
 
             return True
 

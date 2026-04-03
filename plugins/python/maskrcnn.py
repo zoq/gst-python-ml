@@ -28,7 +28,6 @@ try:
     gi.require_version("GstAnalytics", "1.0")
     gi.require_version("GLib", "2.0")
     from gi.repository import Gst, GObject, GstAnalytics, GLib  # noqa: E402
-    import numpy as np
 
     from base_objectdetector import BaseObjectDetector
 except ImportError as e:
@@ -79,9 +78,6 @@ class MaskRCNN(BaseObjectDetector):
                 f"Stream {stream_idx} - Detection {i}: Box coordinates (x1={x1}, y1={y1}, x2={x2}, y2={y2}), "
                 f"Label={label}, Score={score:.2f}"
             )
-
-            # Convert mask to binary for further processing or metadata attachment
-            binary_mask = (mask[0] > 0.5).astype(np.uint8)  # Threshold mask
 
             # Use stream_idx in the quark string to differentiate streams
             qk_string = f"stream_{stream_idx}_label_{label}"

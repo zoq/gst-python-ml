@@ -196,7 +196,9 @@ class CLIPTransform(VideoTransform):
     @labels.setter
     def labels(self, value):
         self._labels_str = value
-        self._labels_list = [l.strip() for l in value.split(",") if l.strip()]
+        self._labels_list = [
+            label.strip() for label in value.split(",") if label.strip()
+        ]
         if self.engine:
             self.engine.clip_labels = self._labels_list
         self.logger.info(f"Labels set to: {self._labels_list}")

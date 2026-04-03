@@ -1,0 +1,13 @@
+[lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]
+
+[lint.per-file-ignores]
+# OpenGL uses star imports by convention — all GL constants come from OpenGL.GL/GLU
+"plugins/python/overlay_helper/overlay_opengl.py" = ["F405", "F403"]
+# GStreamer plugins must call gi.require_version() before importing gi.repository,
+# which triggers E402. This is required and cannot be avoided.
+"plugins/python/*.py" = ["E402"]
+"utils/*.py" = ["E402"]
+"tests/*.py" = ["E402"]
+"demos/*.py" = ["E402"]

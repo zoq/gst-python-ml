@@ -17,7 +17,6 @@
 # Boston, MA 02110-1301, USA.
 
 import gi
-import traceback
 from engine.engine_manager import EngineManager
 
 gi.require_version("Gst", "1.0")

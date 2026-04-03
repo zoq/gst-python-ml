@@ -31,10 +31,10 @@ try:
     from base_objectdetector import BaseObjectDetector
 
     import numpy as np
-    import time
+
     import cv2
     import os
-    from collections import defaultdict, deque
+    from collections import deque
     from engine.pytorch_engine import PyTorchEngine
     from engine.engine_factory import EngineFactory
 
@@ -215,12 +215,7 @@ def warp_points(points_xy, M):
 
 
 def classwise_keep(result, person_thr, ball_thr):
-    if (
-        result is None
-        or result.boxes is None
-        or len(result.boxes) == 0
-        or torch is None
-    ):
+    if result is None or result.boxes is None or len(result.boxes) == 0:
         return np.zeros((0, 6), np.float32), np.zeros((0, 6), np.float32)
 
     b = result.boxes
@@ -984,8 +979,6 @@ class YoloAdvancedEngine(PyTorchEngine):
         else:
             self.det_reject_streak = 0
 
-        did_update_trail = False
-
         if accept and ball_center_candidate is not None:
             cx_raw, cy_raw = ball_center_candidate
             alpha = float(self.ball_smooth_ema)
@@ -1023,7 +1016,6 @@ class YoloAdvancedEngine(PyTorchEngine):
             add_trail_point(
                 self.single_ball_trail, cx, cy, self.frame_idx, densify=True, max_gap=5
             )
-            did_update_trail = True
 
             if from_track:
                 self.ball_state.update_from_xyxy(cand_box, self.frame_idx)
@@ -1085,7 +1077,6 @@ class YoloAdvancedEngine(PyTorchEngine):
                             )
                         self.coast_streak += 1
                         self.coast_used += 1
-                        did_update_trail = True
             else:
                 self.coast_streak = 0
 
@@ -1758,8 +1749,6 @@ class DemoSoccer(BaseObjectDetector):
             x1, y1, x2, y2 = box
             score = 1.0  # Track confidence
             track_id = getattr(tr, "track_id", 0)
-            label_num = 0  # person
-            class_name = COCO_CLASSES.get(label_num, f"unknown_{label_num}")
             qk_string = f"stream_{stream_idx}_person_id_{track_id}"
             qk = GLib.quark_from_string(qk_string)
             ret, od_mtd = meta.add_od_mtd(
@@ -1807,8 +1796,6 @@ class DemoSoccer(BaseObjectDetector):
             x1, y1, x2, y2 = box
             score = 1.0
             track_id = getattr(tr, "track_id", 0)
-            label_num = 32  # sports ball
-            class_name = COCO_CLASSES.get(label_num, f"unknown_{label_num}")
             qk_string = f"stream_{stream_idx}_ball_id_{track_id}"
             qk = GLib.quark_from_string(qk_string)
             ret, od_mtd = meta.add_od_mtd(

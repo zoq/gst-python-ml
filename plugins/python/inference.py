@@ -20,7 +20,6 @@ from log.global_logger import GlobalLogger
 
 CAN_REGISTER_ELEMENT = True
 try:
-    import numpy as np
     import gi
 
     gi.require_version("Gst", "1.0")

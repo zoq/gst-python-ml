@@ -18,10 +18,13 @@ jobs:
           python-version: "3.13"
 
       - name: Install linters
-        run: pip install ruff
+        run: pip install ruff black
 
       - name: Run ruff check
         run: ruff check plugins/ tests/ demos/ utils/
+
+      - name: Run black check
+        run: black --check plugins/ tests/ demos/ utils/
 
   build:
     needs: lint

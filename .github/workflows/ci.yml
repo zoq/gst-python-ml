@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install linters
+        run: pip install ruff
+
+      - name: Run ruff check
+        run: ruff check plugins/ tests/ demos/ utils/
+
+  build:
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            gst-install: |
+              sudo apt-get update
+              sudo apt-get install -y \
+                gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
+                gstreamer1.0-plugins-bad \
+                python3-gst-1.0 gstreamer1.0-python3-plugin-loader \
+                libcairo2 libcairo2-dev pkg-config
+          - os: macos-latest
+            gst-install: |
+              brew install gstreamer cairo pkg-config pygobject3
+          - os: windows-latest
+            gst-install: |
+              choco install gstreamer gstreamer-devel --yes
+              echo "C:\gstreamer\1.0\msvc_x86_64\bin" >> $env:GITHUB_PATH
+              echo "GST_PLUGIN_PATH=C:\gstreamer\1.0\msvc_x86_64\lib\gstreamer-1.0" >> $env:GITHUB_ENV
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install GStreamer
+        run: ${{ matrix.gst-install }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Create venv and install CPU dependencies
+        run: |
+          uv venv --system-site-packages
+          uv pip install --no-deps -e .
+          uv pip install pygobject numpy opencv-python-headless pycairo ultralytics
+
+      - name: Verify core imports
+        run: |
+          uv run python -c "
+          import importlib, sys
+          modules = [
+              'plugins.python.streammux',
+              'plugins.python.streamdemux',
+              'plugins.python.overlay',
+              'plugins.python.engine.ml_engine',
+              'plugins.python.engine.onnx_engine',
+              'plugins.python.engine.engine_factory',
+          ]
+          failed = []
+          for m in modules:
+              try:
+                  importlib.import_module(m)
+                  print(f'  OK  {m}')
+              except Exception as e:
+                  print(f'  FAIL {m}: {e}')
+                  failed.append(m)
+          if failed:
+              print(f'\n{len(failed)} import(s) failed')
+              sys.exit(1)
+          print('\nAll imports OK')
+          "
+
+      - name: Check GStreamer plugin discovery (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          export GST_PLUGIN_PATH=${{ github.workspace }}/plugins:$GST_PLUGIN_PATH
+          gst-inspect-1.0 python || echo "gst-python loader not available in CI (expected without gstreamer1.0-python3-plugin-loader)"

@@ -64,6 +64,45 @@ sudo dnf install -y python3-pip \
 
 
 
+##### Windows
+
+1. **Install GStreamer** from the [official site](https://gstreamer.freedesktop.org/download/#windows).
+   Download and install both the **runtime** and **development** MSVC x86_64 installers.
+   The default install path is `C:\gstreamer\1.0\msvc_x86_64`.
+
+2. **Set environment variables** (adjust paths if your install location differs):
+
+```powershell
+# Add GStreamer to PATH
+[Environment]::SetEnvironmentVariable("PATH", "C:\gstreamer\1.0\msvc_x86_64\bin;" + $env:PATH, "User")
+
+# Point GStreamer at your plugin directory
+[Environment]::SetEnvironmentVariable("GST_PLUGIN_PATH", "D:\Workspace\gst-python-ml\plugins;D:\Workspace\gst-python-ml\demos", "User")
+```
+
+3. **Install Python 3.13+** from [python.org](https://www.python.org/downloads/) or via conda.
+
+4. **Install PyGObject** — on Windows the easiest route is via conda or the
+   [gstreamer-python](https://pypi.org/project/gstreamer-python/) wheel:
+
+```powershell
+pip install gstreamer-python
+```
+
+5. **CUDA (optional)** — install the [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads)
+   matching your GPU driver version, then install the CUDA-enabled PyTorch:
+
+```powershell
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+```
+
+> **Known issue:** The gst-python plugin loader on Windows may discover the plugin
+> directory but register 0 features, preventing `gst-launch-1.0` from finding
+> `pyml_*` elements. This is a known Windows-specific issue in gst-python — see
+> [#18](https://github.com/collabora/gst-python-ml/issues/18) for details and
+> workarounds. As a workaround, you can register plugins explicitly from a Python
+> script using `Gst.Element.register()`.
+
 #### Manage Python packages with uv
 
 ##### install

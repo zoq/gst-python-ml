@@ -34,6 +34,7 @@ class EngineFactory:
     TENSORFLOW_ENGINE = "tensorflow"
     ONNX_ENGINE = "onnx"
     OPENVINO_ENGINE = "openvino"
+    TVM_ENGINE = "tvm"
 
     _builtins_registered: bool = False  # Class-level flag for singleton-like lazy init
 
@@ -71,6 +72,13 @@ class EngineFactory:
             from .openvino_engine import OpenVinoEngine
 
             _try_register(cls.OPENVINO_ENGINE, OpenVinoEngine)
+        except ImportError:
+            pass
+
+        try:
+            from .tvm_engine import TVMEngine
+
+            _try_register(cls.TVM_ENGINE, TVMEngine)
         except ImportError:
             pass
 

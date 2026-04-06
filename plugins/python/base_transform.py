@@ -101,7 +101,7 @@ class BaseTransform(GstBase.BaseTransform):
 
     @GObject.Property(type=str)
     def engine_name(self):
-        "Machine Learning Engine to use : pytorch, tflite, tensorflow, onnx or openvino, or custom engine name"
+        "Machine Learning Engine to use : pytorch, tflite, tensorflow, onnx, openvino, tvm, or custom engine name"
         return self.mgr.engine_name
 
     @engine_name.setter

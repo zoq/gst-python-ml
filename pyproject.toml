@@ -54,6 +54,9 @@ onnx = [
 onnx-gpu = [
     "onnxruntime-gpu",
 ]
+tvm = [
+    "apache-tvm",
+]
 vad = [
     "pysilero",
     "pysilero-vad",

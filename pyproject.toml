@@ -57,6 +57,9 @@ onnx-gpu = [
 tvm = [
     "apache-tvm",
 ]
+tinygrad = [
+    "tinygrad",
+]
 vad = [
     "pysilero",
     "pysilero-vad",

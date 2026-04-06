@@ -35,6 +35,7 @@ class EngineFactory:
     ONNX_ENGINE = "onnx"
     OPENVINO_ENGINE = "openvino"
     TVM_ENGINE = "tvm"
+    TINYGRAD_ENGINE = "tinygrad"
 
     _builtins_registered: bool = False  # Class-level flag for singleton-like lazy init
 
@@ -79,6 +80,13 @@ class EngineFactory:
             from .tvm_engine import TVMEngine
 
             _try_register(cls.TVM_ENGINE, TVMEngine)
+        except ImportError:
+            pass
+
+        try:
+            from .tinygrad_engine import TinyGradEngine
+
+            _try_register(cls.TINYGRAD_ENGINE, TinyGradEngine)
         except ImportError:
             pass
 

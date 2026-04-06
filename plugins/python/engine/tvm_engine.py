@@ -222,7 +222,6 @@ class TVMEngine(MLEngine):
             if len(self.frame_buffer) >= self.batch_size:
                 self.logger.info(f"Processing {self.batch_size} frames")
                 try:
-                    import torch
 
                     gen_kwargs = {"min_length": 10, "max_length": 20, "num_beams": 8}
                     pixel_values = self.image_processor(
@@ -245,7 +244,6 @@ class TVMEngine(MLEngine):
             if is_batch:
                 self.logger.error("Batch processing not supported for LLM-only models.")
                 return None
-            import torch
 
             inputs = self.tokenizer(frames, return_tensors="pt")
             generated_tokens = self.model.generate(**inputs)
@@ -305,7 +303,6 @@ class TVMEngine(MLEngine):
     def do_generate(self, input_text, max_length=1000, system_prompt=None):
         if self.model_type != "llm":
             raise ValueError("Generate is only supported for LLM models.")
-        import torch
 
         inputs = self.tokenizer(input_text, return_tensors="pt")
         outputs = self.model.generate(**inputs, max_length=max_length)

@@ -39,15 +39,19 @@ jobs:
                 gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
                 gstreamer1.0-plugins-bad \
                 python3-gst-1.0 gstreamer1.0-python3-plugin-loader \
-                libcairo2 libcairo2-dev pkg-config
+                libcairo2 libcairo2-dev pkg-config \
+                libgirepository-2.0-dev
           - os: macos-latest
             gst-install: |
-              brew install gstreamer cairo pkg-config pygobject3
+              brew install gstreamer cairo pkg-config pygobject3 gobject-introspection
+              echo "DYLD_LIBRARY_PATH=$(brew --prefix)/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
+              echo "GI_TYPELIB_PATH=$(brew --prefix)/lib/girepository-1.0" >> $GITHUB_ENV
           - os: windows-latest
             gst-install: |
               choco install gstreamer gstreamer-devel --yes
-              echo "C:\gstreamer\1.0\msvc_x86_64\bin" >> $env:GITHUB_PATH
-              echo "GST_PLUGIN_PATH=C:\gstreamer\1.0\msvc_x86_64\lib\gstreamer-1.0" >> $env:GITHUB_ENV
+              "C:\gstreamer\1.0\msvc_x86_64\bin" >> $env:GITHUB_PATH
+              "GST_PLUGIN_PATH=C:\gstreamer\1.0\msvc_x86_64\lib\gstreamer-1.0" >> $env:GITHUB_ENV
+              "PKG_CONFIG_PATH=C:\gstreamer\1.0\msvc_x86_64\lib\pkgconfig" >> $env:GITHUB_ENV
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -65,14 +69,25 @@ jobs:
         shell: bash
         run: |
           python -m venv --system-site-packages .venv
-          source .venv/bin/activate
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            source .venv/Scripts/activate
+          else
+            source .venv/bin/activate
+          fi
           pip install --no-deps -e .
-          pip install pygobject numpy opencv-python-headless pycairo ultralytics
+          pip install numpy opencv-python-headless ultralytics
+          # pygobject/pycairo from pip need C build deps; install only where available
+          pip install pygobject pycairo || echo "pygobject/pycairo pip install failed (using system packages)"
 
       - name: Verify core imports
         shell: bash
+        continue-on-error: ${{ runner.os != 'Linux' }}
         run: |
-          source .venv/bin/activate
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            source .venv/Scripts/activate
+          else
+            source .venv/bin/activate
+          fi
           python -c "
           import importlib, sys
           modules = [

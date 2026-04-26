@@ -1443,11 +1443,11 @@ sudo apt install -y python3-pip python3-venv \
 git clone https://github.com/collabora/gst-python-ml.git
 cd gst-python-ml
 
-<span class="cmt"># Set up uv venv</span>
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv venv --system-site-packages
+<span class="cmt"># Set up venv (must use system Python to match GStreamer)</span>
+python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
-uv sync
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install -e .
 
 <span class="cmt"># Set plugin path</span>
 <span class="kw">export</span> GST_PLUGIN_PATH=<span class="str">$PWD/demos:$PWD/plugins:$GST_PLUGIN_PATH</span>
@@ -1475,10 +1475,10 @@ sudo dnf install -y python3-pip python3-devel \
 <span class="cmt"># Clone and set up</span>
 git clone https://github.com/collabora/gst-python-ml.git
 cd gst-python-ml
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv venv --system-site-packages
+python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
-uv sync
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install -e .
 
 <span class="kw">export</span> GST_PLUGIN_PATH=<span class="str">$PWD/demos:$PWD/plugins:$GST_PLUGIN_PATH</span></pre>
                 </div>
@@ -1497,11 +1497,11 @@ docker run -v ~/src/gst-python-ml/:/root/gst-python-ml \
 docker run -v ~/src/gst-python-ml/:/root/gst-python-ml \
   -it --rm --name ubuntu24 ubuntu24:latest /bin/bash
 
-<span class="cmt"># Inside container: set up uv venv</span>
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv venv --system-site-packages
+<span class="cmt"># Inside container: set up venv</span>
+python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
-uv sync</pre>
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install -e .</pre>
                 </div>
                 <div class="tab-panel" id="tab-windows">
 <pre><span class="cmt"># 1. Install GStreamer MSVC x86_64 (runtime + development)</span>
@@ -1513,7 +1513,7 @@ uv sync</pre>
 [Environment]::SetEnvironmentVariable(<span class="str">"GST_PLUGIN_PATH"</span>,
   <span class="str">"D:\gst-python-ml\plugins;D:\gst-python-ml\demos"</span>, <span class="str">"User"</span>)
 
-<span class="cmt"># 3. Install Python 3.13+ and PyGObject</span>
+<span class="cmt"># 3. Install Python 3.14+ and PyGObject</span>
 pip install gstreamer-python
 
 <span class="cmt"># 4. Install CUDA PyTorch (optional)</span>
@@ -1534,7 +1534,7 @@ uv sync --extra onnx
 uv sync --extra onnx-gpu
 
 <span class="cmt"># Optional: flash-attention (must match python/torch/cuda versions)</span>
-uv pip install ./flash_attn-2.8.3+cu128torch2.9-cp313-cp313-linux_x86_64.whl
+pip install ./flash_attn-2.8.3+cu128torch2.11-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
 
 <span class="cmt"># Verify installation</span>
 gst-inspect-1.0 python</pre>

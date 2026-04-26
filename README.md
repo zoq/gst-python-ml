@@ -80,7 +80,7 @@ sudo dnf install -y python3-pip \
 [Environment]::SetEnvironmentVariable("GST_PLUGIN_PATH", "D:\Workspace\gst-python-ml\plugins;D:\Workspace\gst-python-ml\demos", "User")
 ```
 
-3. **Install Python 3.13+** from [python.org](https://www.python.org/downloads/) or via conda.
+3. **Install Python 3.14+** from [python.org](https://www.python.org/downloads/) or via conda.
 
 4. **Install PyGObject** — on Windows the easiest route is via conda or the
    [gstreamer-python](https://pypi.org/project/gstreamer-python/) wheel:
@@ -103,17 +103,36 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 > workarounds. As a workaround, you can register plugins explicitly from a Python
 > script using `Gst.Element.register()`.
 
-#### Manage Python packages with uv
+#### Manage Python packages
 
-##### install
-curl -LsSf https://astral.sh/uv/install.sh | sh
+##### Important: Python version must match GStreamer
 
-##### set up uv venv
+GStreamer's Python plugin loader (`libgstpython.so`) embeds the system Python interpreter.
+The virtual environment **must** be created with the same Python version that GStreamer uses,
+otherwise `import` errors will occur at runtime (e.g. `No module named 'torch'`).
+
+On Fedora 42+ this is Python 3.14. On Ubuntu 25.04+ this is Python 3.13 or 3.14
+depending on the distribution version.
+
+##### set up venv with system Python
 
 ```
-uv venv --system-site-packages
+python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
-uv pip install --upgrade pip
+pip install --upgrade pip
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install -e .
+```
+
+##### Alternative: manage with uv
+
+If using uv, ensure uv uses the **system** Python (not a downloaded one):
+
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv --python /usr/bin/python3 --system-site-packages
+source .venv/bin/activate
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 uv sync
 ```
 
@@ -130,11 +149,11 @@ uv sync --extra onnx-gpu
 ```
 
 Now manually install flash-attn wheel (must match your version of python, torch and cuda)
-For example:
+For example, for torch 2.11 + CUDA 12.8 + Python 3.14:
 
-`uv pip install ./flash_attn-2.8.3+cu128torch2.9-cp313-cp313-linux_x86_64.whl`
+`pip install ./flash_attn-2.8.3+cu128torch2.11-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl`
 
-Pe-built wheels can be found here:
+Pre-built wheels can be found here:
 https://github.com/mjun0812/flash-attention-prebuild-wheels/releases
 
 
@@ -249,7 +268,7 @@ or
 
 `docker run -v ~/src/gst-python-ml/:/root/gst-python-ml -it --rm --gpus all --name fedora42 fedora42:latest /bin/bash`
 
-Now, in the container shell, set up `uv` `venv` as detailed above.
+Now, in the container shell, set up the `venv` as detailed above.
 
 
 ## Post Install

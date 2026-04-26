@@ -60,6 +60,28 @@ tvm = [
 tinygrad = [
     "tinygrad",
 ]
+mlx = [
+    "mlx>=0.20.0",
+    "mlx-lm",
+]
+executorch = [
+    "executorch",
+]
+llamacpp = [
+    "llama-cpp-python",
+]
+candle = [
+    "candle",
+]
+jax-cpu = [
+    "jax[cpu]",
+]
+jax-gpu = [
+    "jax[cuda12]",
+]
+jax-tpu = [
+    "jax[tpu]",
+]
 vad = [
     "pysilero",
     "pysilero-vad",

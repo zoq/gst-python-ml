@@ -36,6 +36,11 @@ class EngineFactory:
     OPENVINO_ENGINE = "openvino"
     TVM_ENGINE = "tvm"
     TINYGRAD_ENGINE = "tinygrad"
+    MLX_ENGINE = "mlx"
+    EXECUTORCH_ENGINE = "executorch"
+    LLAMACPP_ENGINE = "llamacpp"
+    CANDLE_ENGINE = "candle"
+    JAX_ENGINE = "jax"
 
     _builtins_registered: bool = False  # Class-level flag for singleton-like lazy init
 
@@ -87,6 +92,41 @@ class EngineFactory:
             from .tinygrad_engine import TinyGradEngine
 
             _try_register(cls.TINYGRAD_ENGINE, TinyGradEngine)
+        except ImportError:
+            pass
+
+        try:
+            from .mlx_engine import MLXEngine
+
+            _try_register(cls.MLX_ENGINE, MLXEngine)
+        except ImportError:
+            pass
+
+        try:
+            from .executorch_engine import ExecuTorchEngine
+
+            _try_register(cls.EXECUTORCH_ENGINE, ExecuTorchEngine)
+        except ImportError:
+            pass
+
+        try:
+            from .llamacpp_engine import LlamaCppEngine
+
+            _try_register(cls.LLAMACPP_ENGINE, LlamaCppEngine)
+        except ImportError:
+            pass
+
+        try:
+            from .candle_engine import CandleEngine
+
+            _try_register(cls.CANDLE_ENGINE, CandleEngine)
+        except ImportError:
+            pass
+
+        try:
+            from .jax_engine import JAXEngine
+
+            _try_register(cls.JAX_ENGINE, JAXEngine)
         except ImportError:
             pass
 

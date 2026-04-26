@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GStreamer Python ML &mdash; Pure Python ML Framework for GStreamer</title>
-    <meta name="description" content="A pure Python ML framework for upstream GStreamer. Object detection, pose estimation, depth, captioning, transcription, LLMs, and more &mdash; all as native GStreamer elements. By Collabora.">
+    <meta name="description" content="A pure Python ML framework for upstream GStreamer. Object detection, segmentation, depth, OCR, face recognition, captioning, transcription, LLMs, and more &mdash; all as native GStreamer elements. By Collabora.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -937,11 +937,11 @@
 
         <div class="stats-row" style="grid-template-columns: repeat(3, 1fr);">
             <div class="stat-cell">
-                <h3>5</h3>
+                <h3>12</h3>
                 <p>ML Engines</p>
             </div>
             <div class="stat-cell">
-                <h3>20+</h3>
+                <h3>35+</h3>
                 <p>GStreamer Elements</p>
             </div>
             <div class="stat-cell">
@@ -995,6 +995,41 @@
                 <div class="engine-icon">&#128202;</div>
                 <h3>TensorFlow</h3>
                 <p>SavedModel format for TensorFlow ecosystem compatibility. Set <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">engine-name=tensorflow</code> and point to a TensorFlow SavedModel directory.</p>
+            </div>
+            <div class="engine-card">
+                <div class="engine-icon">&#128640;</div>
+                <h3>Apache TVM</h3>
+                <p>Compiler-optimized inference via Apache TVM. Set <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">engine-name=tvm</code> and point to a compiled TVM <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">.so</code> module.</p>
+            </div>
+            <div class="engine-card">
+                <div class="engine-icon">&#128171;</div>
+                <h3>tinygrad</h3>
+                <p>Minimal-dependency inference with tinygrad. Set <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">engine-name=tinygrad</code> for lightweight GPU/CPU execution with automatic kernel optimization.</p>
+            </div>
+            <div class="engine-card">
+                <div class="engine-icon">&#127823;</div>
+                <h3>Apple MLX</h3>
+                <p>Apple Silicon native inference via MLX. Set <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">engine-name=mlx</code> for unified memory GPU/CPU execution on M-series chips. Supports mlx-lm text generation.</p>
+            </div>
+            <div class="engine-card">
+                <div class="engine-icon">&#128241;</div>
+                <h3>ExecuTorch</h3>
+                <p>Meta&rsquo;s ExecuTorch runtime for on-device inference. Set <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">engine-name=executorch</code> and point to a <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">.pte</code> model.</p>
+            </div>
+            <div class="engine-card">
+                <div class="engine-icon">&#129302;</div>
+                <h3>llama.cpp</h3>
+                <p>GGUF model inference via llama-cpp-python. Set <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">engine-name=llamacpp</code> for efficient quantized LLM inference on CPU or GPU.</p>
+            </div>
+            <div class="engine-card">
+                <div class="engine-icon">&#128367;</div>
+                <h3>Candle</h3>
+                <p>HuggingFace Candle Rust-based inference via Python bindings. Set <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">engine-name=candle</code> for minimal-overhead safetensors model execution.</p>
+            </div>
+            <div class="engine-card">
+                <div class="engine-icon">&#128300;</div>
+                <h3>JAX / Flax</h3>
+                <p>Google JAX with XLA compilation. Set <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--green);">engine-name=jax</code> for JIT-compiled inference with automatic hardware acceleration on GPU, TPU, or CPU.</p>
             </div>
         </div>
     </div>
@@ -1182,6 +1217,96 @@
                 <h3>Speech Separation</h3>
                 <p>SpeechBrain SepFormer model for separating overlapping speakers. Clean single-speaker audio from mixed recordings.</p>
                 <span class="element-tag tag-audio">Audio</span>
+            </div>
+
+            <!-- NEW VISION -->
+            <div class="element-card">
+                <span class="f-icon">&#9935;</span>
+                <code>pyml_sam</code>
+                <h3>Segment Anything</h3>
+                <p>Meta SAM2 zero-shot segmentation. Point, box, or auto prompts. Outputs per-object masks as GstAnalytics metadata.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#128220;</span>
+                <code>pyml_ocr</code>
+                <h3>Optical Character Recognition</h3>
+                <p>EasyOCR and TrOCR text detection and recognition. Outputs bounding boxes and recognized text in GstAnalytics metadata.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#128100;</span>
+                <code>pyml_face</code>
+                <h3>Face Detection &amp; Recognition</h3>
+                <p>RetinaFace detection with ArcFace embedding-based recognition. Configurable face gallery for identification.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#127744;</span>
+                <code>pyml_optical_flow</code>
+                <h3>Optical Flow</h3>
+                <p>RAFT dense optical flow estimation. Outputs per-pixel motion vectors as color-coded visualization or raw flow fields.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#128269;</span>
+                <code>pyml_superres</code>
+                <h3>Super-Resolution</h3>
+                <p>Real-ESRGAN image upscaling (2&times;/4&times;). Tile-based processing for arbitrary input sizes with configurable overlap.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#127916;</span>
+                <code>pyml_action</code>
+                <h3>Action Recognition</h3>
+                <p>SlowFast and X3D temporal action recognition over sliding windows. Classifies activities across configurable frame clips.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#128680;</span>
+                <code>pyml_anomaly</code>
+                <h3>Anomaly Detection</h3>
+                <p>PatchCore visual anomaly detection for manufacturing QA. Generates anomaly score heatmaps with configurable thresholds.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+
+            <!-- NEW AUDIO/MULTIMODAL -->
+            <div class="element-card">
+                <span class="f-icon">&#127911;</span>
+                <code>pyml_clap</code>
+                <h3>Audio Classification (CLAP)</h3>
+                <p>LAION CLAP zero-shot audio classification. User-defined text labels matched against audio &mdash; no fixed label set.</p>
+                <span class="element-tag tag-audio">Audio</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#128064;</span>
+                <code>pyml_vlm</code>
+                <h3>Vision-Language Model</h3>
+                <p>Generic VLM element supporting LLaVA, InternVL, and more. Visual question answering with configurable prompts.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#128190;</span>
+                <code>pyml_embedding</code>
+                <h3>Embedding Extractor</h3>
+                <p>Extract dense vector embeddings from video frames using CLIP, DINOv2, or any vision backbone. Outputs to buffer metadata or file.</p>
+                <span class="element-tag tag-vision">Vision</span>
+            </div>
+
+            <!-- NEW UTILITY -->
+            <div class="element-card">
+                <span class="f-icon">&#128270;</span>
+                <code>pyml_tracker</code>
+                <h3>Multi-Object Tracker</h3>
+                <p>Standalone SORT/ByteTrack tracker. Reads upstream detection metadata and assigns persistent track IDs &mdash; works with any detector.</p>
+                <span class="element-tag tag-utility">Utility</span>
+            </div>
+            <div class="element-card">
+                <span class="f-icon">&#128680;</span>
+                <code>pyml_alert</code>
+                <h3>ML Alert</h3>
+                <p>Rule-based alerting triggered by upstream detections. Webhook, MQTT, and metadata output with per-rule cooldowns.</p>
+                <span class="element-tag tag-utility">Utility</span>
             </div>
         </div>
     </div>

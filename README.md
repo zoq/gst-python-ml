@@ -19,8 +19,9 @@ Supported functionality includes:
 1. LLMs
 1. serializing model metadata to Kafka server
 
-Different ML toolkits are supported via the `MLEngine` abstraction - we have nominal support for
-TensorFlow, LiteRT and OpenVINO, but all testing thus far has been done with PyTorch.
+Different ML toolkits are supported via the `MLEngine` abstraction: PyTorch, ONNX Runtime, OpenVINO,
+LiteRT (TFLite), TensorFlow, Apache TVM, tinygrad, Apple MLX, Meta ExecuTorch, llama.cpp, HuggingFace Candle, and JAX/Flax.
+All testing thus far has been done primarily with PyTorch.
 
 These elements will work with your distribution's GStreamer packages as long as the GStreamer version
 is >= 1.24.
@@ -146,6 +147,81 @@ uv sync --extra onnx
 For GPU inference (requires CUDA):
 ```
 uv sync --extra onnx-gpu
+```
+
+#### tinygrad
+
+```
+pip install tinygrad
+```
+or
+```
+uv sync --extra tinygrad
+```
+
+#### Apple MLX (macOS Apple Silicon only)
+
+```
+pip install mlx mlx-lm
+```
+or
+```
+uv sync --extra mlx
+```
+
+#### ExecuTorch
+
+```
+pip install executorch
+```
+or
+```
+uv sync --extra executorch
+```
+
+#### llama.cpp
+
+```
+pip install llama-cpp-python
+```
+or
+```
+uv sync --extra llamacpp
+```
+
+For GPU support, set the build flag:
+```
+CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python
+```
+
+#### Candle
+
+```
+pip install candle
+```
+or
+```
+uv sync --extra candle
+```
+
+#### JAX
+
+For CPU:
+```
+pip install jax[cpu]
+```
+or
+```
+uv sync --extra jax-cpu
+```
+
+For GPU (CUDA 12):
+```
+pip install jax[cuda12]
+```
+or
+```
+uv sync --extra jax-gpu
 ```
 
 Now manually install flash-attn wheel (must match your version of python, torch and cuda)
@@ -454,6 +530,94 @@ gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
   ! pyml_overlay ! videoconvert ! autovideosink
 ```
 
+#### tinygrad Engine
+
+tinygrad supports TorchVision models, SafeTensors files, and Transformers models.
+Set `engine-name=tinygrad` for lightweight GPU/CPU inference with automatic kernel optimization.
+
+##### ResNet18 classification with tinygrad on GPU
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=224,height=224" \
+  ! pyml_classifier model-name=resnet18 device=cuda engine-name=tinygrad \
+  ! fakesink
+```
+
+##### tinygrad on CPU
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=224,height=224" \
+  ! pyml_classifier model-name=resnet18 device=cpu engine-name=tinygrad \
+  ! fakesink
+```
+
+#### Apple MLX Engine
+
+MLX is designed for Apple Silicon (M1/M2/M3/M4). Supports SafeTensors, `.npz` weights,
+and mlx-lm text generation. Set `engine-name=mlx`.
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=224,height=224" \
+  ! pyml_classifier model-name=resnet18 device=gpu engine-name=mlx \
+  ! fakesink
+```
+
+#### ExecuTorch Engine
+
+Meta ExecuTorch runs `.pte` models for on-device inference. Export a model with
+`torch.export` + ExecuTorch, then set `engine-name=executorch`.
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=224,height=224" \
+  ! pyml_inference engine-name=executorch model-name=model.pte device=cpu \
+  ! fakesink
+```
+
+#### llama.cpp Engine
+
+GGUF quantized LLM inference via llama-cpp-python. Set `engine-name=llamacpp`
+and point to a `.gguf` model file.
+
+```
+gst-launch-1.0 filesrc location=data/prompt_for_llm.txt \
+  ! pyml_llm engine-name=llamacpp model-name=model.gguf device=cpu \
+  ! fakesink
+```
+
+#### Candle Engine
+
+HuggingFace Candle (Rust) inference via Python bindings. Supports SafeTensors models.
+Set `engine-name=candle`.
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=224,height=224" \
+  ! pyml_inference engine-name=candle model-name=model.safetensors device=cpu \
+  ! fakesink
+```
+
+#### JAX/Flax Engine
+
+Google JAX with XLA compilation. Supports Flax checkpoints and HuggingFace models.
+Set `engine-name=jax` for JIT-compiled inference on GPU, TPU, or CPU.
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale \
+  ! "video/x-raw,format=RGB,width=224,height=224" \
+  ! pyml_classifier model-name=resnet18 device=cpu engine-name=jax \
+  ! fakesink
+```
+
 ### Pose Estimation
 
 `pyml_yolo_pose` supports all YOLO pose models. Recommended model names:
@@ -736,4 +900,224 @@ docker exec kafka kafka-topics --create --topic test-kafkasink-topic --bootstrap
 
 ```
  GST_DEBUG=4 gst-launch-1.0   videotestsrc pattern=ball ! video/x-raw, width=320, height=240 ! queue ! pyml_streammux name=mux   videotestsrc pattern=smpte ! video/x-raw, width=320, height=240 ! queue ! mux.sink_1   videotestsrc pattern=smpte ! video/x-raw, width=320, height=240 ! queue ! mux.sink_2   mux.src ! queue ! pyml_streamdemux name=demux   demux.src_0 ! queue ! glimagesink  demux.src_1 ! queue ! glimagesink   demux.src_2 ! queue  ! glimagesink
+```
+
+### Segment Anything (SAM)
+
+`pyml_sam` runs Meta SAM2 for zero-shot segmentation with point, box, or automatic prompts.
+
+#### Auto-mask segmentation (segment everything)
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_sam model-name=facebook/sam2-hiera-small device=cuda prompt-mode=auto \
+  ! videoconvert ! autovideosink sync=false
+```
+
+#### Point-prompt segmentation (segment object at center)
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_sam model-name=facebook/sam2-hiera-small device=cuda \
+            prompt-mode=point points="320,240" \
+  ! videoconvert ! autovideosink sync=false
+```
+
+### OCR
+
+`pyml_ocr` performs text detection and recognition using EasyOCR or TrOCR.
+
+#### EasyOCR text detection (default)
+
+```
+gst-launch-1.0 filesrc location=data/document.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_ocr backend=easyocr languages="en" device=cuda \
+  ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
+```
+
+#### TrOCR recognition
+
+```
+gst-launch-1.0 filesrc location=data/document.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_ocr backend=trocr model-name=microsoft/trocr-base-printed device=cuda \
+  ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
+```
+
+### Face Detection & Recognition
+
+`pyml_face` detects faces with RetinaFace and optionally identifies them using ArcFace embeddings.
+
+#### Face detection only
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_face device=cuda \
+  ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
+```
+
+#### Face detection + recognition with gallery
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_face device=cuda gallery-path=data/face_gallery/ recognition-threshold=0.6 \
+  ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
+```
+
+### Optical Flow
+
+`pyml_optical_flow` estimates dense optical flow between consecutive frames using RAFT.
+
+#### RAFT optical flow with color visualization
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_optical_flow model-name=raft-small device=cuda visualize=true \
+  ! videoconvert ! autovideosink sync=false
+```
+
+### Super-Resolution
+
+`pyml_superres` upscales video frames using Real-ESRGAN.
+
+#### 2x upscale
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=320,height=240" \
+  ! pyml_superres device=cuda scale=2 \
+  ! videoconvert ! autovideosink sync=false
+```
+
+#### 4x upscale with tile processing
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=320,height=240" \
+  ! pyml_superres device=cuda scale=4 tile-size=256 tile-overlap=32 \
+  ! videoconvert ! autovideosink sync=false
+```
+
+### Action Recognition
+
+`pyml_action` classifies activities over sliding temporal windows using SlowFast or X3D.
+
+#### SlowFast action recognition
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_action model-name=slowfast_r50 device=cuda clip-length=32 \
+  ! videoconvert ! pyml_overlay ! videoconvert ! autovideosink sync=false
+```
+
+### Anomaly Detection
+
+`pyml_anomaly` detects visual anomalies using PatchCore for manufacturing QA.
+
+#### PatchCore anomaly detection
+
+```
+gst-launch-1.0 filesrc location=data/factory.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_anomaly device=cuda coreset-path=data/coreset.pt threshold=0.5 \
+  ! videoconvert ! autovideosink sync=false
+```
+
+### Audio Classification (CLAP)
+
+`pyml_clap` performs zero-shot audio classification using LAION CLAP.
+
+#### CLAP audio event detection
+
+```
+gst-launch-1.0 filesrc location=data/audio_sample.wav ! decodebin \
+  ! audioconvert ! audioresample ! audio/x-raw,format=F32LE,rate=48000,channels=1 \
+  ! pyml_clap device=cuda labels="gunshot,siren,baby crying,music,speech" threshold=0.3 \
+  ! fakesink
+```
+
+### Vision-Language Model (VLM)
+
+`pyml_vlm` runs generic VLMs (LLaVA, InternVL, etc.) for visual question answering.
+
+#### LLaVA visual question answering
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_vlm model-name=llava-hf/llava-1.5-7b-hf device=cuda \
+            prompt="What is happening in this scene?" \
+  ! fakesink
+```
+
+### Embedding Extractor
+
+`pyml_embedding` extracts dense vector embeddings from video frames.
+
+#### CLIP embedding extraction
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_embedding model-name=openai/clip-vit-base-patch32 device=cuda \
+            output-mode=metadata \
+  ! fakesink
+```
+
+#### DINOv2 embeddings saved to file
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_embedding model-name=facebook/dinov2-base device=cuda \
+            output-mode=file output-path=embeddings.npy \
+  ! fakesink
+```
+
+### Multi-Object Tracker
+
+`pyml_tracker` is a standalone tracker that works with any upstream detector.
+
+#### YOLO + standalone SORT tracker
+
+```
+gst-launch-1.0 filesrc location=data/soccer_tracking.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_objectdetector model-name=fasterrcnn_resnet50_fpn device=cuda \
+  ! pyml_tracker tracker-type=sort max-age=30 min-hits=3 iou-threshold=0.3 \
+  ! pyml_overlay ! videoconvert ! autovideosink sync=false
+```
+
+### ML Alert
+
+`pyml_alert` triggers alerts based on upstream detection metadata.
+
+#### Webhook alert on person detection
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_objectdetector model-name=fasterrcnn_resnet50_fpn device=cuda \
+  ! pyml_alert rules='{"class":"person","min_score":0.8}' \
+              webhook-url=http://localhost:8080/alert cooldown=10 \
+  ! pyml_overlay ! videoconvert ! autovideosink sync=false
+```
+
+#### MQTT alert with zone filtering
+
+```
+gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin name=d \
+  d. ! queue ! videoconvert ! videoscale ! "video/x-raw,width=640,height=480" \
+  ! pyml_yolo model-name=yolo11m device=cuda \
+  ! pyml_alert rules='{"class":"person","min_score":0.7,"zone":[0,0,320,240]}' \
+              mqtt-broker=localhost:1883 mqtt-topic=alerts/zone1 cooldown=5 \
+  ! pyml_overlay ! videoconvert ! autovideosink sync=false
+```
 ```

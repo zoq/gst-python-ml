@@ -820,7 +820,7 @@ http = [
 
 [[package]]
 name = "gst-python-ml"
-version = "1.0.4"
+version = "1.0.5"
 source = { editable = "." }
 dependencies = [
     { name = "accelerate" },
@@ -859,6 +859,9 @@ onnx = [
 onnx-gpu = [
     { name = "onnxruntime-gpu" },
 ]
+tinygrad = [
+    { name = "tinygrad" },
+]
 vad = [
     { name = "faster-whisper" },
     { name = "pysilero" },
@@ -876,6 +879,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "accelerate", specifier = "==1.12.0" },
+    { name = "apache-tvm", marker = "python_full_version < '3.12' and extra == 'tvm'" },
     { name = "autoawq", specifier = "==0.2.9" },
     { name = "bitsandbytes", specifier = "==0.46.1" },
     { name = "confluent-kafka" },
@@ -900,6 +904,7 @@ requires-dist = [
     { name = "sentencepiece" },
     { name = "soundfile" },
     { name = "speechbrain" },
+    { name = "tinygrad", marker = "extra == 'tinygrad'" },
     { name = "torch", specifier = "==2.9.1" },
     { name = "torchaudio", specifier = "==2.9.1" },
     { name = "torchvision", specifier = "==0.24.1" },
@@ -908,7 +913,7 @@ requires-dist = [
     { name = "webdataset" },
     { name = "whisperspeech" },
 ]
-provides-extras = ["onnx", "onnx-gpu", "vad"]
+provides-extras = ["onnx", "onnx-gpu", "tvm", "tinygrad", "vad"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest", specifier = ">=7.0" }]
@@ -2718,6 +2723,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b7/4d/08c89e34946fce2aec4fbb45c9016efd5f4d7f24af8e5d93296e935631d8/threadpoolctl-3.6.0.tar.gz", hash = "sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e", size = 21274, upload-time = "2025-03-13T13:49:23.031Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/d5/f9a850d79b0851d1d4ef6456097579a9005b31fea68726a4ae5f2d82ddd9/threadpoolctl-3.6.0-py3-none-any.whl", hash = "sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb", size = 18638, upload-time = "2025-03-13T13:49:21.846Z" },
+]
+
+[[package]]
+name = "tinygrad"
+version = "0.12.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/8c/83bc0895d78d335bd3f5ceadb8a6750c1834f058a0f7e5ee763dc0d626bf/tinygrad-0.12.0.tar.gz", hash = "sha256:299cd53d9452b8689b36c7026c866b73d1e4a862ec53a8ea5bc2a412358c1bbf", size = 1761546, upload-time = "2026-01-12T17:05:09.611Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1a/1e/034a535398b1fca9e9a0ece0bc870c122c79c80866eca3ed802bfea7b0df/tinygrad-0.12.0-py3-none-any.whl", hash = "sha256:275c01961e0959579ba99c6ce1ed70a2c2f1a408ed8cfb5c4de8ad1355e66611", size = 1673238, upload-time = "2026-01-12T17:05:06.727Z" },
 ]
 
 [[package]]

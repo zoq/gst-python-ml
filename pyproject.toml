@@ -55,7 +55,7 @@ onnx-gpu = [
     "onnxruntime-gpu",
 ]
 tvm = [
-    "apache-tvm",
+    "apache-tvm; python_version < '3.12'",
 ]
 tinygrad = [
     "tinygrad",

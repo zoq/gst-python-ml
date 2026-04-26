@@ -111,7 +111,7 @@ GStreamer's Python plugin loader (`libgstpython.so`) embeds the system Python in
 The virtual environment **must** be created with the same Python version that GStreamer uses,
 otherwise `import` errors will occur at runtime (e.g. `No module named 'torch'`).
 
-On Fedora 42+ this is Python 3.14. On Ubuntu 25.04+ this is Python 3.13 or 3.14
+On Fedora 42+ this is Python 3.14. On Ubuntu 26.04+ this is Python 3.14
 depending on the distribution version.
 
 ##### set up venv with system Python
@@ -253,7 +253,7 @@ docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 
 #### Build Container
 
-`docker build -f ./Dockerfile_ubuntu24 -t ubuntu24:latest .`
+`docker build -f ./Dockerfile_ubuntu26 -t ubuntu26:latest .`
 
 `docker build -f ./Dockerfile_fedora42 -t fedora42:latest .`
 
@@ -262,7 +262,7 @@ docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 
 Note: If running on CPU, just remove `--gpus all` from commands below:
 
-`docker run -v ~/src/gst-python-ml/:/root/gst-python-ml -it --rm --gpus all --name ubuntu24 ubuntu24:latest /bin/bash`
+`docker run -v ~/src/gst-python-ml/:/root/gst-python-ml -it --rm --gpus all --name ubuntu26 ubuntu26:latest /bin/bash`
 
 or
 

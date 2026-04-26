@@ -1428,11 +1428,11 @@
                 <button class="tab-btn" data-tab="fedora">Fedora</button>
                 <button class="tab-btn" data-tab="docker">Docker</button>
                 <button class="tab-btn" data-tab="windows">Windows</button>
-                <button class="tab-btn" data-tab="pip">pip / uv</button>
             </div>
             <div class="tab-body">
                 <div class="tab-panel active" id="tab-ubuntu">
-<pre><span class="cmt"># Install system packages</span>
+<pre><span class="cmt"># Ubuntu 26.04+ (requires Python 3.14+)</span>
+<span class="cmt"># Install system packages</span>
 sudo apt update &amp;&amp; sudo apt -y upgrade
 sudo apt install -y python3-pip python3-venv \
     gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
@@ -1443,23 +1443,29 @@ sudo apt install -y python3-pip python3-venv \
 git clone https://github.com/collabora/gst-python-ml.git
 cd gst-python-ml
 
-<span class="cmt"># Set up venv (must use system Python to match GStreamer)</span>
+<span class="cmt"># Create venv (must use system Python to match GStreamer)</span>
 python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
+
+<span class="cmt"># Install PyTorch with CUDA support</span>
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
+<span class="cmt"># Install gst-python-ml</span>
 pip install -e .
 
-<span class="cmt"># Set plugin path</span>
-<span class="kw">export</span> GST_PLUGIN_PATH=<span class="str">$PWD/demos:$PWD/plugins:$GST_PLUGIN_PATH</span>
+<span class="cmt"># Optional: flash-attention (must match python/torch/cuda versions)</span>
+<span class="cmt"># pip install ./flash_attn-*.whl</span>
 
-<span class="cmt"># Run a pipeline!</span>
+<span class="cmt"># Set plugin path and run</span>
+<span class="kw">export</span> GST_PLUGIN_PATH=<span class="str">$PWD/demos:$PWD/plugins:$GST_PLUGIN_PATH</span>
 gst-launch-1.0 filesrc location=data/people.mp4 ! decodebin \
   ! videoconvert ! videoscale ! video/x-raw,width=<span class="num">640</span>,height=<span class="num">480</span> \
   ! pyml_yolo model-name=yolo11m device=cuda ! pyml_overlay \
   ! videoconvert ! autovideosink</pre>
                 </div>
                 <div class="tab-panel" id="tab-fedora">
-<pre><span class="cmt"># Install RPM Fusion (for NVIDIA)</span>
+<pre><span class="cmt"># Fedora 42+ (ships Python 3.14)</span>
+<span class="cmt"># Install RPM Fusion (for NVIDIA)</span>
 sudo dnf install https://download1.rpmfusion.org/free/fedora/\
   rpmfusion-free-release-42.noarch.rpm \
   https://download1.rpmfusion.org/nonfree/fedora/\
@@ -1475,29 +1481,39 @@ sudo dnf install -y python3-pip python3-devel \
 <span class="cmt"># Clone and set up</span>
 git clone https://github.com/collabora/gst-python-ml.git
 cd gst-python-ml
+
+<span class="cmt"># Create venv (must use system Python to match GStreamer)</span>
 python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
+
+<span class="cmt"># Install PyTorch with CUDA support</span>
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
+<span class="cmt"># Install gst-python-ml</span>
 pip install -e .
 
+<span class="cmt"># Optional: flash-attention (must match python/torch/cuda versions)</span>
+<span class="cmt"># pip install ./flash_attn-*.whl</span>
+
+<span class="cmt"># Set plugin path and run</span>
 <span class="kw">export</span> GST_PLUGIN_PATH=<span class="str">$PWD/demos:$PWD/plugins:$GST_PLUGIN_PATH</span></pre>
                 </div>
                 <div class="tab-panel" id="tab-docker">
-<pre><span class="cmt"># Build Docker container (Ubuntu 24.04)</span>
-docker build -f ./Dockerfile_ubuntu24 -t ubuntu24:latest .
-
-<span class="cmt"># Or Fedora 42</span>
+<pre><span class="cmt"># Build Docker container (Fedora 42 — recommended, has Python 3.14)</span>
 docker build -f ./Dockerfile_fedora42 -t fedora42:latest .
+
+<span class="cmt"># Or Ubuntu 26.04</span>
+docker build -f ./Dockerfile_ubuntu26 -t ubuntu26:latest .
 
 <span class="cmt"># Run with GPU</span>
 docker run -v ~/src/gst-python-ml/:/root/gst-python-ml \
-  -it --rm --gpus all --name ubuntu24 ubuntu24:latest /bin/bash
+  -it --rm --gpus all --name fedora42 fedora42:latest /bin/bash
 
 <span class="cmt"># Run without GPU</span>
 docker run -v ~/src/gst-python-ml/:/root/gst-python-ml \
-  -it --rm --name ubuntu24 ubuntu24:latest /bin/bash
+  -it --rm --name fedora42 fedora42:latest /bin/bash
 
-<span class="cmt"># Inside container: set up venv</span>
+<span class="cmt"># Inside container: set up venv and install</span>
 python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
@@ -1520,25 +1536,6 @@ pip install gstreamer-python
 pip install torch torchvision torchaudio \
   --index-url https://download.pytorch.org/whl/cu128</pre>
                 </div>
-                <div class="tab-panel" id="tab-pip">
-<pre><span class="cmt"># Install from PyPI</span>
-pip install gst-python-ml
-
-<span class="cmt"># Or with uv</span>
-uv pip install gst-python-ml
-
-<span class="cmt"># Optional: ONNX Runtime (CPU)</span>
-uv sync --extra onnx
-
-<span class="cmt"># Optional: ONNX Runtime (GPU, requires CUDA)</span>
-uv sync --extra onnx-gpu
-
-<span class="cmt"># Optional: flash-attention (must match python/torch/cuda versions)</span>
-pip install ./flash_attn-2.8.3+cu128torch2.11-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
-
-<span class="cmt"># Verify installation</span>
-gst-inspect-1.0 python</pre>
-                </div>
             </div>
         </div>
     </div>
@@ -1555,17 +1552,17 @@ gst-inspect-1.0 python</pre>
             <div class="deploy-card">
                 <div class="d-icon">&#128421;</div>
                 <h3>Linux (Ubuntu / Fedora)</h3>
-                <p>Native host installation with distribution GStreamer packages. Full GPU support with NVIDIA CUDA. Tested on Ubuntu 24.04 and Fedora 42.</p>
+                <p>Native host installation with distribution GStreamer packages. Full GPU support with NVIDIA CUDA. Tested on Ubuntu 26.04 and Fedora 42.</p>
             </div>
             <div class="deploy-card">
                 <div class="d-icon">&#128051;</div>
                 <h3>Docker</h3>
-                <p>Pre-built Dockerfiles for Ubuntu 24.04 and Fedora 42. NVIDIA Container Toolkit for GPU pass-through. CPU-only mode available.</p>
+                <p>Pre-built Dockerfiles for Ubuntu 26.04 and Fedora 42. NVIDIA Container Toolkit for GPU pass-through. CPU-only mode available.</p>
             </div>
             <div class="deploy-card">
                 <div class="d-icon">&#128187;</div>
                 <h3>Windows</h3>
-                <p>GStreamer MSVC runtime with Python 3.13+. CUDA GPU support via PyTorch. PowerShell setup scripts included.</p>
+                <p>GStreamer MSVC runtime with Python 3.14+. CUDA GPU support via PyTorch. PowerShell setup scripts included.</p>
             </div>
         </div>
     </div>

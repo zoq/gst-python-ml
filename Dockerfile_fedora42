@@ -7,9 +7,6 @@ RUN dnf install -y gcc python3-pip python3-devel cairo cairo-devel cairo-gobject
     gstreamer1-plugins-good gstreamer1-plugins-bad-free \
     gstreamer1-plugins-bad-free-devel python3-gstreamer1
 
-# Install uv via pip
-RUN pip install uv
-
 # Set some environment variables
 ENV GST_PLUGIN_PATH=/root/gst-python-ml/plugins
 

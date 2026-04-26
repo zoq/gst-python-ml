@@ -18,7 +18,7 @@ jobs:
           python-version: "3.14"
 
       - name: Install linters
-        run: pip install ruff black
+        run: pip install ruff 'black<26'
 
       - name: Run ruff check
         run: ruff check plugins/ tests/ demos/ utils/
